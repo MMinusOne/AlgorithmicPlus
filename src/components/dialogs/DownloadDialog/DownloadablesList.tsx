@@ -1,6 +1,12 @@
 import { FaMagnifyingGlass, FaX } from "react-icons/fa6";
 import { useDialogState } from "../../../lib/state";
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Dialog, Downloadable, MarketDataType } from "../../../types";
 import { throttle } from "lodash";
 import { invoke } from "@tauri-apps/api/core";
@@ -200,53 +206,47 @@ export function DownloadablesTable({
             <th>Name</th>
             <th>Symbol</th>
             <th>Source</th>
-            <th>Data Type</th>
           </tr>
         </thead>
         <tbody className="max-h-72 overflow-y-scroll">
-          {displayedDownloadables.map((downloadable, downloadableIndex) => {
-            const downloadNumber = downloadableIndex + 1;
-            const downloadScaledIndex =
-              downloadNumber + (downloadablePage - 1) * DOWNLOAD_PAGE_ITEMS;
-            if (
-              (downloadablePage - 1) * DOWNLOAD_PAGE_ITEMS <
-                downloadScaledIndex &&
-              downloadScaledIndex > downloadablePage * DOWNLOAD_PAGE_ITEMS
+          {displayedDownloadables
+            .slice(
+              downloadablePage * DOWNLOAD_PAGE_ITEMS,
+              downloadablePage * DOWNLOAD_PAGE_ITEMS + DOWNLOAD_PAGE_ITEMS
             )
-              return;
-            console.log(
-              (downloadablePage - 1) * DOWNLOAD_PAGE_ITEMS,
-              downloadNumber,
-              downloadScaledIndex,
-              downloadablePage * DOWNLOAD_PAGE_ITEMS
-            );
+            .map((downloadable, downloadableIndex) => {
+              const downloadNumber = downloadableIndex + 1;
 
-            return (
-              <tr className="hover:bg-base-300">
-                <th>
-                  <input
-                    onChange={(e) => {
-                      if (e.currentTarget.checked) {
-                        setSelectedDownloadables((prev) => [...prev, downloadable]);
-                      } else { 
-                        setSelectedDownloadables((prev) => prev.filter((e) => e.symbol === downloadable.symbol));
-                      }
-                    }}
-                    type="checkbox"
-                    className="checkbox checkbox-primary"
-                  />
-                </th>
-                <th>
-                  {(downloadablePage - 1) * DOWNLOAD_PAGE_ITEMS +
-                    downloadNumber}
-                </th>
-                <td>{downloadable.name}</td>
-                <td>{downloadable.symbol}</td>
-                <td>{downloadable.source}</td>
-                <td>{downloadable.data_type}</td>
-              </tr>
-            );
-          })}
+              return (
+                <tr className="hover:bg-base-300">
+                  <th>
+                    <input
+                      onChange={(e) => {
+                        if (e.currentTarget.checked) {
+                          setSelectedDownloadables((prev) => [
+                            ...prev,
+                            downloadable,
+                          ]);
+                        } else {
+                          setSelectedDownloadables((prev) =>
+                            prev.filter((e) => e.symbol === downloadable.symbol)
+                          );
+                        }
+                      }}
+                      type="checkbox"
+                      className="checkbox checkbox-primary"
+                    />
+                  </th>
+                  <th>
+                    {(downloadablePage - 1) * DOWNLOAD_PAGE_ITEMS +
+                      downloadNumber}
+                  </th>
+                  <td>{downloadable.name}</td>
+                  <td>{downloadable.symbol}</td>
+                  <td>{downloadable.source}</td>
+                </tr>
+              );
+            })}
         </tbody>
       </table>
     </>

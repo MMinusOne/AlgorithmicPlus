@@ -1,8 +1,8 @@
 import Draggable from "react-draggable";
 import DownloadablesList from "./DownloadablesList";
-import { TopBar } from "./TopBar";
-import { useDialogState } from "../../../lib/state";
-import { Dialog } from "../../../types";
+import { TopBar } from "../TopBar";
+import { useDialogState } from "@/lib/state";
+import { Dialog } from "@/types";
 import { useState } from "react";
 import IndividualDownload from "./IndividualDownload";
 import GroupDownload from "./GroupDownload";
@@ -17,11 +17,12 @@ export default function DownloadDialog() {
   const [currentMenu, setCurrentMenu] = useState<DownloadDialogMenu>(
     DownloadDialogMenu.DownloadablesList
   );
+
+  const dialogState = useDialogState();
+  
   const handleClose = () => {
     dialogState.removeActiveDialog(Dialog.Download);
   };
-
-  const dialogState = useDialogState();
 
   return (
     dialogState.activeDialogs.includes(Dialog.Download) && (

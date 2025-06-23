@@ -117,7 +117,8 @@ export function NavigationBar({
   currentMarketType: MarketType;
   handleSearch: (query: string) => void;
   selectedDownloadables: Downloadable[];
-}) {
+  }) {
+  useEffect(() => { console.log(selectedDownloadables) }, [selectedDownloadables])
   return (
     <>
       <ul className="menu menu-horizontal items-center w-full bg-base-200 p-0 flex justify-between">
@@ -174,7 +175,7 @@ export function NavigationBar({
             tabIndex={1}
             role="button"
             className={`btn btn-active btn-xs ${
-              selectedDownloadables.length < 0 ? "btn-disabled" : ""
+              selectedDownloadables.length === 0 ? "btn-disabled" : ""
             }`}
           >
             Download
@@ -195,7 +196,7 @@ export function DownloadablesTable({
   DOWNLOAD_PAGE_ITEMS: number;
   displayedDownloadables: Downloadable[];
   setSelectedDownloadables: Dispatch<SetStateAction<Downloadable[]>>;
-}) {
+  }) {
   return (
     <>
       <table className="table table-xs">
@@ -263,7 +264,7 @@ export function Pagination({
   setDownloadablePage: Dispatch<SetStateAction<number>>;
   displayedDownloadables: Downloadable[];
   DOWNLOAD_PAGE_ITEMS: number;
-}) {
+  }) {
   return (
     <>
       <div className="w-full flex items-center justify-center">

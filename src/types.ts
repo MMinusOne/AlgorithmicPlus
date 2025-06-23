@@ -11,12 +11,12 @@ export enum MarketType {
 }
 
 export enum MarketDataType {
-  OHLCV,
-  Spread,
-  OrderFlow,
-  BidAsk,
-  News,
-  Economics,
+  OHLCV = "OHLCV",
+  Spread = "Spread",
+  OrderFlow = "Order Flow", 
+  BidAsk = "Bid/Ask",
+  News = "News",
+  Economics = "Economics",
 }
 
 export interface Downloadable {

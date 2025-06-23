@@ -3,15 +3,20 @@ import DownloadablesList from "./DownloadablesList";
 import { TopBar } from "./TopBar";
 import { useDialogState } from "../../../lib/state";
 import { Dialog } from "../../../types";
+import { useState } from "react";
+import IndividualDownload from "./IndividualDownload";
+import GroupDownload from "./GroupDownload";
 
-enum DialogMenu { 
-  DownloadablesList, 
+enum DownloadDialogMenu {
+  DownloadablesList,
+  GroupDownload,
   IndividualDownload,
-  
 }
 
 export default function DownloadDialog() {
-  const [currentMenu, setCurrentMenu] = useState<DialogMenu>(DialogMenu.DownloadablesList);
+  const [currentMenu, setCurrentMenu] = useState<DownloadDialogMenu>(
+    DownloadDialogMenu.DownloadablesList
+  );
   const handleClose = () => {
     dialogState.removeActiveDialog(Dialog.Download);
   };
@@ -28,7 +33,15 @@ export default function DownloadDialog() {
           <Draggable defaultClassNameDragging="cursor-grab">
             <div className="bg-white shadow-xl w-[600px] mx-4">
               <TopBar title="Download Menu" handleClose={handleClose} />
-              <DownloadablesList />
+              {currentMenu === DownloadDialogMenu.DownloadablesList ? (
+                <DownloadablesList />
+              ) : currentMenu === DownloadDialogMenu.IndividualDownload ? (
+                <IndividualDownload />
+              ) : currentMenu === DownloadDialogMenu.GroupDownload ? (
+                <GroupDownload />
+              ) : (
+                <DownloadablesList />
+              )}
             </div>
           </Draggable>
         </dialog>

@@ -124,8 +124,7 @@ impl Source for Yahoo {
                 name: symbol.name,
                 symbol: symbol.symbol,
                 source: SourceName::YahooFinance,
-                market_type: MarketType::Stock,
-                data_type: DataType::OHLCV
+                market_type: MarketType::Stock
             };
 
             downloadables.push(symbol_downloadable);

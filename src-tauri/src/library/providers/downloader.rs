@@ -84,5 +84,4 @@ pub struct Downloadable {
     pub symbol: String,
     pub source: SourceName,
     pub market_type: MarketType,
-    pub data_type: DataType,
 }

@@ -25,7 +25,10 @@ use serde::{Deserialize, Serialize};
 pub fn run() {
     return tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![get_downloadables])
+        .invoke_handler(tauri::generate_handler![
+            get_downloadables,
+            get_sources_info
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

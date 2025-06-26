@@ -3,6 +3,12 @@ use reqwest::get;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+const BINANCE_SYMBOLS_DATA: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/src/data/misc/binance_symbols.json"
+));
+
+
 use crate::{
     library::providers::downloader::{DataType, Downloadable, MarketType, Source, SourceName},
     utils::classes::logger::LOGGER,
@@ -12,16 +18,6 @@ pub struct Binance {
     source_name: String,
     source_url: String,
     timeframes: Vec<&'static str>,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct ExchangeInfo { 
-    symbols: Vec<SymbolCell>
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct SymbolCell { 
-    symbol: String
 }
 
 #[async_trait]
@@ -45,37 +41,17 @@ impl Source for Binance {
     async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn std::error::Error>> {
         let mut downloadables: Vec<Downloadable> = vec![];
 
-        match get("https://api.binance.com/api/v3/exchangeInfo").await {
-            Ok(exchange_info_response) => match exchange_info_response.text().await {
-                Ok(exchange_info_string) => {
-                    match serde_json::from_str::<ExchangeInfo>(&exchange_info_string) {
-                        Ok(exchange_info) => {
-                            for symbol in exchange_info.symbols {
-                                downloadables.push(Downloadable {
-                                    name: symbol.symbol.clone(),
-                                    symbol: symbol.symbol,
-                                    source: SourceName::Binance,
-                                    market_type: MarketType::Crypto,
-                                    data_type: DataType::OHLCV,
-                                });
-                            }
-                        }
-                        Err(e) => LOGGER.error(&format!(
-                            "Error serializing exchange_info Binance {}",
-                            e.to_string()
-                        )),
-                    }
-                }
+        let symbols: Vec<String> = serde_json::from_str(BINANCE_SYMBOLS_DATA)?;
 
-                Err(e) => LOGGER.error(&format!(
-                    "Error parsing test Binance exchangeInfo {}",
-                    e.to_string()
-                )),
-            },
-            Err(e) => LOGGER.error(&format!(
-                "Error while getting the Binance exchangeInfo {}",
-                e.to_string()
-            )),
+        for symbol in symbols {
+            let symbol_downloadable = Downloadable {
+                name: symbol.to_string(),
+                symbol: symbol.to_string(),
+                source: SourceName::Binance,
+                market_type: MarketType::Crypto
+            };
+
+            downloadables.push(symbol_downloadable);
         }
 
         return Ok(downloadables);

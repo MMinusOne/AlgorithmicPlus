@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Dialog } from "../types";
+import { Dialog } from "../../types";
 
 interface DialogState {
   activeDialogs: Dialog[];

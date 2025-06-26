@@ -1,5 +1,5 @@
 import { FaPlus } from "react-icons/fa6";
-import { useDialogState } from "../lib/state";
+import { useDialogState } from "../lib/state/dialogs";
 import { Dialog } from "../types";
 
 export default function Sidebar() {
@@ -38,7 +38,7 @@ export default function Sidebar() {
               </ul>
             </details>
             <details open>
-              <SidebarSummary>data study</SidebarSummary>
+              <SidebarSummary>data study (composer)</SidebarSummary>
               <ul>
                 <li>
                   <a className="truncate" title="Item">

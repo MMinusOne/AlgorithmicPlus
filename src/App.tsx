@@ -4,7 +4,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import Sidebar from "./components/Sidebar";
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useRef, useState } from "react";
-import DownloadDialog from "./components/dialogs/DownloadDialog";
+import DownloadDialog from "@/components/dialogs/DownloadDialog";
 
 function App() {
   return (

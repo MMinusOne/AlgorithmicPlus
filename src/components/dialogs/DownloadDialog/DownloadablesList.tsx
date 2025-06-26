@@ -1,36 +1,25 @@
-import { FaMagnifyingGlass, FaX } from "react-icons/fa6";
-import { useDialogState } from "../../../lib/state";
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
-import { Dialog, Downloadable, MarketDataType } from "../../../types";
+import { FaMagnifyingGlass } from "react-icons/fa6";
+import { useCallback, useEffect } from "react";
+import { Downloadable, MarketType } from "@/types";
 import { throttle } from "lodash";
 import { invoke } from "@tauri-apps/api/core";
-import Loading from "../../Loading";
+import Loading from "@/components/Loading";
+import { useDownloadDialogState } from "@/lib/state/downloads";
 
-enum MarketType {
-  Crypto = "Crypto",
-  Stock = "Stock",
-  Futures = "Futures",
-}
-
-export default function DownloadablesList() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentMarketType, setCurrentMarketType] = useState<MarketType>(
-    MarketType.Crypto
-  );
-  const [downloadables, setDownloadables] = useState<Downloadable[]>([]);
-  const [displayedDownloadables, setDisplayedDownloadables] = useState<
-    Downloadable[]
-  >([]);
-  const [selectedDownloadables, setSelectedDownloadables] = useState<
-    Downloadable[]
-  >([]);
-  const [downloadablePage, setDownloadablePage] = useState(1);
+export default function DownloadablesList({
+  onDownload,
+}: {
+  onDownload: () => void;
+}) {
+  const {
+    isLoading,
+    setIsLoading,
+    currentMarketType,
+    downloadables,
+    setDownloadables,
+    setDisplayedDownloadables,
+    setDownloadablePage,
+  } = useDownloadDialogState();
 
   const handleSearch = useCallback(
     throttle((searchValue: string) => {
@@ -54,7 +43,6 @@ export default function DownloadablesList() {
     }, 1000),
     [downloadables]
   );
-  const DOWNLOAD_PAGE_ITEMS = 12;
 
   useEffect(() => {
     const getDownloadables = async () => {
@@ -80,27 +68,12 @@ export default function DownloadablesList() {
 
   return (
     <>
-      <NavigationBar
-        currentMarketType={currentMarketType}
-        handleSearch={handleSearch}
-        selectedDownloadables={selectedDownloadables}
-        setCurrentMarketType={setCurrentMarketType}
-      />
+      <NavigationBar onDownload={onDownload} handleSearch={handleSearch} />
 
       <Loading isLoading={isLoading}>
         <div className="overflow-x-auto">
-          <DownloadablesTable
-            DOWNLOAD_PAGE_ITEMS={DOWNLOAD_PAGE_ITEMS}
-            displayedDownloadables={displayedDownloadables}
-            downloadablePage={downloadablePage}
-            setSelectedDownloadables={setSelectedDownloadables}
-          />
-          <Pagination
-            DOWNLOAD_PAGE_ITEMS={DOWNLOAD_PAGE_ITEMS}
-            downloadablePage={downloadablePage}
-            displayedDownloadables={displayedDownloadables}
-            setDownloadablePage={setDownloadablePage}
-          />
+          <DownloadablesTable />
+          <Pagination />
         </div>
       </Loading>
     </>
@@ -108,17 +81,19 @@ export default function DownloadablesList() {
 }
 
 export function NavigationBar({
-  setCurrentMarketType,
-  currentMarketType,
+  onDownload,
   handleSearch,
-  selectedDownloadables,
 }: {
-  setCurrentMarketType: Dispatch<SetStateAction<MarketType>>;
-  currentMarketType: MarketType;
-  handleSearch: (query: string) => void;
-  selectedDownloadables: Downloadable[];
-  }) {
-  useEffect(() => { console.log(selectedDownloadables) }, [selectedDownloadables])
+  onDownload: () => void;
+  handleSearch: (searchValue: string) => void;
+}) {
+  const { currentMarketType, setCurrentMarketType, selectedDownloadables } =
+    useDownloadDialogState();
+
+  useEffect(() => {
+    console.log(selectedDownloadables);
+  }, [selectedDownloadables]);
+
   return (
     <>
       <ul className="menu menu-horizontal items-center w-full bg-base-200 p-0 flex justify-between">
@@ -177,6 +152,7 @@ export function NavigationBar({
             className={`btn btn-active btn-xs ${
               selectedDownloadables.length === 0 ? "btn-disabled" : ""
             }`}
+            onClick={onDownload}
           >
             Download
           </button>
@@ -186,20 +162,18 @@ export function NavigationBar({
   );
 }
 
-export function DownloadablesTable({
-  downloadablePage,
-  DOWNLOAD_PAGE_ITEMS,
-  displayedDownloadables,
-  setSelectedDownloadables,
-}: {
-  downloadablePage: number;
-  DOWNLOAD_PAGE_ITEMS: number;
-  displayedDownloadables: Downloadable[];
-  setSelectedDownloadables: Dispatch<SetStateAction<Downloadable[]>>;
-  }) {
+export function DownloadablesTable() {
+  const {
+    displayedDownloadables,
+    selectedDownloadables,
+    setSelectedDownloadables,
+    downloadablePage,
+    DOWNLOAD_PAGE_ITEMS,
+  } = useDownloadDialogState();
+
   return (
     <>
-      <table className="table table-xs">
+      <table className="table table-xs bg-base-200">
         <thead>
           <tr>
             <th></th>
@@ -217,23 +191,46 @@ export function DownloadablesTable({
             )
             .map((downloadable, downloadableIndex) => {
               const downloadNumber = downloadableIndex + 1;
+              const isSelected = selectedDownloadables.find(
+                (selectedDownloadable) =>
+                  selectedDownloadable.symbol === downloadable.symbol
+              );
 
               return (
-                <tr className="hover:bg-base-300">
+                <tr
+                  onClick={() => {
+                    if (!isSelected) {
+                      setSelectedDownloadables([
+                        ...selectedDownloadables,
+                        downloadable,
+                      ]);
+                    } else {
+                      setSelectedDownloadables(
+                        selectedDownloadables.filter(
+                          (e) => e.symbol !== downloadable.symbol
+                        )
+                      );
+                    }
+                  }}
+                  className="hover:bg-base-300"
+                >
                   <th>
                     <input
                       onChange={(e) => {
                         if (e.currentTarget.checked) {
-                          setSelectedDownloadables((prev) => [
-                            ...prev,
+                          setSelectedDownloadables([
+                            ...selectedDownloadables,
                             downloadable,
                           ]);
                         } else {
-                          setSelectedDownloadables((prev) =>
-                            prev.filter((e) => e.symbol === downloadable.symbol)
+                          setSelectedDownloadables(
+                            selectedDownloadables.filter(
+                              (e) => e.symbol !== downloadable.symbol
+                            )
                           );
                         }
                       }}
+                      checked={isSelected ? true : false}
                       type="checkbox"
                       className="checkbox checkbox-primary"
                     />
@@ -242,7 +239,9 @@ export function DownloadablesTable({
                     {(downloadablePage - 1) * DOWNLOAD_PAGE_ITEMS +
                       downloadNumber}
                   </th>
-                  <td>{downloadable.name}</td>
+                  <td className="truncate max-w-80 w-80">
+                    {downloadable.name}
+                  </td>
                   <td>{downloadable.symbol}</td>
                   <td>{downloadable.source}</td>
                 </tr>
@@ -254,17 +253,13 @@ export function DownloadablesTable({
   );
 }
 
-export function Pagination({
-  downloadablePage,
-  setDownloadablePage,
-  displayedDownloadables,
-  DOWNLOAD_PAGE_ITEMS,
-}: {
-  downloadablePage: number;
-  setDownloadablePage: Dispatch<SetStateAction<number>>;
-  displayedDownloadables: Downloadable[];
-  DOWNLOAD_PAGE_ITEMS: number;
-  }) {
+export function Pagination() {
+  const {
+    displayedDownloadables,
+    downloadablePage,
+    setDownloadablePage,
+    DOWNLOAD_PAGE_ITEMS,
+  } = useDownloadDialogState();
   return (
     <>
       <div className="w-full flex items-center justify-center">
@@ -281,12 +276,14 @@ export function Pagination({
             Page {downloadablePage}
           </button>
           <button
-            onClick={() =>
-              downloadablePage <
-                Math.ceil(
-                  displayedDownloadables.length / DOWNLOAD_PAGE_ITEMS
-                ) && setDownloadablePage(downloadablePage + 1)
-            }
+            onClick={() => {
+              if (
+                downloadablePage <
+                Math.ceil(displayedDownloadables.length / DOWNLOAD_PAGE_ITEMS)
+              ) {
+                setDownloadablePage(downloadablePage + 1);
+              }
+            }}
             className="join-item btn w-1/3"
           >
             »

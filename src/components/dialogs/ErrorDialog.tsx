@@ -2,7 +2,7 @@
 
 import Draggable from "react-draggable";
 import { TopBar } from "./TopBar";
-import { useDialogState } from "@/lib/state";
+import { useDialogState } from "@/lib/state/dialogs";
 import { Dialog } from "@/types";
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useState } from "react";
@@ -35,6 +35,7 @@ export default function ErrorDialog() {
   useEffect(() => {
     const unlisten = listen("error", (event) => {
       setError(event.payload as EngineError);
+      dialogState.addActiveDialog(Dialog.Error);
     });
 
     return () => {

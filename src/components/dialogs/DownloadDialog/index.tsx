@@ -3,9 +3,9 @@ import DownloadablesList from "./DownloadablesList";
 import { TopBar } from "../TopBar";
 import { useDialogState } from "@/lib/state/dialogs";
 import { Dialog, DownloadDialogMenu, MarketType } from "@/types";
-import { useState } from "react";
 import Download from "./Download";
 import { useDownloadDialogState } from "@/lib/state/downloads";
+import DownloadProgress from "./DownloadProgress";
 
 export default function DownloadDialog() {
   const {
@@ -51,7 +51,10 @@ export default function DownloadDialog() {
                 title="Download Menu"
                 handleClose={handleClose}
                 handleBack={
-                  currentMenu !== DownloadDialogMenu.DownloadablesList
+                  [
+                    DownloadDialogMenu.DownloadablesList,
+                    DownloadDialogMenu.DownloadProgress,
+                  ].includes(currentMenu)
                     ? handleBack
                     : undefined
                 }
@@ -59,7 +62,13 @@ export default function DownloadDialog() {
               {currentMenu === DownloadDialogMenu.DownloadablesList ? (
                 <DownloadablesList onDownload={onDownload} />
               ) : currentMenu === DownloadDialogMenu.Download ? (
-                <Download />
+                <Download
+                  onDownloadStart={() => {
+                    setCurrentMenu(DownloadDialogMenu.DownloadProgress);
+                  }}
+                />
+              ) : currentMenu === DownloadDialogMenu.DownloadProgress ? (
+                <DownloadProgress />
               ) : (
                 <DownloadablesList onDownload={onDownload} />
               )}

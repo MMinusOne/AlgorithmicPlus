@@ -30,10 +30,11 @@ export interface Downloadable {
 export enum DownloadDialogMenu {
   DownloadablesList,
   Download,
+  DownloadProgress,
 }
 
 export interface SourceInfo {
-  source_name: string;
-  source_url: string;
+  exchange_name: string;
+  exchange_url: string;
   timeframes: string[];
 }

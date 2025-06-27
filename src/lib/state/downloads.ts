@@ -1,4 +1,9 @@
-import { Downloadable, DownloadDialogMenu, MarketType } from "@/types";
+import {
+  Downloadable,
+  DownloadDialogMenu,
+  MarketDataType,
+  MarketType,
+} from "@/types";
 import { create } from "zustand";
 
 interface UserDownloadState {
@@ -25,8 +30,16 @@ interface DownloadDialogState {
   setDownloadables: (downloadables: Downloadable[]) => void;
   selectedDownloadables: Downloadable[];
   setSelectedDownloadables: (downloadables: Downloadable[]) => void;
-  currentMenu: DownloadDialogMenu,
+  currentMenu: DownloadDialogMenu;
   setCurrentMenu: (menu: DownloadDialogMenu) => void;
+  selectedTimeframe: string;
+  setSelectedTimeframe: (timeframe: string) => void;
+  selectedStartDate: string;
+  setSelectedStartDate: (startDate: string) => void;
+  selectedEndDate: string;
+  setSelectedEndDate: (endDate: string) => void;
+  selectedDataTypes: MarketDataType[];
+  setSelectedDataTypes: (dataTypes: MarketDataType[]) => void;
   DOWNLOAD_PAGE_ITEMS: number;
 }
 
@@ -37,8 +50,13 @@ export const useDownloadDialogState = create<DownloadDialogState>((set) => ({
   DOWNLOAD_PAGE_ITEMS: 12,
   currentMarketType: MarketType.Crypto,
   downloadables: [],
-  selectedDownloadables: [],
   currentMenu: DownloadDialogMenu.DownloadablesList,
+  selectedDownloadables: [],
+  selectedTimeframe: "1h",
+  selectedDataTypes: [MarketDataType.OHLCV],
+  selectedStartDate: "2025-05-15",
+  selectedEndDate: "2025-06-15",
+
   setDisplayedDownloadables: (downloadables: Downloadable[]) =>
     set((state) => ({ ...state, displayedDownloadables: downloadables })),
   setDownloadablePage: (downloadablePage: number) =>
@@ -53,4 +71,13 @@ export const useDownloadDialogState = create<DownloadDialogState>((set) => ({
     set((state) => ({ ...state, selectedDownloadables: downloadables })),
   setCurrentMenu: (currentMenu: DownloadDialogMenu) =>
     set((state) => ({ ...state, currentMenu: currentMenu })),
+  setSelectedDataTypes: (selectedDataTypes: MarketDataType[]) =>
+    set((state) => ({ ...state, selectedDataTypes })),
+  setSelectedEndDate: (selectedEndDate: string) =>
+    set((state) => ({ ...state, selectedEndDate })),
+  setSelectedStartDate: (selectedStartDate: string) =>
+    set((state) => ({ ...state, selectedStartDate })),
+  setSelectedTimeframe: (selectedTimeframe: string) =>
+    set((state) => ({ ...state, selectedTimeframe })),
 }));
+

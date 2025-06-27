@@ -137,7 +137,7 @@ impl Source for Yahoo {
 impl Yahoo {
     pub fn new() -> Self {
         return Self {
-            source_name: "Yahoo Finance".to_string(),
+            source_name: "YahooFinance".to_string(),
             source_url: "https://finance.yahoo.com/".to_string(),
             timeframes: vec!["1d"]
         };

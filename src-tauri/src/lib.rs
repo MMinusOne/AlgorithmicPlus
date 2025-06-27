@@ -27,7 +27,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             get_downloadables,
-            get_sources_info
+            get_sources_info,
+            download_request
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

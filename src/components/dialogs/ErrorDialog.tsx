@@ -37,10 +37,6 @@ export default function ErrorDialog() {
       setError(event.payload as EngineError);
       dialogState.addActiveDialog(Dialog.Error);
     });
-
-    return () => {
-      unlisten.then((fn) => fn());
-    };
   }, []);
 
   return (

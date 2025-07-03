@@ -1,10 +1,12 @@
-use crate::{library::providers::downloader::{DataType, Downloadable, MarketType, Source, SourceName}, utils::classes::logger::LOGGER};
-use serde::{Deserialize, Serialize};
-use serde_json::{json};
-use std::{collections::HashMap, os::windows::fs::MetadataExt, time::UNIX_EPOCH, time::SystemTime};
-use yahoo_finance::{history, Bar};
+use crate::{
+    library::providers::downloader::{DataType, Downloadable, MarketType, Source, SourceName},
+    utils::classes::logger::LOGGER,
+};
 use async_trait::async_trait;
-
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use std::{collections::HashMap, os::windows::fs::MetadataExt, time::SystemTime, time::UNIX_EPOCH};
+use yahoo_finance::{history, Bar};
 
 const YAHOO_SYMBOLS_DATA: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -62,8 +64,8 @@ impl Source for Yahoo {
 
     // fn format_raw_data(&self, data: Vec<Bar>) -> Vec<Vec<f64>> {
     //     let mut candles: Vec<Vec<f64>> = vec![];
-        
-    //     for candle in data { 
+
+    //     for candle in data {
     //      candles.push([candle.timestamp,
     //          candle.open,
     //           candle.high,
@@ -75,56 +77,21 @@ impl Source for Yahoo {
     //     return candles;
     // }
 
-    async fn download(&self, symbol: String, timeframe: String, limit: i128) -> Option<String> {
-        let download_path = format!(
-            "{}/src/data/data-stories/ohlcv/{}.json", 
-            env!("CARGO_MANIFEST_DIR"), 
-            symbol
-        );
-    
-        let result = history::retrieve(&symbol)
-            .await
-            .map_err(|error| {
-                let error_msg = format!(
-                    "Error while downloading symbol: {}, timeframe: {}, limit: {}, from YahooFinance, error: {}",
-                    symbol, timeframe, limit, error
-                );
-                LOGGER.error(&error_msg);
-            })
-            .and_then(|data| {
-                let serializable_data: Vec<SerializableBar> = data
-                    .into_iter()
-                    .map(SerializableBar::from)
-                    .collect();
-    
-                serde_json::to_string(&serializable_data)
-                    .map_err(|error| {
-                        LOGGER.error(&format!("Error serializing data: {}", error));
-                    })
-            })
-            .and_then(|serialized_data| {
-                std::fs::write(&download_path, &serialized_data)
-                    .map_err(|error| {
-                        LOGGER.error(&format!("Error writing file: {}", error));
-                    })
-                    .map(|_| download_path.clone())
-            });
-    
-        return result.ok()
+    async fn download(&self) -> Option<String> {
+        return None;
     }
- 
+
     async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn std::error::Error>> {
         let mut downloadables: Vec<Downloadable> = vec![];
 
         let symbols: Vec<SymbolCell> = serde_json::from_str(YAHOO_SYMBOLS_DATA)?;
 
         for symbol in symbols {
-
             let symbol_downloadable = Downloadable {
                 name: symbol.name,
                 symbol: symbol.symbol,
                 source: SourceName::YahooFinance,
-                market_type: MarketType::Stock
+                market_type: MarketType::Stock,
             };
 
             downloadables.push(symbol_downloadable);
@@ -139,7 +106,7 @@ impl Yahoo {
         return Self {
             source_name: "YahooFinance".to_string(),
             source_url: "https://finance.yahoo.com/".to_string(),
-            timeframes: vec!["1d"]
+            timeframes: vec!["1d"],
         };
     }
 }

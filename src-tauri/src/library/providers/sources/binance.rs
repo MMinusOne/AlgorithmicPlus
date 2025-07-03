@@ -34,8 +34,8 @@ impl Source for Binance {
         return self.timeframes.clone();
     }
 
-    async fn download(&self, symbol: String, timeframe: String, limit: i128) -> Option<String> {
-        return Some("not done yet".to_string());
+    async fn download(&self) -> Option<String> {
+        return None;
     }
 
     async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn std::error::Error>> {

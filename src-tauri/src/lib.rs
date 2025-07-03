@@ -1,6 +1,5 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
-mod commands;
 /**
  * TODO:
  * - Make ALL the metric formulas in utils/formulas
@@ -11,6 +10,7 @@ mod commands;
  *  concurrency options, data story, etc...
  * - Based on that make the WFO tester with its options
  */
+mod commands;
 mod library;
 mod utils;
 
@@ -20,6 +20,7 @@ use crate::library::providers::{
 };
 use commands::*;
 use serde::{Deserialize, Serialize};
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

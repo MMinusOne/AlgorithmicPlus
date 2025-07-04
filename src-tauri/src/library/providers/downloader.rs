@@ -54,61 +54,54 @@ impl Downloader {
         download_datas: Vec<DownloadData>,
         thread_limit: Option<u8>,
         on_progress: Option<F>,
-    ) -> Option<Vec<String>>
-    where
+    ) where
         F: Fn(usize) + Send + Sync + 'static,
     {
         let thread_count = thread_limit.unwrap_or(8);
         let total_count = download_datas.len();
         let completed_count = Arc::new(AtomicUsize::new(0));
 
-        let results: Vec<Option<String>> = stream::iter(download_datas)
+        let task_results: Vec<_> = stream::iter(download_datas)
             .map(|download_data| {
                 let counter = Arc::clone(&completed_count);
                 let on_progress = &on_progress;
 
                 return async move {
-                    let result = self.download(download_data).await;
+                    for download_data_type in &download_data.data_types {
+                        match download_data_type.as_str() {
+                            "OHLCV" => {
+                                self.download_ohlcv(download_data.clone()).await;
+                            }
+                            "bidask" => {
+                                //TODO: make bidask download
+                            }
+                            "news" => {
+                                //TODO: make news download */
+                            }
+                            _ => {}
+                        }
+                    }
+
                     let current = counter.fetch_add(1, Ordering::Relaxed) + 1;
                     let progress = current * 100 / total_count;
 
                     if let Some(progress_callback) = on_progress {
                         progress_callback(progress);
                     }
-
-                    return result;
                 };
             })
             .buffer_unordered(thread_count as usize)
             .collect()
             .await;
-
-        let successful_results: Vec<String> = results
-            .into_iter()
-            .filter_map(|result| {
-                if let Some(value) = result {
-                    return Some(value);
-                } else {
-                    LOGGER.warning(&format!("Couldn't download a symbol"));
-                    return None;
-                }
-            })
-            .collect();
-
-        if successful_results.is_empty() {
-            return None;
-        } else {
-            return Some(successful_results);
-        }
     }
 
-    pub async fn download(&self, download_data: DownloadData) -> Option<String> {
+    pub async fn download_ohlcv(&self, download_data: DownloadData) -> Option<String> {
         //TODO: make it download the data
 
         match self.sources.get(&download_data.source_name) {
             Some(source) => {
-                let download_path = source.download(download_data).await;
-                return download_path;
+                let ohlcv_download_path = source.download_ohlcv(download_data).await;
+                return ohlcv_download_path;
             }
             None => {
                 return None;
@@ -146,13 +139,13 @@ pub struct OHLCVDownloadJSONFileStructure {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct OHLCVJSONFileDataStructure { 
+pub struct OHLCVJSONFileDataStructure {
     pub symbol: String,
-    pub timeframe: String, 
+    pub timeframe: String,
     pub start_date: i64,
-    pub end_date: i64, 
+    pub end_date: i64,
 
-    pub timestamps: Vec<u64>, 
+    pub timestamps: Vec<u64>,
     pub opens: Vec<f32>,
     pub highs: Vec<f32>,
     pub lows: Vec<f32>,
@@ -187,7 +180,7 @@ pub trait Source: Send + Sync {
     fn source_name(&self) -> SourceName;
     fn source_url(&self) -> &str;
     fn timeframes(&self) -> Vec<&str>;
-    async fn download(&self, download_data: DownloadData) -> Option<String>;
+    async fn download_ohlcv(&self, download_data: DownloadData) -> Option<String>;
     // fn format_raw_data(&self, data: Vec<>) -> Vec<Vec<String>>;
     async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn std::error::Error>>;
 }

@@ -32,7 +32,7 @@ impl Source for Binance {
         return self.timeframes.clone();
     }
 
-    async fn download(&self, download_data: DownloadData) -> Option<String> {
+    async fn download_ohlcv(&self, download_data: DownloadData) -> Option<String> {
         return None;
     }
 

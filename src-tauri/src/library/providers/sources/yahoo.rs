@@ -37,8 +37,9 @@ impl Source for Yahoo {
     fn timeframes(&self) -> Vec<&str> {
         return self.timeframes.clone();
     }
+
     //TODO: change all download's to download_ohlcv
-    async fn download(&self, download_data: DownloadData) -> Option<String> {
+    async fn download_ohlcv(&self, download_data: DownloadData) -> Option<String> {
         if let Ok(yahoo_connector) = yahoo::YahooConnector::new() {
             let start_date = match parse_date_string_to_offsettime(&download_data.start_date) {
                 Ok(date) => date,

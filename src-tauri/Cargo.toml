@@ -29,3 +29,7 @@ lazy_static = "1.5.0"
 tokio = { version = "1.45.1", features = ["full"] }
 uuid = { version = "1.17.0", features = ["v4"] }
 futures = "0.3.31"
+yahoo_finance_api = "4.0.0"
+chrono = "0.4.41"
+time = "0.3.41"
+once_cell = "1.21.3"

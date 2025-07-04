@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use crate::library::providers::downloader::{DownloadData, Downloadable, Downloader, Source};
+use crate::library::providers::downloader::{
+    DownloadData, Downloadable, Downloader, Source, SourceName,
+};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use tauri::{Emitter, Manager};
@@ -18,8 +20,8 @@ pub async fn get_downloadables() -> Vec<Downloadable> {
 
 #[derive(Serialize, Deserialize)]
 pub struct SourceInfo {
-    pub exchange_name: &'static str,
-    pub exchange_url: &'static str,
+    pub name: SourceName,
+    pub url: &'static str,
     pub timeframes: Vec<&'static str>,
 }
 
@@ -27,10 +29,10 @@ pub struct SourceInfo {
 pub fn get_sources_info() -> Vec<SourceInfo> {
     let mut sources_info: Vec<SourceInfo> = vec![];
 
-    for source in &DOWNLOADER.sources {
+    for source in DOWNLOADER.sources.values() {
         sources_info.push(SourceInfo {
-            exchange_name: source.source_name(),
-            exchange_url: source.source_url(),
+            name: source.source_name(),
+            url: source.source_url(),
             timeframes: source.timeframes(),
         })
     }
@@ -77,6 +79,7 @@ pub async fn download_request(
     for downloadable in data.downloadables {
         let download_data = DownloadData {
             symbol: downloadable.symbol,
+            source_name: downloadable.source_name,
             timeframe: data.timeframe.clone(),
             data_types: data.data_types.clone(),
             start_date: data.start_date.clone(),
@@ -87,17 +90,17 @@ pub async fn download_request(
     }
 
     let app_handle = app.clone();
-    let download_id = Arc::new(download_id); 
+    let download_id = Arc::new(download_id);
 
     let on_progress = {
-        println!("Executed");
         let download_id = Arc::clone(&download_id);
         move |download_progress: usize| {
+            println!("Download progress {:?}", download_progress);
             app_handle
                 .emit(
                     "download_progress",
                     DownloadProgressResponse {
-                        download_id: (*download_id).clone(), 
+                        download_id: (*download_id).clone(),
                         download_progress,
                     },
                 )
@@ -105,10 +108,52 @@ pub async fn download_request(
         }
     };
 
-
     DOWNLOADER
         .download_all(download_datas, None, Some(on_progress))
         .await;
 
     return response;
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DownloadableTimeframePairAvailableRequestData {
+    downloadable: Downloadable,
+    timeframe: String,
+}
+
+#[tauri::command]
+pub async fn downloadable_timeframe_pair_available(
+    data: DownloadableTimeframePairAvailableRequestData,
+) -> bool {
+    let source_name = data.downloadable.source_name.clone();
+    
+    match DOWNLOADER.sources.get(&source_name) {
+        Some(source) => {
+            let timeframes = source.timeframes();
+            if timeframes.contains(&data.timeframe.as_str()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        None => {
+            return false;
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn get_available_sources_timeframes() -> Vec<String> {
+    let mut all_timeframes: Vec<String> = vec![];
+
+    for source in DOWNLOADER.sources.values() { 
+       for timeframe in &source.timeframes() { 
+        if !all_timeframes.contains(&timeframe.to_string()) { 
+            all_timeframes.push(timeframe.to_string());
+        }
+       }
+    }
+
+    return all_timeframes;
 }

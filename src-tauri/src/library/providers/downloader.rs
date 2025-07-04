@@ -1,6 +1,9 @@
-use std::sync::{
-    atomic::{AtomicUsize, Ordering},
-    Arc,
+use std::{
+    collections::HashMap,
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
 };
 
 use crate::{
@@ -15,22 +18,28 @@ use futures::stream::{self, StreamExt};
 use serde::{Deserialize, Serialize};
 
 pub struct Downloader {
-    pub sources: Vec<Box<dyn Source>>,
+    pub sources: HashMap<SourceName, Box<dyn Source>>,
 }
 
 impl Downloader {
     pub fn new() -> Self {
+        let mut sources_map: HashMap<SourceName, Box<dyn Source>> = HashMap::new();
+
         let yahoo = Box::new(Yahoo::new());
         let binance = Box::new(Binance::new());
+
+        sources_map.insert(yahoo.source_name(), yahoo);
+        sources_map.insert(binance.source_name(), binance);
+
         return Self {
-            sources: vec![yahoo, binance],
+            sources: sources_map,
         };
     }
 
     pub async fn get_downloadables(&self) -> Vec<Downloadable> {
         let mut downloadables: Vec<Downloadable> = vec![];
 
-        for source in &self.sources {
+        for source in self.sources.values() {
             match source.get_downloadables().await {
                 Ok(source_downloadables) => downloadables.extend(source_downloadables),
                 Err(err) => logger::LOGGER.error(&err.to_string()),
@@ -57,7 +66,7 @@ impl Downloader {
             .map(|download_data| {
                 let counter = Arc::clone(&completed_count);
                 let on_progress = &on_progress;
-                
+
                 return async move {
                     let result = self.download(download_data).await;
                     let current = counter.fetch_add(1, Ordering::Relaxed) + 1;
@@ -95,49 +104,70 @@ impl Downloader {
 
     pub async fn download(&self, download_data: DownloadData) -> Option<String> {
         //TODO: make it download the data
-        // Dont bother editing this, this will just download the data and return string
-        return None;
-    }
 
-    pub fn get_source(&self, source_name_or_url: &str) -> Option<&dyn Source> {
-        for source in &self.sources {
-            if source.source_name() == source_name_or_url
-                || source.source_url() == source_name_or_url
-            {
-                return Some(source.as_ref());
+        match self.sources.get(&download_data.source_name) {
+            Some(source) => {
+                let download_path = source.download(download_data).await;
+                return download_path;
+            }
+            None => {
+                return None;
             }
         }
-
-        return None;
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DownloadData {
     pub symbol: String,
     pub timeframe: String,
     pub data_types: Vec<String>,
+    pub source_name: SourceName,
     pub start_date: String,
     pub end_date: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Downloadable {
     pub name: String,
     pub symbol: String,
-    pub source: SourceName,
+    pub source_name: SourceName,
     pub market_type: MarketType,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct OHLCVDownloadJSONFileStructure {
+    pub timestamps: Vec<u64>,
+    pub opens: Vec<f32>,
+    pub highs: Vec<f32>,
+    pub lows: Vec<u64>,
+    pub closes: Vec<f32>,
+    pub volumes: Vec<u32>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct OHLCVJSONFileDataStructure { 
+    pub symbol: String,
+    pub timeframe: String, 
+    pub start_date: i64,
+    pub end_date: i64, 
+
+    pub timestamps: Vec<u64>, 
+    pub opens: Vec<f32>,
+    pub highs: Vec<f32>,
+    pub lows: Vec<f32>,
+    pub closes: Vec<f32>,
+    pub volumes: Vec<u32>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
 pub enum SourceName {
     YahooFinance,
     Binance,
-    Okx,
     Marketaux,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum MarketType {
     Crypto,
     Stock,
@@ -154,10 +184,10 @@ pub enum DataType {
 
 #[async_trait]
 pub trait Source: Send + Sync {
-    fn source_name(&self) -> &str;
+    fn source_name(&self) -> SourceName;
     fn source_url(&self) -> &str;
     fn timeframes(&self) -> Vec<&str>;
-    async fn download(&self) -> Option<String>;
+    async fn download(&self, download_data: DownloadData) -> Option<String>;
     // fn format_raw_data(&self, data: Vec<>) -> Vec<Vec<String>>;
     async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn std::error::Error>>;
 }

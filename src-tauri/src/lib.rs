@@ -19,17 +19,47 @@ use crate::library::providers::{
     sources::binance::Binance,
 };
 use commands::*;
+use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
+use tauri::AppHandle;
 use tauri::Manager;
+
+static APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     return tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .setup(|app| {
+            let app_handle = app.handle();
+            APP_HANDLE.set(app_handle.clone()).unwrap();
+
+            let app_data_dir = app.path().app_data_dir()?;
+
+            let directories: Vec<&str> = vec![
+                "raw",
+                "raw/ohlcv",
+                "raw/bidask",
+                "raw/news",
+                "results",
+                "stories",
+            ];
+
+            for directory in directories {
+                let full_path = app_data_dir.join(directory);
+                println!("{:?}", full_path);
+                std::fs::create_dir_all(&full_path).unwrap();
+            }
+
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_downloadables,
             get_sources_info,
-            download_request
+            download_request,
+            downloadable_timeframe_pair_available,
+            get_available_sources_timeframes
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,3 +1,7 @@
+use crate::{
+    library::providers::downloader::{DataType, DownloadData, Downloadable, MarketType, Source, SourceName},
+    utils::classes::logger::LOGGER,
+};
 use async_trait::async_trait;
 use reqwest::get;
 use serde::{Deserialize, Serialize};
@@ -5,25 +9,19 @@ use serde_json::Value;
 
 const BINANCE_SYMBOLS_DATA: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/src/data/misc/binance_symbols.json"
+    "/src/data/static/binance_symbols.json"
 ));
 
-
-use crate::{
-    library::providers::downloader::{DataType, Downloadable, MarketType, Source, SourceName},
-    utils::classes::logger::LOGGER,
-};
-
 pub struct Binance {
-    source_name: String,
+    source_name: SourceName,
     source_url: String,
     timeframes: Vec<&'static str>,
 }
 
 #[async_trait]
 impl Source for Binance {
-    fn source_name(&self) -> &str {
-        return &self.source_name;
+    fn source_name(&self) -> SourceName {
+        return self.source_name.clone();
     }
 
     fn source_url(&self) -> &str {
@@ -34,7 +32,7 @@ impl Source for Binance {
         return self.timeframes.clone();
     }
 
-    async fn download(&self) -> Option<String> {
+    async fn download(&self, download_data: DownloadData) -> Option<String> {
         return None;
     }
 
@@ -47,7 +45,7 @@ impl Source for Binance {
             let symbol_downloadable = Downloadable {
                 name: symbol.to_string(),
                 symbol: symbol.to_string(),
-                source: SourceName::Binance,
+                source_name: SourceName::Binance,
                 market_type: MarketType::Crypto
             };
 
@@ -61,7 +59,7 @@ impl Source for Binance {
 impl Binance {
     pub fn new() -> Self {
         return Self {
-            source_name: "Binance".to_string(),
+            source_name: SourceName::Binance,
             source_url: "https://binance.com".to_string(),
             timeframes: vec![
                 "1s", "1m", "5m", "10m", "15m", "30m", "45m", "1h", "2h", "3h", "4h", "12h", "1d",

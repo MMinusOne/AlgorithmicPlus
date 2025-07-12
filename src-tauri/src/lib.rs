@@ -48,7 +48,6 @@ pub fn run() {
 
             for directory in directories {
                 let full_path = app_data_dir.join(directory);
-                println!("{:?}", full_path);
                 std::fs::create_dir_all(&full_path).unwrap();
             }
 
@@ -59,7 +58,9 @@ pub fn run() {
             get_sources_info,
             download_request,
             downloadable_timeframe_pair_available,
-            get_available_sources_timeframes
+            get_available_sources_timeframes,
+            get_downloaded_metadatas,
+            get_raw_data
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

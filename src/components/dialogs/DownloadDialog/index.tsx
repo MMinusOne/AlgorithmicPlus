@@ -53,7 +53,6 @@ export default function DownloadDialog() {
                 handleBack={
                   [
                     DownloadDialogMenu.DownloadablesList,
-                    DownloadDialogMenu.DownloadProgress,
                   ].includes(currentMenu)
                     ? handleBack
                     : undefined

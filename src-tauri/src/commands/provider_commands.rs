@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
-use crate::library::providers::downloader::{
-    DownloadData, Downloadable, Downloader, Source, SourceName,
+use crate::{
+    library::providers::downloader::{
+        DownloadData, Downloadable, Downloader, OHLCVJSONFileDataStructure, Source, SourceName,
+    },
+    APP_HANDLE,
 };
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
@@ -59,7 +62,7 @@ pub struct DownloadRequestResponse {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct DownloadProgressResponse {
     pub download_id: String,
-    pub download_progress: usize,
+    pub download_progress: f32,
 }
 
 #[tauri::command]
@@ -94,8 +97,7 @@ pub async fn download_request(
 
     let on_progress = {
         let download_id = Arc::clone(&download_id);
-        move |download_progress: usize| {
-            println!("Download progress {:?}", download_progress);
+        move |download_progress: f32| {
             app_handle
                 .emit(
                     "download_progress",
@@ -127,7 +129,7 @@ pub async fn downloadable_timeframe_pair_available(
     data: DownloadableTimeframePairAvailableRequestData,
 ) -> bool {
     let source_name = data.downloadable.source_name.clone();
-    
+
     match DOWNLOADER.sources.get(&source_name) {
         Some(source) => {
             let timeframes = source.timeframes();
@@ -147,13 +149,16 @@ pub async fn downloadable_timeframe_pair_available(
 pub async fn get_available_sources_timeframes() -> Vec<String> {
     let mut all_timeframes: Vec<String> = vec![];
 
-    for source in DOWNLOADER.sources.values() { 
-       for timeframe in &source.timeframes() { 
-        if !all_timeframes.contains(&timeframe.to_string()) { 
-            all_timeframes.push(timeframe.to_string());
+    for source in DOWNLOADER.sources.values() {
+        for timeframe in &source.timeframes() {
+            if !all_timeframes.contains(&timeframe.to_string()) {
+                all_timeframes.push(timeframe.to_string());
+            }
         }
-       }
     }
 
     return all_timeframes;
 }
+
+
+

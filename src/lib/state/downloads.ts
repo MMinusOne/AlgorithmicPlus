@@ -40,6 +40,8 @@ interface DownloadDialogState {
   setSelectedEndDate: (endDate: string) => void;
   selectedDataTypes: MarketDataType[];
   setSelectedDataTypes: (dataTypes: MarketDataType[]) => void;
+  availableSelectedDownloadables: Downloadable[];
+  setAvailableSelectedDownloadables: (downloadadables: Downloadable[]) => void;
   DOWNLOAD_PAGE_ITEMS: number;
 }
 
@@ -56,6 +58,7 @@ export const useDownloadDialogState = create<DownloadDialogState>((set) => ({
   selectedDataTypes: [MarketDataType.OHLCV],
   selectedStartDate: "2025-05-15",
   selectedEndDate: "2025-06-15",
+  availableSelectedDownloadables: [],
 
   setDisplayedDownloadables: (downloadables: Downloadable[]) =>
     set((state) => ({ ...state, displayedDownloadables: downloadables })),
@@ -79,5 +82,7 @@ export const useDownloadDialogState = create<DownloadDialogState>((set) => ({
     set((state) => ({ ...state, selectedStartDate })),
   setSelectedTimeframe: (selectedTimeframe: string) =>
     set((state) => ({ ...state, selectedTimeframe })),
+  setAvailableSelectedDownloadables: (
+    availableSelectedDownloadables: Downloadable[]
+  ) => set((state) => ({ ...state, availableSelectedDownloadables })),
 }));
-

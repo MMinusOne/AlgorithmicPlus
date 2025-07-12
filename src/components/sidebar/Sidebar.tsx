@@ -1,9 +1,26 @@
 import { FaPlus } from "react-icons/fa6";
-import { useDialogState } from "../lib/state/dialogs";
-import { Dialog } from "../types";
+import { useDialogState } from "../../lib/state/dialogs";
+import { Dialog, DownloadedMetadata, SelectedItemType } from "../../types";
+import { useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { useSidebarState } from "@/lib/state/sidebar";
 
 export default function Sidebar() {
   const dialogState = useDialogState();
+  const sidebarState = useSidebarState();
+
+  useEffect(() => {
+    const getDownloadMetadata = async () => {
+      const downloadedMetadatas = await invoke<DownloadedMetadata[]>(
+        "get_downloaded_metadatas"
+      );
+
+      sidebarState.setDownloadedMetadata(downloadedMetadatas);
+      sidebarState.setIsLoading(false);
+    };
+
+    getDownloadMetadata();
+  }, []);
 
   return (
     <>
@@ -38,7 +55,22 @@ export default function Sidebar() {
               </ul>
             </details>
             <details open>
-              <SidebarSummary>data study (composer)</SidebarSummary>
+              <SidebarSummary>data study (story composer)</SidebarSummary>
+              <ul>
+                <li>
+                  <a className="truncate" title="Item">
+                    <span className="truncate">Item</span>
+                  </a>
+                </li>
+                <li>
+                  <a className="truncate" title="Item">
+                    <span className="truncate">Item</span>
+                  </a>
+                </li>
+              </ul>
+            </details>
+            <details open>
+              <SidebarSummary>data stories</SidebarSummary>
               <ul>
                 <li>
                   <a className="truncate" title="Item">
@@ -55,16 +87,35 @@ export default function Sidebar() {
             <details open>
               <SidebarSummary>data</SidebarSummary>
               <ul>
-                <li>
-                  <a className="truncate" title="Item">
-                    <span className="truncate">Item</span>
-                  </a>
-                </li>
-                <li>
-                  <a className="truncate" title="Item">
-                    <span className="truncate">Item</span>
-                  </a>
-                </li>
+                {sidebarState.downloadedMetadatas.map((downloadedMetadata) => {
+                  const { id, symbol, timeframe, start_date, end_date } =
+                    downloadedMetadata;
+
+                  return (
+                    <li
+                      onClick={() => {
+                        sidebarState.setSelectedItem({
+                          type: SelectedItemType.RawData,
+                          id,
+                        });
+                      }}
+                    >
+                      <a
+                        className={`truncate ${
+                          sidebarState.selectedItem?.id ===
+                          downloadedMetadata.id
+                            ? "bg-base-300"
+                            : ""
+                        }`}
+                        title="Item"
+                      >
+                        <span className="truncate">
+                          {symbol}_{timeframe}_{start_date}_{end_date}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </details>
           </li>

@@ -1,6 +1,6 @@
 import { useDownloadDialogState } from "@/lib/state/downloads";
 import { useEffect, useState } from "react";
-import { listen } from "@tauri-apps/api/event";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
 interface DownloadRequestResponse {
@@ -15,53 +15,66 @@ interface DownloadProgressResponse {
 
 export default function DownloadProgress() {
   const {
-    selectedDownloadables,
     selectedDataTypes,
     selectedTimeframe,
     selectedStartDate,
     selectedEndDate,
+    availableSelectedDownloadables
   } = useDownloadDialogState();
 
   const [downloadId, setDownloadId] = useState<string>();
   const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
+    let progressUnlisten: (() => void) | null = null;
+
     const startDownload = async () => {
-      const data = {
-        downloadables: selectedDownloadables,
-        dataTypes: selectedDataTypes,
-        timeframe: selectedTimeframe,
-        startDate: selectedStartDate,
-        endDate: selectedEndDate,
-      };
+      try {
+        progressUnlisten = await listen<DownloadProgressResponse>(
+          "download_progress",
+          (event) => {
+            const { download_progress } = event.payload;
 
-      // console.log(data);
-      const { status, download_id }: DownloadRequestResponse = await invoke(
-        "download_request",
-        { data }
-      );
+            setProgress(download_progress);
 
-      if (status == "OK") {
-        setDownloadId(download_id);
+            if (download_progress === 100) {
+              if (progressUnlisten) {
+                progressUnlisten();
+                progressUnlisten = null;
+              }
+            }
+          }
+        );
+
+        const data = {
+          downloadables: availableSelectedDownloadables,
+          dataTypes: selectedDataTypes,
+          timeframe: selectedTimeframe,
+          startDate: selectedStartDate,
+          endDate: selectedEndDate,
+        };
+
+        const { status, download_id }: DownloadRequestResponse = await invoke(
+          "download_request",
+          { data }
+        );
+
+        if (status === "OK") {
+          setDownloadId(download_id);
+        }
+      } catch (error) {
+        console.error("Failed to start download:", error);
       }
     };
 
     startDownload();
-  }, []);
 
-  useEffect(() => {
-    if (!downloadId) return;
-    const unlisten = listen("download_progress", (event) => {
-      const { download_id, download_progress } =
-        event.payload as DownloadProgressResponse;
-      if (download_id === downloadId) {
-        setProgress(download_progress);
-        if (progress === 100) {
-          unlisten.then((fn) => fn());
-        }
+    return () => {
+      if (progressUnlisten) {
+        progressUnlisten();
       }
-    });
-  }, [downloadId]);
+    };
+  }, []);
 
   return (
     <>
@@ -69,11 +82,11 @@ export default function DownloadProgress() {
         <div className="p-4 px-6 w-full flex gap-2 items-center justify-center">
           <progress
             className="progress progress-primary w-full"
-            value="100"
-            max="100"
+            value={progress.toFixed(1)}
+            max={100}
           ></progress>
           <div className="w-12 flex items-center justify-center">
-            <kbd className="kbd">{progress}%</kbd>
+            <kbd className="kbd p-1">{progress.toFixed(1)}%</kbd>
           </div>
         </div>
       </div>

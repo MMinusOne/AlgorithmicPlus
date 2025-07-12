@@ -24,16 +24,16 @@ export default function DownloadablesList({
   const handleSearch = useCallback(
     throttle((searchValue: string) => {
       const downloadablesSearch = downloadables.filter((downloadable) => {
+        console.log(downloadable);
         return (
-          downloadable.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-          downloadable.symbol
+          downloadable?.name
             .toLowerCase()
             .includes(searchValue.toLowerCase()) ||
-          downloadable.source
-            .toLowerCase()
+          downloadable?.symbol
+            ?.toLowerCase()
             .includes(searchValue.toLowerCase()) ||
-          downloadable.data_type
-            .toLowerCase()
+          downloadable?.source_name
+            ?.toLowerCase()
             .includes(searchValue.toLowerCase())
         );
       });
@@ -89,10 +89,6 @@ export function NavigationBar({
 }) {
   const { currentMarketType, setCurrentMarketType, selectedDownloadables } =
     useDownloadDialogState();
-
-  useEffect(() => {
-    console.log(selectedDownloadables);
-  }, [selectedDownloadables]);
 
   return (
     <>
@@ -232,7 +228,7 @@ export function DownloadablesTable() {
                       }}
                       checked={isSelected ? true : false}
                       type="checkbox"
-                      className="checkbox checkbox-primary"
+                      className="checkbox checkbox-primary animate-none transition-none"
                     />
                   </th>
                   <th>
@@ -243,7 +239,7 @@ export function DownloadablesTable() {
                     {downloadable.name}
                   </td>
                   <td>{downloadable.symbol}</td>
-                  <td>{downloadable.source}</td>
+                  <td>{downloadable.source_name}</td>
                 </tr>
               );
             })}

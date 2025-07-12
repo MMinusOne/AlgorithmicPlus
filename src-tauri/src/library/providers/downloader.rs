@@ -1,11 +1,3 @@
-use std::{
-    collections::HashMap,
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc,
-    },
-};
-
 use crate::{
     library::providers::sources::{
         binance::Binance,
@@ -15,7 +7,15 @@ use crate::{
 };
 use async_trait::async_trait;
 use futures::stream::{self, StreamExt};
+use num_traits::AsPrimitive;
 use serde::{Deserialize, Serialize};
+use std::{
+    collections::HashMap,
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
+};
 
 pub struct Downloader {
     pub sources: HashMap<SourceName, Box<dyn Source>>,
@@ -49,15 +49,21 @@ impl Downloader {
         return downloadables;
     }
 
-    pub async fn download_all<F>(
+    pub async fn download_all<F, T>(
         &self,
         download_datas: Vec<DownloadData>,
         thread_limit: Option<u8>,
         on_progress: Option<F>,
     ) where
-        F: Fn(usize) + Send + Sync + 'static,
+        F: Fn(T) + Send + Sync + 'static,
+        T: 'static + Copy + Send + Sync,
+        f32: num_traits::AsPrimitive<T>,
     {
-        let thread_count = thread_limit.unwrap_or(8);
+        let thread_count = thread_limit.unwrap_or(
+            std::thread::available_parallelism()
+                .map(|n| n.get() as u8)
+                .unwrap_or(8),
+        );
         let total_count = download_datas.len();
         let completed_count = Arc::new(AtomicUsize::new(0));
 
@@ -83,7 +89,7 @@ impl Downloader {
                     }
 
                     let current = counter.fetch_add(1, Ordering::Relaxed) + 1;
-                    let progress = current * 100 / total_count;
+                    let progress: T = ((current * 100) as f32 / (total_count) as f32).as_();
 
                     if let Some(progress_callback) = on_progress {
                         progress_callback(progress);
@@ -95,18 +101,18 @@ impl Downloader {
             .await;
     }
 
-    pub async fn download_ohlcv(&self, download_data: DownloadData) -> Option<String> {
+    pub async fn download_ohlcv(
+        &self,
+        download_data: DownloadData,
+    )  {
         //TODO: make it download the data
 
-        match self.sources.get(&download_data.source_name) {
+         match self.sources.get(&download_data.source_name) {
             Some(source) => {
-                let ohlcv_download_path = source.download_ohlcv(download_data).await;
-                return ohlcv_download_path;
+                let ohlcv_download_path = source.download_ohlcv(download_data).await;;
             }
-            None => {
-                return None;
-            }
-        }
+            None => {}
+        };
     }
 }
 
@@ -145,12 +151,12 @@ pub struct OHLCVJSONFileDataStructure {
     pub start_date: i64,
     pub end_date: i64,
 
-    pub timestamps: Vec<u64>,
+    pub timestamps: Vec<i64>,
     pub opens: Vec<f32>,
     pub highs: Vec<f32>,
     pub lows: Vec<f32>,
     pub closes: Vec<f32>,
-    pub volumes: Vec<u32>,
+    pub volumes: Vec<f32>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
@@ -180,7 +186,10 @@ pub trait Source: Send + Sync {
     fn source_name(&self) -> SourceName;
     fn source_url(&self) -> &str;
     fn timeframes(&self) -> Vec<&str>;
-    async fn download_ohlcv(&self, download_data: DownloadData) -> Option<String>;
+    async fn download_ohlcv(
+        &self,
+        download_data: DownloadData,
+    ) -> Result<(), Box<dyn std::error::Error>>;
     // fn format_raw_data(&self, data: Vec<>) -> Vec<Vec<String>>;
     async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn std::error::Error>>;
 }

@@ -39,16 +39,17 @@ impl Source for Yahoo {
     }
 
     //TODO: change all download's to download_ohlcv
-    async fn download_ohlcv(&self, download_data: DownloadData) -> Option<String> {
+    async fn download_ohlcv(&self, download_data: DownloadData) -> Result<(), Box<dyn std::error::Error>> {
         if let Ok(yahoo_connector) = yahoo::YahooConnector::new() {
             let start_date = match parse_date_string_to_offsettime(&download_data.start_date) {
                 Ok(date) => date,
-                Err(_) => return None,
+                Err(error) => return Err(error),
             };
             let end_date = match parse_date_string_to_offsettime(&download_data.end_date) {
                 Ok(date) => date,
-                Err(_) => return None,
+                Err(error) => return Err(error),
             };
+
             match yahoo_connector
                 .get_quote_history(&download_data.symbol, start_date, end_date)
                 .await
@@ -70,8 +71,6 @@ impl Source for Yahoo {
                                 volumes: Vec::new(),
                             };
 
-                            let download_id = uuid::Uuid::new_v4().to_string();
-
                             let app_handle =
                                 match APP_HANDLE.get().ok_or("App handle is not initized") {
                                     Ok(app) => app,
@@ -79,7 +78,7 @@ impl Source for Yahoo {
                                         LOGGER.error(&format!(
                                             "App handle is not initilized for Yahoo"
                                         ));
-                                        return None;
+                                        return Err(error.into());
                                     }
                                 };
 
@@ -87,10 +86,11 @@ impl Source for Yahoo {
                                 Ok(dir) => dir,
                                 Err(error) => {
                                     LOGGER.error(&format!("Couldn't get data dir for Yahoo"));
-                                    return None;
+                                    return Err(error.into());
                                 }
                             };
-
+                            
+                            let download_id = uuid::Uuid::new_v4().to_string();
                             let base_download_path = app_data_dir.join("raw/ohlcv");
                             let json_path = base_download_path.join(format!("{}.json", download_id));
                             let bin_path = base_download_path.join(format!("{}.bin", download_id));
@@ -103,17 +103,17 @@ impl Source for Yahoo {
                                         download_data.symbol,
                                         error.to_string()
                                     ));
-                                    return None;
+                                    return Err(error.into());
                                 }
                             };
 
                             for quote in yahoo_quotes {
-                                let timestamp = quote.timestamp as u64;
+                                let timestamp = quote.timestamp as i64;
                                 let open = quote.open as f32;
                                 let high = quote.high as f32;
                                 let low = quote.low as f32;
                                 let close = quote.close as f32;
-                                let volume = quote.volume as u32;
+                                let volume = quote.volume as f32;
 
                                 ohlcv_json_data.timestamps.push(timestamp);
                                 ohlcv_json_data.opens.push(open);
@@ -154,8 +154,7 @@ impl Source for Yahoo {
                                         download_data.symbol,
                                         error.to_string()
                                     ));
-
-                                    return None;
+                                    return Err(error.into());
                                 }
                             };
 
@@ -168,7 +167,7 @@ impl Source for Yahoo {
                                 )),
                             };
 
-                            return Some(download_path);
+                            return Ok(());
                         }
 
                         Err(error) => {
@@ -178,7 +177,7 @@ impl Source for Yahoo {
                                 error.to_string()
                             ));
 
-                            return None;
+                            return Err(error.into());
                         }
                     };
                 }
@@ -189,11 +188,11 @@ impl Source for Yahoo {
                         error.to_string()
                     ));
 
-                    return None;
+                    return Err(error.into());
                 }
             };
         } else {
-            return None;
+            return Err("Couldn't connect to YahooFinance".into());
         }
     }
 
@@ -235,10 +234,10 @@ pub struct SymbolCell {
 
 #[repr(C, packed)]
 pub struct OHLCVCandleObject {
-    timestamp: u64,
+    timestamp: i64,
     open: f32,
     high: f32,
     low: f32,
     close: f32,
-    volume: u32,
+    volume: f32,
 }

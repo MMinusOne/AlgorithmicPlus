@@ -58,23 +58,28 @@ export interface DownloadedMetadata {
 export type ChartingSeries =
   | {
       chart_type: "ohlcv";
-      data: (CandlestickData<Time>)[];
+      height?: number;
+      data: CandlestickData<Time>[];
     }
   | {
       chart_type: "line";
-      data: (LineData<Time>)[];
+      height?: number;
+      data: LineData<Time>[];
     }
   | {
       chart_type: "bar";
+      height?: number;
       data: (WhitespaceData<Time> | BarData<Time>)[];
     }
   | {
       chart_type: "histogram";
-      data: (HistogramData<Time>)[];
+      height?: number;
+      data: HistogramData<Time>[];
     }
   | {
       chart_type: "area";
-      data: (AreaData<Time>)[];
+      height?: number;
+      data: AreaData<Time>[];
     };
 
 export interface NewsData {}
@@ -84,6 +89,21 @@ export enum SelectedItemType {
 }
 
 export interface RawDataResponse {
+  symbol?: string;
+  timeframe?: string;
+  start_timestamp?: number;
+  end_timestamp?: number;
+  data_type: string;
   news_data: NewsData[];
   charting_data: ChartingSeries[];
+}
+
+export interface SidebarData {
+  symbol?: string;
+  timeframe?: string;
+  startTimestamp?: number;
+  endTimestamp?: number;
+  dataType?: string;
+  newsData: NewsData[];
+  chartingData: ChartingSeries[];
 }

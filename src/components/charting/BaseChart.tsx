@@ -7,7 +7,6 @@ import {
   AreaSeries,
   BarSeries,
   HistogramSeries,
-  ISeriesApi,
 } from "lightweight-charts";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 
@@ -32,7 +31,7 @@ export default function BaseChart({
       autoSize: true,
       localization: {
         priceFormatter: (price: number) => {
-          if (price > 10_000) {
+          if (Math.abs(price) > 10_000) {
             return priceFormatter.format(price);
           } else {
             return price.toFixed(3);
@@ -57,19 +56,16 @@ export default function BaseChart({
     const chart = chartApiRef.current;
 
     for (const storedSerieIndex in storedSeries) {
-      const serieIndex = Number(storedSerieIndex);
       if (storedSeries[storedSerieIndex]) {
         chart.removeSeries(storedSeries[storedSerieIndex]);
-        setStoredSeries(
-          storedSeries.filter((_, index) => index !== serieIndex)
-        );
       }
+      
+      setStoredSeries([]);
     }
-   
+
     for (const chartingSerieIndex in chartingData || []) {
       const chartingSerie = chartingData[chartingSerieIndex];
       const paneIndex = Number(chartingSerieIndex);
-      console.log(paneIndex);
 
       switch (chartingSerie.chart_type) {
         case "ohlcv":
@@ -108,6 +104,11 @@ export default function BaseChart({
           lineSeries.setData(chartingSerie.data);
           setStoredSeries((prev) => [...prev, lineSeries]);
           break;
+      }
+
+      if (chartingSerie.height) {
+        const pane = chart.panes()[paneIndex];
+        pane.setHeight(chartingSerie.height);
       }
     }
 

@@ -27,7 +27,7 @@ pub struct Binance {
     source_url: String,
     timeframes: Vec<&'static str>,
 }
-
+//TODO: fix the download command
 #[async_trait]
 impl Source for Binance {
     fn source_name(&self) -> SourceName {

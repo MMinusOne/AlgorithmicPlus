@@ -7,13 +7,11 @@ import {
   RawDataResponse,
   NewsData,
   ChartingSeries,
+  SidebarData,
 } from "@/types";
 import { IChartApi } from "lightweight-charts";
-
-interface SidebarData {
-  newsData: NewsData[];
-  chartingData: ChartingSeries[];
-}
+import ChartingContent from "./content/ChartingContent";
+import NewsContent from "./content/NewsContent";
 
 export default function SidebarContent() {
   const { selectedItem } = useSidebarState();
@@ -37,6 +35,11 @@ export default function SidebarContent() {
           });
 
           setSidebarData({
+            symbol: data.symbol,
+            timeframe: data.timeframe,
+            dataType: data.data_type,
+            startTimestamp: data.start_timestamp,
+            endTimestamp: data.end_timestamp,
             chartingData: data.charting_data,
             newsData: data.news_data,
           });
@@ -49,21 +52,31 @@ export default function SidebarContent() {
 
   useEffect(() => {
     if (!chartRef.current) return;
-    const panes = chartRef.current.panes()[1];
-    panes.setHeight(1000);
-   }, [chartRef])
+  }, [chartRef]);
+  //TODO: Display download informaton and not just chart (symbol name, downloaded at, start timestamp, end timestamp, download size, download location)
 
-  return (
-    <>
-      <div
-        className={`w-full flex items-center justify-center ${
-          sidebarData.newsData.length === 0 ? "h-[1000px]" : "h-[800px]"
-        }`}
-      >
-        {sidebarData.chartingData.length !== 0 ? (
-          <BaseChart chartingData={sidebarData.chartingData} chartApiRef={chartRef}/>
-        ) : null}
+  if (sidebarData.chartingData.length > 0) {
+    return (
+      <div className="w-full h-screen overflow-hidden overflow-y-scroll">
+        <ChartingContent sidebarData={sidebarData} chartRef={chartRef} />
+        {/* <div className="h-[300px] w-full">
+          <div className="flex flex-col">
+            <span>Download Symbol: {sidebarData.symbol}</span>
+            <span>Timeframe: {sidebarData.timeframe}</span>
+            <span>Data Type: {sidebarData.dataType}</span>
+            <span>
+              Start Date: {new Date(sidebarData.startTimestamp!).getUTCDate()}
+            </span>
+            <span>
+              End Date: {new Date(sidebarData.endTimestamp!).getUTCDate()}
+            </span>
+          </div>
+        </div> */}
       </div>
-    </>
-  );
+    );
+  }
+
+  if (sidebarData.newsData.length > 0) {
+    return <NewsContent />;
+  }
 }

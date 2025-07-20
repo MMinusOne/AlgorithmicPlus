@@ -70,6 +70,10 @@ pub struct GetRawDataParams {
 
 #[derive(Serialize, Deserialize)]
 pub struct RawDataResponse {
+    pub symbol: Option<String>,
+    pub timeframe: Option<String>,
+    pub start_timestamp: Option<i64>,
+    pub end_timestamp: Option<i64>, 
     pub news_data: Vec<NewsData>,
     pub charting_data: Vec<ChartingData>,
 }
@@ -78,6 +82,10 @@ pub struct RawDataResponse {
 pub async fn get_raw_data(data: GetRawDataParams) -> RawDataResponse {
     println!("{:?}", data);
     let mut raw_data = RawDataResponse {
+        symbol: None,
+        timeframe: None, 
+        start_timestamp: None, 
+        end_timestamp: None,
         charting_data: vec![],
         news_data: vec![],
     };
@@ -113,6 +121,11 @@ pub async fn get_raw_data(data: GetRawDataParams) -> RawDataResponse {
                 let mut candlestick_data: Vec<CandlestickData> = vec![];
                 let mut volume_data: Vec<HistogramData> = vec![];
 
+                raw_data.symbol = Some(file_data_json.symbol);
+                raw_data.timeframe = Some(file_data_json.timeframe);
+                raw_data.start_timestamp = Some(file_data_json.timestamps[0]);
+                raw_data.end_timestamp = Some(file_data_json.timestamps[file_data_json.timestamps.len() - 1]);
+
                 for index in 0..file_data_json.timestamps.len() {
                     let timestamp = file_data_json.timestamps[index];
                     let open = file_data_json.opens[index];
@@ -145,6 +158,7 @@ pub async fn get_raw_data(data: GetRawDataParams) -> RawDataResponse {
                         CandlestickChartingData {
                             chart_type: "ohlcv".into(),
                             data: candlestick_data,
+                            height: Some(900),
                         },
                     ));
                 raw_data
@@ -152,6 +166,7 @@ pub async fn get_raw_data(data: GetRawDataParams) -> RawDataResponse {
                     .push(ChartingData::HistogramChartingData(HistogramChartingData {
                         chart_type: "histogram".into(),
                         data: volume_data,
+                        height: Some(150),
                     }));
                 //TODO: send volume histogram
                 break;
@@ -175,6 +190,7 @@ pub enum ChartingData {
 #[derive(Serialize, Deserialize)]
 pub struct CandlestickChartingData {
     pub chart_type: String,
+    pub height: Option<i16>,
     pub data: Vec<CandlestickData>,
 }
 
@@ -200,6 +216,7 @@ pub struct BarChartingData {}
 #[derive(Serialize, Deserialize)]
 pub struct HistogramChartingData {
     pub chart_type: String,
+    pub height: Option<i16>,
     pub data: Vec<HistogramData>,
 }
 

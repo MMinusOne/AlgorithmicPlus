@@ -53,6 +53,7 @@ export default function SidebarContent() {
   useEffect(() => {
     if (!chartRef.current) return;
   }, [chartRef]);
+  
   //TODO: Display download informaton and not just chart (symbol name, downloaded at, start timestamp, end timestamp, download size, download location)
 
   if (sidebarData.chartingData.length > 0) {

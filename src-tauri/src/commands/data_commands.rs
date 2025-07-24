@@ -80,7 +80,6 @@ pub struct RawDataResponse {
 
 #[tauri::command]
 pub async fn get_raw_data(data: GetRawDataParams) -> RawDataResponse {
-    println!("{:?}", data);
     let mut raw_data = RawDataResponse {
         symbol: None,
         timeframe: None, 

@@ -1,7 +1,7 @@
 use crate::{
     library::providers::sources::{
         binance::Binance,
-        yahoo::{SymbolCell, Yahoo},
+        yahoo::{Yahoo},
     },
     utils::classes::logger::{self, LOGGER},
 };

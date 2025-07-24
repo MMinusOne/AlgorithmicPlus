@@ -12,16 +12,11 @@
  */
 mod commands;
 mod library;
+mod user;
 mod utils;
 
-use crate::library::providers::{
-    downloader::{Downloader, Source},
-    sources::binance::Binance,
-};
 use commands::*;
 use once_cell::sync::OnceCell;
-use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use tauri::AppHandle;
 use tauri::Manager;
 
@@ -60,7 +55,8 @@ pub fn run() {
             downloadable_timeframe_pair_available,
             get_available_sources_timeframes,
             get_downloaded_metadatas,
-            get_raw_data
+            get_raw_data,
+            get_compositions
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

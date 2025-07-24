@@ -1,6 +1,7 @@
 pub struct CommunicationLogger;
 
 //TODO: frontend message
+//TODO: singleton pattern
 
 impl CommunicationLogger {
     pub fn success(&self, message: &str) {}

@@ -11,3 +11,8 @@ pub fn get_compositions() -> Vec<String> {
 
     return composed_stories_ids;
 }
+
+#[tauri::command]
+pub fn get_composition_by_id() { 
+    
+}

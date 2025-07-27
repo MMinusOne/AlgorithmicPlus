@@ -109,7 +109,7 @@ impl Downloader {
 
          match self.sources.get(&download_data.source_name) {
             Some(source) => {
-                let ohlcv_download_path = source.download_ohlcv(download_data).await;;
+                let ohlcv_download_path = source.download_ohlcv(download_data).await;
             }
             None => {}
         };
@@ -148,8 +148,8 @@ pub struct OHLCVDownloadJSONFileStructure {
 pub struct OHLCVJSONFileDataStructure {
     pub symbol: String,
     pub timeframe: String,
-    pub start_date: i64,
-    pub end_date: i64,
+    pub start_timestamp: i64,
+    pub end_timestamp: i64,
 
     pub timestamps: Vec<i64>,
     pub opens: Vec<f32>,

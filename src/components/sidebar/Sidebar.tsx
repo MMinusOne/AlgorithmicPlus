@@ -1,6 +1,6 @@
 import { FaPlus } from "react-icons/fa6";
 import { useDialogState } from "../../lib/state/dialogs";
-import { Dialog, DownloadedMetadata, SelectedItemType } from "../../types";
+import { Dialog, StaticResource, SelectedItemType } from "../../types";
 import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useSidebarState } from "@/lib/state/sidebar";
@@ -11,11 +11,11 @@ export default function Sidebar() {
 
   useEffect(() => {
     const getDownloadMetadata = async () => {
-      const downloadedMetadatas = await invoke<DownloadedMetadata[]>(
-        "get_downloaded_metadatas"
+      const staticResources = await invoke<StaticResource[]>(
+        "get_static_resources"
       );
 
-      sidebarState.setDownloadedMetadata(downloadedMetadatas);
+      sidebarState.setStaticResources(staticResources);
       sidebarState.setIsLoading(false);
     };
 
@@ -55,21 +55,6 @@ export default function Sidebar() {
               </ul>
             </details>
             <details open>
-              <SidebarSummary>data study (story composer)</SidebarSummary>
-              <ul>
-                <li>
-                  <a className="truncate" title="Item">
-                    <span className="truncate">Item</span>
-                  </a>
-                </li>
-                <li>
-                  <a className="truncate" title="Item">
-                    <span className="truncate">Item</span>
-                  </a>
-                </li>
-              </ul>
-            </details>
-            <details open>
               <SidebarSummary>data stories</SidebarSummary>
               <ul>
                 <li>
@@ -85,33 +70,27 @@ export default function Sidebar() {
               </ul>
             </details>
             <details open>
-              <SidebarSummary>data</SidebarSummary>
+              <SidebarSummary>static resources</SidebarSummary>
               <ul>
-                {sidebarState.downloadedMetadatas.map((downloadedMetadata) => {
-                  const { id, symbol, timeframe, start_date, end_date } =
-                    downloadedMetadata;
-
+                {sidebarState.staticResources.map((staticResource) => {
                   return (
                     <li
                       onClick={() => {
                         sidebarState.setSelectedItem({
-                          type: SelectedItemType.RawData,
-                          id,
+                          itemType: SelectedItemType.RawData,
+                          id: staticResource.id,
                         });
                       }}
                     >
                       <a
                         className={`truncate ${
-                          sidebarState.selectedItem?.id ===
-                          downloadedMetadata.id
+                          sidebarState.selectedItem?.id === staticResource.id
                             ? "bg-base-300"
                             : ""
                         }`}
                         title="Item"
                       >
-                        <span className="truncate">
-                          {symbol}_{timeframe}_{start_date}_{end_date}
-                        </span>
+                        <span className="truncate">{staticResource.name}</span>
                       </a>
                     </li>
                   );

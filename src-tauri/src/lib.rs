@@ -54,9 +54,9 @@ pub fn run() {
             download_request,
             downloadable_timeframe_pair_available,
             get_available_sources_timeframes,
-            get_downloaded_metadatas,
+            get_static_resources,
             get_raw_data,
-            get_compositions
+            // get_compositions
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

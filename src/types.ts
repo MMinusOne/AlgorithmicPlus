@@ -47,13 +47,17 @@ export interface SourceInfo {
   timeframes: string[];
 }
 
-export interface DownloadedMetadata {
+export type StaticResource = OHLCVStaticResource;
+
+export type OHLCVStaticResource = {
+  id: string;
+  name: string;
   symbol: string;
   timeframe: string;
-  start_date: string;
-  end_date: string;
-  id: string;
-}
+  start_timestamp: string;
+  end_timestamp: string;
+};
+
 
 export type ChartingSeries =
   | {
@@ -85,7 +89,9 @@ export type ChartingSeries =
 export interface NewsData {}
 
 export enum SelectedItemType {
-  RawData = "raw_data",
+  RawData = "RAWDATA",
+  Composition = "COMPOSITION",
+  Backtest = "BACKTEST",
 }
 
 export interface RawDataResponse {

@@ -25,11 +25,11 @@ export default function SidebarContent() {
 
   useEffect(() => {
     const getSidebarData = async () => {
-      switch (selectedItem?.type) {
+      switch (selectedItem?.itemType) {
         case SelectedItemType.RawData:
           const data = await invoke<RawDataResponse>("get_raw_data", {
             data: {
-              itemType: selectedItem.type,
+              itemType: selectedItem.itemType,
               id: selectedItem.id,
             },
           });

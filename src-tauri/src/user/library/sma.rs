@@ -1,4 +1,4 @@
-use crate::{commands::ChartingData, user::library::ITechnicalIndicator};
+use crate::{user::library::ITechnicalIndicator, utils::classes::charting::ChartingData};
 use num_traits::{FromPrimitive, Num};
 use std::collections::VecDeque;
 
@@ -55,7 +55,7 @@ impl<T: Num + Copy + FromPrimitive> SMA<T> {
             description: "The mean of the last {period} elements".into(),
             period,
             current_sum: T::zero(),
-            values: VecDeque::new(),
+            values: VecDeque::new()
         };
     }
 }

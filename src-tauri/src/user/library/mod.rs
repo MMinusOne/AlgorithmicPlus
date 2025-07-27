@@ -1,4 +1,4 @@
-use crate::commands::ChartingData;
+use crate::utils::classes::charting::ChartingData;
 
 pub trait ITechnicalIndicator<T> { 
     fn name(&self) -> &str;

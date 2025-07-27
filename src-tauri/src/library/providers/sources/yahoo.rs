@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::{fs::File, io::Write, mem};
 use tauri::Manager;
-use yahoo_finance_api::{self as yahoo, YahooConnector};
+use yahoo_finance_api::{self as yahoo};
 
 const YAHOO_SYMBOLS_DATA: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -40,6 +40,7 @@ impl Source for Yahoo {
 
     //TODO: change all download's to download_ohlcv
     async fn download_ohlcv(&self, download_data: DownloadData) -> Result<(), Box<dyn std::error::Error>> {
+        println!("Got here");
         if let Ok(yahoo_connector) = yahoo::YahooConnector::new() {
             let start_date = match parse_date_string_to_offsettime(&download_data.start_date) {
                 Ok(date) => date,
@@ -57,12 +58,11 @@ impl Source for Yahoo {
                 Ok(yahoo_response) => {
                     match yahoo_response.quotes() {
                         Ok(yahoo_quotes) => {
-                            let download_path = String::new();
                             let mut ohlcv_json_data = OHLCVJSONFileDataStructure {
                                 symbol: download_data.symbol.clone(),
                                 timeframe: download_data.timeframe,
-                                start_date: start_date.unix_timestamp(),
-                                end_date: end_date.unix_timestamp(),
+                                start_timestamp: start_date.unix_timestamp(),
+                                end_timestamp: end_date.unix_timestamp(),
                                 timestamps: Vec::new(),
                                 opens: Vec::new(),
                                 highs: Vec::new(),

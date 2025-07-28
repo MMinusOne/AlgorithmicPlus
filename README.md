@@ -18,6 +18,7 @@ Here's some very good reasons to use AlgorutmicPlus.
 6) It supports OHLCV, news, bidask data by default, and you can make it support any kind of data really.
 7) The development process it-self is better than other frameworks, since the data is first downloaded, then it's pre-processed which we call composing the data, and only then is the strategy ran, meaning it would be very easy and performant to incorportate your data structures before backtesting, for example, making a strategy that has multiple pairs, multiple timeframes, bid-ask, news data and OHLCV data at the same time is no issue here, since it supports composing the data before backtesting.
 8) Im really focused on optimization, I used every trick in the book, it's multi-threaded, uses memory-mapped files, efficient data structures, O(1) implementations of technical indicators.
+9) Implementations for multiple optimization algoritms such as: Beysian, Genetic search, Grid search and backtesting such as: standard backtesting, WFO(Walk-Forward Optimization/Testing) and Monte carlo permutation
 
 So over-all, it's hella performant, supported, low-barrier to entry, you can do ANYTHING, and has alot of future plans.
 

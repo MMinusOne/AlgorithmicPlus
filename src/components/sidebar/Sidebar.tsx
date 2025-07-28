@@ -5,6 +5,9 @@ import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useSidebarState } from "@/lib/state/sidebar";
 
+
+//TODO: tooltip when clicking on a selecteable item: properties, delete, etc...
+
 export default function Sidebar() {
   const dialogState = useDialogState();
   const sidebarState = useSidebarState();

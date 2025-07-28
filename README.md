@@ -40,17 +40,17 @@ It's still lacking alot of features, the only features currently available are t
 
 ## Future changes and plans
 
-### Todo List
-- [] Fix Binance provider.
-- [] Finish the data composer
-- [] Implement technical indicators
-- [] Implement standard backtesting 
-- [] Implement optimization Algorithmic
-- [] GUI Settings Menu 
-- [] Re-write performance-sensitive parts in C++ 
-- [] Make the code documentation 
-- [] Implement more data providers. 
-- [] Make the metric formulas.
+### Todo List  
+- ❌ Fix Binance provider.
+- ❌ Finish the data composer
+- ❌ Implement technical indicators
+- ❌ Implement standard backtesting 
+- ❌ Implement optimization Algorithmic
+- ❌ GUI Settings Menu 
+- ❌ Re-write performance-sensitive parts in C++ 
+- ❌ Make the code documentation 
+- ❌ Implement more data providers. 
+- ❌ Make the metric formulas.
 
 I have plans to keep working on this.
 

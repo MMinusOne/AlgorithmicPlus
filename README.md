@@ -43,16 +43,17 @@ It's still lacking alot of features, the only features currently available are t
 
 ### Todo List  
 - ❌ Fix Binance provider.
-- ❌ Finish the data composer
-- ❌ Implement technical indicators
-- ❌ Implement standard backtesting 
-- ❌ Implement optimization Algorithmic
-- ❌ GUI Settings Menu 
-- ❌ Re-write performance-sensitive parts in C++ 
-- ❌ Make the code documentation 
+- ❌ Finish the data composer.
+- ❌ Implement technical indicators.
+- ❌ Implement standard backtesting.
+- ❌ Implement optimization Algorithmic.
+- ❌ GUI Settings Menu.
+- ❌ Re-write performance-sensitive parts in C++. 
+- ❌ Make the code documentation.
 - ❌ Implement more data providers. 
 - ❌ Make the metric formulas.
-
+- ❌ Refactor the code as to remove expect, match, and any statement that might crash the whole thing, propogate all the errrs to main and consider using an error library.
+ 
 I have plans to keep working on this.
 
 

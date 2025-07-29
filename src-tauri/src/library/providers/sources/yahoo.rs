@@ -40,7 +40,6 @@ impl Source for Yahoo {
 
     //TODO: change all download's to download_ohlcv
     async fn download_ohlcv(&self, download_data: DownloadData) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Got here");
         if let Ok(yahoo_connector) = yahoo::YahooConnector::new() {
             let start_date = match parse_date_string_to_offsettime(&download_data.start_date) {
                 Ok(date) => date,
@@ -72,7 +71,7 @@ impl Source for Yahoo {
                             };
 
                             let app_handle =
-                                match APP_HANDLE.get().ok_or("App handle is not initized") {
+                                match APP_HANDLE.get().ok_or("Could not get app handle") {
                                     Ok(app) => app,
                                     Err(error) => {
                                         LOGGER.error(&format!(

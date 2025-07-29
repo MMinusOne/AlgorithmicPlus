@@ -70,7 +70,6 @@ pub async fn download_request(
     app: tauri::AppHandle,
     data: DownloadRequestParams,
 ) -> DownloadRequestResponse {
-    println!("Got here 2");
     let download_id = Uuid::new_v4().to_string();
     let status = "OK".to_string();
     //TODO: make it download the data, normilization feature for charts

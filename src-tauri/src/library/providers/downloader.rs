@@ -1,8 +1,5 @@
 use crate::{
-    library::providers::sources::{
-        binance::Binance,
-        yahoo::{Yahoo},
-    },
+    library::providers::sources::{binance::Binance, yahoo::Yahoo},
     utils::classes::logger::{self, LOGGER},
 };
 use async_trait::async_trait;
@@ -101,13 +98,8 @@ impl Downloader {
             .await;
     }
 
-    pub async fn download_ohlcv(
-        &self,
-        download_data: DownloadData,
-    )  {
-        //TODO: make it download the data
-
-         match self.sources.get(&download_data.source_name) {
+    pub async fn download_ohlcv(&self, download_data: DownloadData) {
+        match self.sources.get(&download_data.source_name) {
             Some(source) => {
                 let ohlcv_download_path = source.download_ohlcv(download_data).await;
             }

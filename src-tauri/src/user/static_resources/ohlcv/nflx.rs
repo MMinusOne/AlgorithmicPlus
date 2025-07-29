@@ -37,8 +37,8 @@ impl NFLX {
     pub fn new() -> Self {
         return Self {
             id: Uuid::new_v4().into(),
-            name: "Netflix".into(),
-            load_path: "C:/Users/pc/AppData/Roaming/com.algorithmicplus.app/raw/ohlcv/92aa72bf-f6f3-42cb-91e4-74b6dab01f72".into(),
+            name: "ETHUSDT".into(),
+            load_path: "C:/Users/pc/AppData/Roaming/com.algorithmicplus.app/raw/ohlcv/a22cd66c-0e81-47f2-a2b6-11d20f670959".into(),
         };
     }
 }

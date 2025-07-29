@@ -35,7 +35,7 @@ impl<T: Num + Copy + FromPrimitive> ITechnicalIndicator<T> for SMA<T> {
             return None;
         }
 
-        let period = T::from_usize(self.period).expect("Couldn't convert usize to T");
+        let period = T::from_usize(self.period)?;
         let value = self.current_sum / period;
 
         return Some(value);

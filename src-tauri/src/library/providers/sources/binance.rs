@@ -43,16 +43,93 @@ impl Source for Binance {
         return self.timeframes.clone();
     }
 
-    async fn download_ohlcv(
-        &self,
-        download_data: DownloadData,
-    ) -> Result<(), Box<dyn Error>> {
-        //TODO
+    async fn download_ohlcv(&self, download_data: DownloadData) -> Result<(), Box<dyn Error>> {
+        let start_timestamp = parse_date_string_to_utc(&download_data.start_date)?.timestamp();
+        let end_timestamp = parse_date_string_to_utc(&download_data.end_date)?.timestamp(); 
+
+
+        let mut ohlcv_json_data = OHLCVJSONFileDataStructure { 
+            symbol: download_data.symbol.clone(),
+            timeframe: download_data.timeframe.clone(), 
+            start_timestamp,
+            end_timestamp,
+            timestamps: Vec::new(),
+            opens: Vec::new(),
+            highs: Vec::new(),
+            lows: Vec::new(),
+            closes: Vec::new(),
+            volumes: Vec::new(),
+        };
+
+        let download_id = Uuid::new_v4().to_string();
+        let app_handle = APP_HANDLE.get().ok_or("Could not get app handle")?;
+        let app_data_dir = app_handle.path().app_data_dir()?;
+
+        let base_download_path = app_data_dir.join("raw/ohlcv");
+        let json_path = base_download_path.join(format!("{}.json", download_id));
+        let bin_path = base_download_path.join(format!("{}.bin", download_id));
+
+        let mut binary_file = File::create(bin_path)?;
+        
+        loop {
+            let mut timestamp = start_timestamp;
+            if ohlcv_json_data.timestamps.len() != 0 { 
+                timestamp = ohlcv_json_data.timestamps[ohlcv_json_data.timestamps.len()-1];
+            }
+            let request_url = 
+            format!("https://fapi.binance.com/fapi/v1/klines?symbol={}&interval={}&limit=1000&startTime={}", 
+            download_data.symbol, download_data.timeframe, timestamp * 1000
+        ); 
+        
+        let raw_klines = reqwest::get(request_url).await?.json::<Vec<RawRequestKline>>().await?;
+        
+            for raw_kline_index in 1..raw_klines.len() { 
+                let raw_kline = &raw_klines[raw_kline_index];
+                let timestamp = raw_kline.0 as i64 / 1000 as i64;
+                let open = raw_kline.1.parse::<f32>()?;
+                let high = raw_kline.2.parse::<f32>()?;
+                let low = raw_kline.3.parse::<f32>()?;
+                let close = raw_kline.4.parse::<f32>()?;
+                let volume = raw_kline.5.parse::<f32>()?;
+
+                ohlcv_json_data.timestamps.push(timestamp);
+                ohlcv_json_data.opens.push(open);
+                ohlcv_json_data.highs.push(high);
+                ohlcv_json_data.lows.push(low);
+                ohlcv_json_data.closes.push(close);
+                ohlcv_json_data.volumes.push(volume);
+                
+                let candle = OHLCVCandleObject {
+                    timestamp,
+                    open,
+                    high,
+                    low,
+                    close,
+                    volume
+                };
+
+                let bytes = unsafe { 
+                    std::slice::from_raw_parts(
+                    &candle as *const OHLCVCandleObject as *const u8, 
+                    mem::size_of::<OHLCVCandleObject>()
+                    )
+                };
+
+                binary_file.write_all(bytes)?;
+            }
+
+            if raw_klines.len() < 1000 {
+                break;
+            }
+        }
+
+        let ohlcv_data_string = serde_json::to_string(&ohlcv_json_data)?;
+        std::fs::write(&json_path, ohlcv_data_string)?;
 
         Ok(())
     }
 
-    async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn std::error::Error>> {
+    async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn Error>> {
         let mut downloadables: Vec<Downloadable> = vec![];
 
         let symbols: Vec<String> = serde_json::from_str(BINANCE_SYMBOLS_DATA)?;
@@ -85,6 +162,7 @@ impl Binance {
     }
 }
 
+// I didn't copy this from ChatGPT, I copied this structure from the Binance documentation, Ill maintain my sanity from AI slop thank you very much
 #[derive(Serialize, Deserialize, Debug)]
 struct RawRequestKline(
     u64,    // Timestamp

@@ -38,7 +38,7 @@ impl NFLX {
         return Self {
             id: Uuid::new_v4().into(),
             name: "ETHUSDT".into(),
-            load_path: "C:/Users/pc/AppData/Roaming/com.algorithmicplus.app/raw/ohlcv/a22cd66c-0e81-47f2-a2b6-11d20f670959".into(),
+            load_path: "C:/Users/pc/AppData/Roaming/com.algorithmicplus.app/raw/ohlcv/3f50eaaa-d337-486c-b15d-09631a65fc00".into(),
         };
     }
 }

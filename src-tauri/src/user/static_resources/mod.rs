@@ -112,8 +112,7 @@ impl StaticResource {
             StaticResource::OHLCVDataType(_resource) => {
                 let file_data_string =
                     std::fs::read_to_string(&format!("{}{}", self.load_path(), ".json"))?;
-                let data = serde_json::from_str(&file_data_string)
-                    .map_err(|e| Box::new(e) as Box<dyn Error>)?;
+                let data = serde_json::from_str(&file_data_string)?;
 
                 Ok(data)
             }

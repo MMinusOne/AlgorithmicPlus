@@ -1,5 +1,3 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-
 /**
  * TODO:
  * - Make ALL the metric formulas in utils/formulas

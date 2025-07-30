@@ -3,7 +3,7 @@ use crate::{
         DataType, DownloadData, Downloadable, MarketType, OHLCVJSONFileDataStructure, Source,
         SourceName,
     },
-    utils::{classes::logger::LOGGER, date::parse_date_string_to_offsettime},
+    utils::{classes::logger::LOGGER, date::parse_date_string_to_offsettime, paths::get_app_data_dir},
     APP_HANDLE,
 };
 use async_trait::async_trait;
@@ -66,9 +66,7 @@ impl Source for Yahoo {
             volumes: Vec::new(),
         };
 
-        let app_handle = APP_HANDLE.get().ok_or("Could not get app handle")?;
-
-        let app_data_dir = app_handle.path().app_data_dir()?;
+        let app_data_dir = get_app_data_dir()?;
 
         let download_id = uuid::Uuid::new_v4().to_string();
         let base_download_path = app_data_dir.join("raw/ohlcv");

@@ -37,10 +37,8 @@ impl Downloader {
         let mut downloadables: Vec<Downloadable> = vec![];
 
         for source in self.sources.values() {
-            match source.get_downloadables().await {
-                Ok(source_downloadables) => downloadables.extend(source_downloadables),
-                Err(err) => logger::LOGGER.error(&err.to_string()),
-            }
+            let source_downloadables = source.get_downloadables()?;
+            downloadables.extend(source_downloadables);
         }
 
         return downloadables;

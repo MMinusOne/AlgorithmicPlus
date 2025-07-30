@@ -1,15 +1,18 @@
 mod ohlcv;
 use crate::library::providers::downloader::OHLCVJSONFileDataStructure;
 use crate::user::static_resources::ohlcv::nflx::NFLX;
-use crate::utils::classes::charting::{CandlestickChartingData, CandlestickData, ChartingData, HistogramChartingData, HistogramData};
+use crate::utils::classes::charting::{
+    CandlestickChartingData, CandlestickData, ChartingData, HistogramChartingData, HistogramData,
+};
 use serde::Deserialize;
 use std::error::Error;
+use std::path::PathBuf;
 use std::sync::LazyLock;
 
 pub trait IStaticResource<T: for<'de> Deserialize<'de>>: Send + Sync {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
-    fn load_path(&self) -> &str;
+    fn load_path(&self) -> PathBuf;
     fn data_type(&self) -> &str;
     fn render(&self) -> Option<Vec<ChartingData>> {
         return None;
@@ -36,7 +39,7 @@ impl StaticResource {
         }
     }
 
-    pub fn load_path(&self) -> &str {
+    pub fn load_path(&self) -> PathBuf {
         match self {
             StaticResource::OHLCVDataType(resource) => resource.load_path(),
         }
@@ -110,8 +113,9 @@ impl StaticResource {
     pub fn load(&self) -> Result<OHLCVData, Box<dyn Error>> {
         match self {
             StaticResource::OHLCVDataType(_resource) => {
-                let file_data_string =
-                    std::fs::read_to_string(&format!("{}{}", self.load_path(), ".json"))?;
+                let mut path = self.load_path();
+                path.set_extension("json");
+                let file_data_string = std::fs::read_to_string(path)?;
                 let data = serde_json::from_str(&file_data_string)?;
 
                 Ok(data)

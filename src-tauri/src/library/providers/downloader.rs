@@ -37,7 +37,7 @@ impl Downloader {
         let mut downloadables: Vec<Downloadable> = vec![];
 
         for source in self.sources.values() {
-            let source_downloadables = source.get_downloadables()?;
+            let source_downloadables = source.get_downloadables().await.unwrap();
             downloadables.extend(source_downloadables);
         }
 

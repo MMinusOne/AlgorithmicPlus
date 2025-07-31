@@ -8,4 +8,5 @@ pub trait ITechnicalIndicator<T> {
     fn render(&mut self) -> Option<Vec<ChartingData>>;
 }
 
+
 pub mod technical_indicators;

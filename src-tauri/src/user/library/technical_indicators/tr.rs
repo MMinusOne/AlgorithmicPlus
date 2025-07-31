@@ -1,8 +1,5 @@
-use std::collections::VecDeque;
-
 use crate::{user::library::ITechnicalIndicator, utils::classes::charting::ChartingData};
 use num_traits::{FromPrimitive, Num, Signed};
-//TR=max(CurrentHigh−CurrentLow,∣CurrentHigh−PreviousClose∣,∣CurrentLow−PreviousClose∣)
 
 pub struct TR<T: Num + Copy + FromPrimitive + Ord + Signed> {
     name: String,

@@ -33,7 +33,7 @@ export default function ErrorDialog() {
   };
 
   useEffect(() => {
-    const unlisten = listen("error", (event) => {
+    listen("error", (event) => {
       setError(event.payload as EngineError);
       dialogState.addActiveDialog(Dialog.Error);
     });

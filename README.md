@@ -53,6 +53,7 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Implement more data providers. 
 - ❌ Make the metric formulas.
 - ❌ Refactor the code as to remove expect, match, and any statement that might crash the whole thing, propogate all the errrs to main and consider using an error library.
+- ❌ Fork `lightweight-charts` and implement time sensitive functions in C++.
  
 I have plans to keep working on this.
 

@@ -34,6 +34,8 @@ export default function SidebarContent() {
             },
           });
 
+          console.log('Got charting data');
+
           setSidebarData({
             symbol: data.symbol,
             timeframe: data.timeframe,

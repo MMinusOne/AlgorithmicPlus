@@ -1,6 +1,6 @@
 import Loading from "@/components/Loading";
 import { useDownloadDialogState } from "@/lib/state/downloads";
-import { Downloadable, MarketDataType, SourceInfo } from "@/types";
+import { Downloadable, MarketDataType } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 

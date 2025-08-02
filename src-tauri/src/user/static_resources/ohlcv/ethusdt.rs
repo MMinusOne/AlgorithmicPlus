@@ -7,13 +7,13 @@ use crate::{
     utils::paths::join_app_data_dir,
 };
 
-pub struct NFLX {
+pub struct ETHUSDT {
     id: String,
     name: String,
     load_path: PathBuf,
 }
 
-impl IStaticResource<OHLCVData> for NFLX {
+impl IStaticResource<OHLCVData> for ETHUSDT {
     fn id(&self) -> &str {
         return &self.id;
     }
@@ -31,17 +31,17 @@ impl IStaticResource<OHLCVData> for NFLX {
     }
 }
 
-impl NFLX {
-    pub fn instance() -> &'static NFLX {
-        static INSTANCE: OnceLock<NFLX> = OnceLock::new();
-        return INSTANCE.get_or_init(|| NFLX::new());
+impl ETHUSDT {
+    pub fn instance() -> &'static ETHUSDT {
+        static INSTANCE: OnceLock<ETHUSDT> = OnceLock::new();
+        return INSTANCE.get_or_init(|| ETHUSDT::new());
     }
 
     pub fn new() -> Self {
         return Self {
             id: Uuid::new_v4().into(),
             name: "ETHUSDT".into(),
-            load_path: join_app_data_dir("raw/ohlcv/3f50eaaa-d337-486c-b15d-09631a65fc00").unwrap(),
+            load_path: join_app_data_dir("raw/ohlcv/aef3ff43-18cc-416c-a968-e9b38c9fe000").unwrap(),
         };
     }
 }

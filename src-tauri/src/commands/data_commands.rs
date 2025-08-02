@@ -1,5 +1,8 @@
 use crate::{
-    library::providers::downloader::OHLCVJSONFileDataStructure, user::static_resources::{self, STATIC_RESOURCES}, utils::classes::charting::{ChartingData, DataBlock}, APP_HANDLE
+    library::providers::downloader::OHLCVJSONFileDataStructure,
+    user::static_resources::{self, STATIC_RESOURCES},
+    utils::classes::charting::{ChartingData, DataBlock},
+    APP_HANDLE,
 };
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
@@ -22,7 +25,7 @@ pub async fn get_static_resources() -> Vec<DownloadMetadata> {
 
     for static_resource in &*STATIC_RESOURCES {
         if static_resource.data_type() == "OHLCV" {
-            if let Ok(raw_data) = static_resource.load() {
+            if let Ok(raw_data) = static_resource.load_ohlcv_metadata() {
                 metadatas.push(DownloadMetadata {
                     id: static_resource.id().into(),
                     name: static_resource.name().into(),
@@ -73,11 +76,11 @@ pub async fn get_raw_data(data: GetRawDataParams) -> RawDataResponse {
         if static_resource.id() == data.id {
             if data.item_type == "RAWDATA" {
                 if static_resource.data_type() == "OHLCV" {
-                    if let Ok(raw_data) = static_resource.load() {
-                        data_response.symbol = Some(raw_data.symbol);
-                        data_response.timeframe = Some(raw_data.timeframe);
-                        data_response.start_timestamp = Some(raw_data.start_timestamp);
-                        data_response.end_timestamp = Some(raw_data.end_timestamp);
+                    if let Ok(raw_metadata) = static_resource.load_ohlcv_metadata() {
+                        data_response.symbol = Some(raw_metadata.symbol);
+                        data_response.timeframe = Some(raw_metadata.timeframe);
+                        data_response.start_timestamp = Some(raw_metadata.start_timestamp);
+
                         if let Some(charting_data) = static_resource.render() {
                             for chart in charting_data {
                                 data_response.charting_data.push(chart);
@@ -95,4 +98,3 @@ pub async fn get_raw_data(data: GetRawDataParams) -> RawDataResponse {
 
     return data_response;
 }
-

@@ -1,6 +1,6 @@
 import { useDownloadDialogState } from "@/lib/state/downloads";
 import { useEffect, useState } from "react";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
 interface DownloadRequestResponse {

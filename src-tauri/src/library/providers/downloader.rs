@@ -135,6 +135,14 @@ pub struct OHLCVDownloadJSONFileStructure {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct OHLCVMetaData {
+    pub symbol: String,
+    pub timeframe: String,
+    pub start_timestamp: i64,
+    pub end_timestamp: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct OHLCVJSONFileDataStructure {
     pub symbol: String,
     pub timeframe: String,

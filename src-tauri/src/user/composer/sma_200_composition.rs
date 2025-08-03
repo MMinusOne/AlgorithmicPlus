@@ -1,70 +1,133 @@
-// use std::collections::HashMap;
-// use std::sync::{Arc, Mutex, OnceLock};
+use crate::user::composer::{CompositionDataType, IComposition};
+use crate::user::library::technical_indicators::{sma, SMA};
+use crate::user::library::ITechnicalIndicator;
+use crate::user::static_resources::ohlcv::ETHUSDT;
+use crate::user::static_resources::StaticResource;
+use crate::utils::classes::charting::{CandlestickData, ChartingData, LineChartingData, LineData};
+use std::collections::HashMap;
+use std::error::Error;
+use std::sync::OnceLock;
+use uuid::Uuid;
 
-// use once_cell::sync::Lazy;
-// use uuid::Uuid;
+#[derive(Clone)]
+pub struct SMA200Composition {
+    id: String,
+    name: String,
+    description: String,
+    composition_fields: HashMap<&'static str, usize>,
+    static_resources: HashMap<&'static str, StaticResource>,
+}
 
-// use crate::commands::ChartingData;
-// use crate::user::composer::{CompositionDataValue, IComposition};
-// use crate::user::static_resources::mastercard::Mastercard;
-// use crate::user::static_resources::{IStaticResource, StaticResource};
+impl IComposition for SMA200Composition {
+    fn id(&self) -> &str {
+        return &self.id;
+    }
 
-// pub struct SMA200Composition {
-//     id: String,
-//     name: String,
-//     description: String,
-//     composition_fields: HashMap<&'static str, i8>,
-//     static_resources: HashMap<&'static str, StaticResource>,
-// }
+    fn name(&self) -> &str {
+        return &self.name;
+    }
 
-// impl IComposition for SMA200Composition {
-//     fn id(&self) -> &str {
-//         return &self.id;
-//     }
+    fn description(&self) -> &str {
+        return &self.description;
+    }
 
-//     fn name(&self) -> &str {
-//         return &self.name;
-//     }
+    fn composition_fields(&self) -> HashMap<&'static str, usize> {
+        return self.composition_fields.clone();
+    }
 
-//     fn description(&self) -> &str {
-//         return &self.description;
-//     }
+    fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
+        let mut composed_data: Vec<Box<[CompositionDataType]>> = vec![];
 
-//     fn composition_fields(&self) -> HashMap<&'static str, i8> {
-//         return self.composition_fields.clone();
-//     }
+        let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
 
-//     fn compose(&mut self) -> Vec<Vec<Option<CompositionDataValue>>> {
-//         let composed_data: Vec<Vec<Option<CompositionDataValue>>> = vec![];
+        let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
+        let mut sma = SMA::<f32>::new(200);
 
-//         return composed_data;
-//     }
+        composed_data.reserve(ethusdt_data.len());
 
-//     fn render(&mut self) -> Option<Vec<ChartingData>> {
-//         let charting_data: Vec<ChartingData> = vec![];
+        for candle in ethusdt_data.iter() {
+            let timestamp = candle.timestamp;
+            let close = candle.close;
+            let current_sma = sma.get_data();
 
-//         return Some(charting_data);
-//     }
+            let data = Box::new([
+                CompositionDataType::Int(timestamp),
+                CompositionDataType::Float(close),
+                CompositionDataType::OptionFloat(current_sma),
+            ]);
 
-//     fn save(&mut self) {}
-// }
+            composed_data.push(data);
 
-// impl SMA200Composition {
-//     pub fn instance() -> &'static SMA200Composition {
-//         static INSTANCE: OnceLock<SMA200Composition> = OnceLock::new();
-//         return INSTANCE.get_or_init(|| SMA200Composition::new());
-//     }
+            sma.allocate(close);
+        }
 
-//     fn new() -> Self {
-//         return Self {
-//             name: "SMA 200 Composition".into(),
-//             description: "The composition for the SMA 200 strategy".into(),
-//             id: Uuid::new_v4().into(),
-//             composition_fields: HashMap::from([("close", 0), ("sma_200", 1)]),
-//             static_resources: HashMap::from([(
-//                 "mastercard",
-//                 StaticResource::Mastercard(Mastercard::instance()),
-//             )]),
-//         };
-//     }
-// }
+        Ok(composed_data)
+    }
+
+    fn render(&mut self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
+        let mut close_data: Vec<LineData> = vec![];
+        let mut sma_data: Vec<LineData> = vec![];
+
+        let composed_data = self.compose()?;
+        let timestamp_position = self.composition_fields.get("timestamp").unwrap().clone();
+        let close_position = self.composition_fields.get("close").unwrap().clone();
+        let sma_200_position = self.composition_fields.get("sma_200").unwrap().clone();
+
+        for data_point in composed_data.into_iter() {
+            let timestamp = self.extract_int(data_point[timestamp_position]);
+            let close = self.extract_float(data_point[close_position]);
+            let sma_200 = self.extract_option_float(data_point[sma_200_position]);
+
+            close_data.push(LineData {
+                time: timestamp,
+                value: close,
+                color: Some("blue".into()),
+            });
+
+            sma_data.push(LineData {
+                time: timestamp,
+                value: sma_200,
+                color: Some("red".into()),
+            });
+        }
+
+        let charting_data: Vec<ChartingData> =
+            vec![ChartingData::LineChartingData(LineChartingData {
+                chart_type: "line".into(),
+                height: None,
+                data: close_data,
+            }), 
+            ChartingData::LineChartingData(LineChartingData {
+                chart_type: "line".into(),
+                height: None,
+                data: sma_data,
+            })];
+
+        Ok(charting_data)
+    }
+
+    fn save(&self) -> Result<(), Box<dyn Error>> {
+        // TODO: Save to file
+        Ok(())
+    }
+}
+
+impl SMA200Composition {
+    pub fn instance() -> &'static SMA200Composition {
+        static INSTANCE: OnceLock<SMA200Composition> = OnceLock::new();
+        return INSTANCE.get_or_init(|| SMA200Composition::new());
+    }
+
+    pub fn new() -> Self {
+        return Self {
+            name: "SMA 200 Composition".into(),
+            description: "The composition for the SMA 200 strategy".into(),
+            id: Uuid::new_v4().into(),
+            composition_fields: HashMap::from([("timestamp", 0), ("close", 1), ("sma_200", 2)]),
+            static_resources: HashMap::from([(
+                "ETHUSDT",
+                StaticResource::OHLCVDataType(ETHUSDT::instance()),
+            )]),
+        };
+    }
+}

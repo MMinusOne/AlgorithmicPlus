@@ -1,4 +1,4 @@
-# AlgorithmicPlus 
+# AlgorithmicPlus
 
 ## Overview
 
@@ -6,19 +6,19 @@ AlgorithmicPlus is a framework for developping, testing and optimizing financial
 
 The over-all code architecture is meant to be as abstracted for people who just want to develop the strategies, meaning there's a bit more abstraction for a better developer expierence for making strategies.
 
-## Why use it? 
+## Why use it?
 
 Here's some very good reasons to use AlgorutmicPlus.
 
-1) It's open source and free for ever.
-2) The backtesting part is written in Rust which is by default a performant language, and the UI is made with the best frontend framework out there, React.
-3) For people who want to make strategies only, it's very easy to use since there are abstractions that make developping the strategy itself easier.
-4) It's performance oriented, alot of the parts of it are diligently optimized, which you won't get that result making your own backtesting engine in a few days, it's fast.
-5) The code is structed in a way that makes it very easy to implement whatever you want.
-6) It supports OHLCV, news, bidask data by default, and you can make it support any kind of data really.
-7) The development process it-self is better than other frameworks, since the data is first downloaded, then it's pre-processed which we call composing the data, and only then is the strategy ran, meaning it would be very easy and performant to incorportate your data structures before backtesting, for example, making a strategy that has multiple pairs, multiple timeframes, bid-ask, news data and OHLCV data at the same time is no issue here, since it supports composing the data before backtesting.
-8) Im really focused on optimization, I used every trick in the book, it's multi-threaded, uses memory-mapped files, efficient data structures, O(1) implementations of technical indicators.
-9) Implementations for multiple optimization algoritms such as: Beysian, Genetic search, Grid search and backtesting such as: standard backtesting, WFO(Walk-Forward Optimization/Testing) and Monte carlo permutation
+1. It's open source and free for ever.
+2. The backtesting part is written in Rust which is by default a performant language, and the UI is made with the best frontend framework out there, React.
+3. For people who want to make strategies only, it's very easy to use since there are abstractions that make developping the strategy itself easier.
+4. It's performance oriented, alot of the parts of it are diligently optimized, which you won't get that result making your own backtesting engine in a few days, it's fast.
+5. The code is structed in a way that makes it very easy to implement whatever you want.
+6. It supports OHLCV, news, bidask data by default, and you can make it support any kind of data really.
+7. The development process it-self is better than other frameworks, since the data is first downloaded, then it's pre-processed which we call composing the data, and only then is the strategy ran, meaning it would be very easy and performant to incorportate your data structures before backtesting, for example, making a strategy that has multiple pairs, multiple timeframes, bid-ask, news data and OHLCV data at the same time is no issue here, since it supports composing the data before backtesting.
+8. Im really focused on optimization, I used every trick in the book, it's multi-threaded, uses memory-mapped files, efficient data structures, O(1) implementations of technical indicators.
+9. Implementations for multiple optimization algoritms such as: Beysian, Genetic search, Grid search and backtesting such as: standard backtesting, WFO(Walk-Forward Optimization/Testing) and Monte carlo permutation
 
 So over-all, it's hella performant, supported, low-barrier to entry, you can do ANYTHING, and has alot of future plans.
 
@@ -41,22 +41,20 @@ It's still lacking alot of features, the only features currently available are t
 
 ## Future changes and plans
 
-### Todo List  
-- ❌ Fix Binance provider.
+### Todo List
+
+- ❌ Add the label ability for the charting data and auto-coloring.
 - ❌ Finish the data composer.
 - ❌ Implement technical indicators.
 - ❌ Implement standard backtesting.
 - ❌ Implement optimization Algorithmic.
 - ❌ GUI Settings Menu.
-- ❌ Re-write performance-sensitive parts in C++. 
+- ❌ Re-write performance-sensitive parts in C++.
 - ❌ Make the code documentation.
-- ❌ Implement more data providers. 
+- ❌ Implement more data providers.
 - ❌ Make the metric formulas.
 - ❌ Refactor the code as to remove expect, match, and any statement that might crash the whole thing, propogate all the errrs to main and consider using an error library.
 - ❌ Fork `lightweight-charts` and implement time sensitive functions in C++.
- 
+- ❌ Make all the commands return a Result.
+
 I have plans to keep working on this.
-
-
-
-

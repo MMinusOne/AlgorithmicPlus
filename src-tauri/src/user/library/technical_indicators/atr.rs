@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use num_traits::{FromPrimitive, Num};
 
 use crate::{user::library::ITechnicalIndicator, utils::classes::charting::ChartingData};
@@ -34,10 +36,10 @@ impl<T: Num + Copy + FromPrimitive> ITechnicalIndicator<T> for ATR<T> {
         return Some(atr);
     }
 
-    fn render(&mut self) -> Option<Vec<ChartingData>> {
+    fn render(&self, timestamps: Vec<i64>) -> Result<Vec<ChartingData>, Box<dyn Error>> {
         let charting_data: Vec<ChartingData> = vec![];
 
-        return Some(charting_data);
+        Ok(charting_data)
     }
 }
 

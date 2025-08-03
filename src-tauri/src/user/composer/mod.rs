@@ -1,68 +1,62 @@
-// pub mod sma_200_composition;
-// use crate::commands::ChartingData;
-// use crate::user::composer::sma_200_composition::SMA200Composition;
-// use core::fmt;
-// use serde::{Deserialize, Serialize};
-// use std::collections::HashMap;
-// use std::error::Error;
-// use std::sync::{Arc, LazyLock, Mutex};
+pub mod sma_200_composition;
+pub use sma_200_composition::SMA200Composition;
 
-// #[derive(Debug)]
-// pub struct CompositionError {
-//     message: String,
-// }
+use crate::utils::classes::charting::ChartingData;
+use std::collections::HashMap;
+use std::error::Error;
+use std::marker::Copy;
+use std::sync::LazyLock;
 
-// impl Error for CompositionError {}
+#[derive(Clone, Copy)]
+pub enum CompositionDataType {
+    Int(i64),
+    Float(f32),
+    OptionFloat(Option<f32>),
+}
 
-// impl CompositionError {
-//     fn new(message: &str) -> Self {
-//         return CompositionError {
-//             message: message.into(),
-//         };
-//     }
-// }
+pub trait IComposition: Send + Sync {
+    fn id(&self) -> &str;
+    fn name(&self) -> &str;
+    fn description(&self) -> &str;
+    fn composition_fields(&self) -> HashMap<&'static str, usize>;
+    fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>>;
+    fn safe_compose(&mut self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
+        let composition_data = self.compose()?;
+        let composition_fields = self.composition_fields();
+        let composition_fields_length = composition_fields.len();
 
-// impl fmt::Display for CompositionError {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         return write!(f, "Composition Error: {}", self.message);
-//     }
-// }
+        for data_point in &composition_data {
+            if data_point.len() != composition_fields_length {
+                return Err("Data point not as long as composition fields".into());
+            }
+        }
 
-// #[derive(Serialize, Deserialize, Debug, Clone)]
-// pub enum CompositionDataValue {
-//     I32(i32),
-//     I16(i16),
-//     I8(i8),
-//     String(String),
-//     Bool(bool),
-// }
+        Ok(composition_data)
+    }
+    fn render(&mut self) -> Result<Vec<ChartingData>, Box<dyn Error>>;
+    fn save(&self) -> Result<(), Box<dyn Error>>;
 
-// pub trait IComposition: Send + Sync {
-//     fn id(&self) -> &str;
-//     fn name(&self) -> &str;
-//     fn description(&self) -> &str;
-//     fn composition_fields(&self) -> HashMap<&'static str, i8>;
-//     fn compose(&mut self) -> Vec<Vec<Option<CompositionDataValue>>>;
-//     fn safe_compose(&mut self) -> Result<Vec<Vec<Option<CompositionDataValue>>>, Box<dyn Error>> {
-//         let composition_data = self.compose();
-//         let composition_fields = self.composition_fields();
-//         let composition_fields_length = composition_fields.len();
+    fn extract_int(&self, compsition_data: CompositionDataType) -> i64 {
+        match compsition_data {
+            CompositionDataType::Int(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
 
-//         for data_point in &composition_data {
-//             if data_point.len() != composition_fields_length {
-//                 return Err(Box::new(CompositionError::new(
-//                     "Composition data point size not equal to composition fields size",
-//                 )));
-//             }
-//         }
+    fn extract_float(&self, compsition_data: CompositionDataType) -> f32 {
+        match compsition_data {
+            CompositionDataType::Float(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
 
-//         Ok(composition_data)
-//     }
-//     fn render(&mut self) -> Option<Vec<ChartingData>>;
-//     fn save(&mut self);
-// }
+    fn extract_option_float(&self, compsition_data: CompositionDataType) -> f32 {
+        match compsition_data {
+            CompositionDataType::Float(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
+}
 
-
-// pub static COMPOSED_STORIES: Vec<&'static dyn IComposition> = vec![
-//     SMA200Composition::instance()
-// ];
+pub static COMPOSITIONS: LazyLock<Vec<Box<dyn IComposition>>> =
+    LazyLock::new(|| vec![Box::new(SMA200Composition::instance().clone())]);

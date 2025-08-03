@@ -58,7 +58,7 @@ pub struct RawDataResponse {
 }
 
 #[tauri::command]
-pub async fn get_raw_data(data: GetRawDataParams) -> Result<RawDataResponse, tauri::Error> {
+pub async fn get_static_resource_data(data: GetRawDataParams) -> Result<RawDataResponse, tauri::Error> {
     let mut data_response = RawDataResponse {
         symbol: None,
         timeframe: None,
@@ -77,7 +77,7 @@ pub async fn get_raw_data(data: GetRawDataParams) -> Result<RawDataResponse, tau
                         data_response.timeframe = Some(raw_metadata.timeframe);
                         data_response.start_timestamp = Some(raw_metadata.start_timestamp);
 
-                        if let Some(charting_data) = static_resource.render() {
+                        if let Ok(charting_data) = static_resource.render() {
                             for chart in charting_data {
                                 data_response.charting_data.push(chart);
                             }

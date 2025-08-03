@@ -27,14 +27,15 @@ export default function SidebarContent() {
     const getSidebarData = async () => {
       switch (selectedItem?.itemType) {
         case SelectedItemType.RawData:
-          const data = await invoke<RawDataResponse>("get_raw_data", {
-            data: {
-              itemType: selectedItem.itemType,
-              id: selectedItem.id,
-            },
-          });
-
-          console.log('Got charting data');
+          const data = await invoke<RawDataResponse>(
+            "get_static_resource_data",
+            {
+              data: {
+                itemType: selectedItem.itemType,
+                id: selectedItem.id,
+              },
+            }
+          );
 
           setSidebarData({
             symbol: data.symbol,
@@ -55,7 +56,7 @@ export default function SidebarContent() {
   useEffect(() => {
     if (!chartRef.current) return;
   }, [chartRef]);
-  
+
   //TODO: Display download informaton and not just chart (symbol name, downloaded at, start timestamp, end timestamp, download size, download location)
 
   if (sidebarData.chartingData.length > 0) {

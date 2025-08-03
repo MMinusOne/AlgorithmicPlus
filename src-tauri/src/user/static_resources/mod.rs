@@ -1,4 +1,4 @@
-mod ohlcv;
+pub mod ohlcv;
 use crate::library::providers::downloader::{OHLCVJSONFileDataStructure, OHLCVMetaData};
 use crate::library::providers::sources::binance::OHLCVCandleObject;
 use crate::user::static_resources::ohlcv::ethusdt::ETHUSDT;
@@ -6,21 +6,15 @@ use crate::utils::classes::charting::{
     CandlestickChartingData, CandlestickData, ChartingData, HistogramChartingData, HistogramData,
 };
 use crate::utils::load_mmap::{load_mmap, MmapManager};
-use core::slice;
-use memmap2::{Mmap, MmapOptions};
 use serde::Deserialize;
 use std::error::Error;
-use std::fs::File;
-use std::mem;
 use std::path::PathBuf;
 use std::sync::LazyLock;
-use std::time::Instant;
 
 pub trait IStaticResource<T: for<'de> Deserialize<'de>>: Send + Sync {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
     fn load_path(&self) -> PathBuf;
-    fn data_type(&self) -> &str;
     fn render(&self) -> Option<Vec<ChartingData>> {
         return None;
     }
@@ -28,6 +22,7 @@ pub trait IStaticResource<T: for<'de> Deserialize<'de>>: Send + Sync {
 
 pub type OHLCVData = OHLCVJSONFileDataStructure;
 
+#[derive(Clone)]
 pub enum StaticResource {
     OHLCVDataType(&'static dyn IStaticResource<OHLCVData>),
 }
@@ -58,9 +53,9 @@ impl StaticResource {
         }
     }
 
-    pub fn render(&self) -> Option<Vec<ChartingData>> {
+    pub fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
         match self {
-            StaticResource::OHLCVDataType(resource) => {
+            StaticResource::OHLCVDataType(_resource) => {
                 let mut candlestick_data: Vec<CandlestickData> = vec![];
                 let mut volume_data: Vec<HistogramData> = vec![];
 
@@ -110,8 +105,8 @@ impl StaticResource {
                     ChartingData::CandlestickChartingData(candlestick_chart),
                     ChartingData::HistogramChartingData(volume_chart),
                 ];
-                println!("Made render data");
-                return Some(charting_data);
+
+                Ok(charting_data)
             }
         }
     }
@@ -130,6 +125,7 @@ impl StaticResource {
             _ => Err("Wrong resource type".into()),
         }
     }
+
     pub fn load_ohlcv_json(&self) -> Result<OHLCVData, Box<dyn Error>> {
         match self {
             StaticResource::OHLCVDataType(_resource) => {
@@ -143,6 +139,7 @@ impl StaticResource {
             _ => Err("Wrong resource type".into()),
         }
     }
+
     pub fn load_ohlcv_mmap(&self) -> Result<MmapManager<OHLCVCandleObject>, Box<dyn Error>> {
         match self {
             StaticResource::OHLCVDataType(_resource) => {

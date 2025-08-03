@@ -1,10 +1,14 @@
 import { FaPlus } from "react-icons/fa6";
 import { useDialogState } from "../../lib/state/dialogs";
-import { Dialog, StaticResource, SelectedItemType } from "../../types";
+import {
+  Dialog,
+  StaticResource,
+  SelectedItemType,
+  CompositionMetadata,
+} from "../../types";
 import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { useSidebarState } from "@/lib/state/sidebar";
-
 
 //TODO: tooltip when clicking on a selecteable item: properties, delete, etc...
 
@@ -13,16 +17,21 @@ export default function Sidebar() {
   const sidebarState = useSidebarState();
 
   useEffect(() => {
-    const getDownloadMetadata = async () => {
+    const getStaticResources = async () => {
       const staticResources = await invoke<StaticResource[]>(
         "get_static_resources"
       );
 
+      const compositions = await invoke<CompositionMetadata[]>(
+        "get_compositions"
+      );
+
       sidebarState.setStaticResources(staticResources);
+      sidebarState.setCompositionMetadatas(compositions);
       sidebarState.setIsLoading(false);
     };
 
-    getDownloadMetadata();
+    getStaticResources();
   }, []);
 
   return (
@@ -60,16 +69,15 @@ export default function Sidebar() {
             <details open>
               <SidebarSummary>data stories</SidebarSummary>
               <ul>
-                <li>
-                  <a className="truncate" title="Item">
-                    <span className="truncate">Item</span>
-                  </a>
-                </li>
-                <li>
-                  <a className="truncate" title="Item">
-                    <span className="truncate">Item</span>
-                  </a>
-                </li>
+                {sidebarState.compositionMetadatas.map((compositionMetadata) => {
+                  return (
+                    <li>
+                      <a className="truncate" title="Item">
+                        <span className="truncate">{compositionMetadata.name}</span>
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </details>
             <details open>

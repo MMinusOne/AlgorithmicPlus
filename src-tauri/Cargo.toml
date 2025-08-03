@@ -39,3 +39,4 @@ url = "2.5.4"
 async-recursion = "1.1.1"
 walkdir = "2.5.0"
 memmap2 = "0.9.7"
+phf = {version = "0.12.1", features = ["macros"] }

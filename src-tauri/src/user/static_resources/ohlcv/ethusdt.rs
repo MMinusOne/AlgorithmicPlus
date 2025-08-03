@@ -22,10 +22,6 @@ impl IStaticResource<OHLCVData> for ETHUSDT {
         return &self.name;
     }
 
-    fn data_type(&self) -> &str {
-        return "OHLCV";
-    }
-
     fn load_path(&self) -> PathBuf {
         return self.load_path.clone();
     }

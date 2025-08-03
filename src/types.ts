@@ -47,6 +47,7 @@ export interface SourceInfo {
   timeframes: string[];
 }
 
+// Add more types the more I have 
 export type StaticResource = OHLCVStaticResource;
 
 export type OHLCVStaticResource = {
@@ -57,7 +58,6 @@ export type OHLCVStaticResource = {
   start_timestamp: string;
   end_timestamp: string;
 };
-
 
 export type ChartingSeries =
   | {
@@ -112,4 +112,10 @@ export interface SidebarData {
   dataType?: string;
   newsData: NewsData[];
   chartingData: ChartingSeries[];
+}
+
+export interface CompositionMetadata { 
+  id: string;
+  name: string;
+  description: string;
 }

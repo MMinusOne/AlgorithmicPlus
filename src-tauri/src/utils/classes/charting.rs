@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ChartingData {
@@ -32,7 +31,18 @@ pub struct CandlestickData {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct LineChartingData {}
+pub struct LineChartingData {
+    pub chart_type: String,
+    pub height: Option<i16>,
+    pub data: Vec<LineData>,
+}
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub struct LineData {
+    pub time: i64,
+    pub value: f32,
+    pub color: Option<String>
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct BarChartingData {}

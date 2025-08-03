@@ -44,7 +44,6 @@ It's still lacking alot of features, the only features currently available are t
 ### Todo List
 
 - ❌ Add the label ability for the charting data and auto-coloring.
-- ❌ Finish the data composer.
 - ❌ Implement technical indicators.
 - ❌ Implement standard backtesting.
 - ❌ Implement optimization Algorithmic.

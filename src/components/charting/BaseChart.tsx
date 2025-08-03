@@ -59,13 +59,16 @@ export default function BaseChart({
       if (storedSeries[storedSerieIndex]) {
         chart.removeSeries(storedSeries[storedSerieIndex]);
       }
-      
+
       setStoredSeries([]);
     }
 
     for (const chartingSerieIndex in chartingData || []) {
       const chartingSerie = chartingData[chartingSerieIndex];
-      const paneIndex = Number(chartingSerieIndex);
+      //@ts-ignore
+      const paneIndex: number = Number.isNaN(chartingSerie.pane)
+        ? Number(chartingSerieIndex)
+        : chartingSerie.pane;
 
       switch (chartingSerie.chart_type) {
         case "ohlcv":

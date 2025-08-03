@@ -47,7 +47,7 @@ export interface SourceInfo {
   timeframes: string[];
 }
 
-// Add more types the more I have 
+// Add more types the more I have
 export type StaticResource = OHLCVStaticResource;
 
 export type OHLCVStaticResource = {
@@ -63,26 +63,31 @@ export type ChartingSeries =
   | {
       chart_type: "ohlcv";
       height?: number;
+      pane?: number;
       data: CandlestickData<Time>[];
     }
   | {
       chart_type: "line";
       height?: number;
+      pane?: number;
       data: LineData<Time>[];
     }
   | {
       chart_type: "bar";
       height?: number;
+      pane?: number;
       data: (WhitespaceData<Time> | BarData<Time>)[];
     }
   | {
       chart_type: "histogram";
       height?: number;
+      pane?: number;
       data: HistogramData<Time>[];
     }
   | {
       chart_type: "area";
       height?: number;
+      pane?: number;
       data: AreaData<Time>[];
     };
 
@@ -99,9 +104,15 @@ export interface RawDataResponse {
   timeframe?: string;
   start_timestamp?: number;
   end_timestamp?: number;
-  data_type: string;
   news_data: NewsData[];
   charting_data: ChartingSeries[];
+}
+
+export interface CompositionDataResponse {
+  name: string;
+  description: string;
+  charting_data: ChartingSeries[];
+  news_data: NewsData[];
 }
 
 export interface SidebarData {
@@ -110,11 +121,13 @@ export interface SidebarData {
   startTimestamp?: number;
   endTimestamp?: number;
   dataType?: string;
+  name?: string;
+  description?: string;
   newsData: NewsData[];
   chartingData: ChartingSeries[];
 }
 
-export interface CompositionMetadata { 
+export interface CompositionMetadata {
   id: string;
   name: string;
   description: string;

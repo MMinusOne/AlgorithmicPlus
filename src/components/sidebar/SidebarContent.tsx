@@ -8,6 +8,7 @@ import {
   NewsData,
   ChartingSeries,
   SidebarData,
+  CompositionDataResponse,
 } from "@/types";
 import { IChartApi } from "lightweight-charts";
 import ChartingContent from "./content/ChartingContent";
@@ -27,24 +28,40 @@ export default function SidebarContent() {
     const getSidebarData = async () => {
       switch (selectedItem?.itemType) {
         case SelectedItemType.RawData:
-          const data = await invoke<RawDataResponse>(
+          const rawData = await invoke<RawDataResponse>(
             "get_static_resource_data",
             {
               data: {
-                itemType: selectedItem.itemType,
                 id: selectedItem.id,
               },
             }
           );
 
           setSidebarData({
-            symbol: data.symbol,
-            timeframe: data.timeframe,
-            dataType: data.data_type,
-            startTimestamp: data.start_timestamp,
-            endTimestamp: data.end_timestamp,
-            chartingData: data.charting_data,
-            newsData: data.news_data,
+            symbol: rawData.symbol,
+            timeframe: rawData.timeframe,
+            startTimestamp: rawData.start_timestamp,
+            endTimestamp: rawData.end_timestamp,
+            chartingData: rawData.charting_data,
+            newsData: rawData.news_data,
+          });
+          break;
+
+        case SelectedItemType.Composition:
+          const compositionData = await invoke<CompositionDataResponse>(
+            "get_composition_data",
+            {
+              data: {
+                id: selectedItem.id,
+              },
+            }
+          );
+          console.log(compositionData);
+          setSidebarData({
+            name: compositionData.name,
+            description: compositionData.description,
+            chartingData: compositionData.charting_data,
+            newsData: compositionData.news_data,
           });
           break;
       }

@@ -67,17 +67,28 @@ export default function Sidebar() {
               </ul>
             </details>
             <details open>
-              <SidebarSummary>data stories</SidebarSummary>
+              <SidebarSummary>data compositions</SidebarSummary>
               <ul>
-                {sidebarState.compositionMetadatas.map((compositionMetadata) => {
-                  return (
-                    <li>
-                      <a className="truncate" title="Item">
-                        <span className="truncate">{compositionMetadata.name}</span>
-                      </a>
-                    </li>
-                  );
-                })}
+                {sidebarState.compositionMetadatas.map(
+                  (compositionMetadata) => {
+                    return (
+                      <li
+                        onClick={() => {
+                          sidebarState.setSelectedItem({
+                            itemType: SelectedItemType.Composition,
+                            id: compositionMetadata.id,
+                          });
+                        }}
+                      >
+                        <a className="truncate" title="Item">
+                          <span className="truncate">
+                            {compositionMetadata.name}
+                          </span>
+                        </a>
+                      </li>
+                    );
+                  }
+                )}
               </ul>
             </details>
             <details open>

@@ -64,9 +64,9 @@ impl IComposition for SMA200Composition {
         Ok(composed_data)
     }
 
-    fn render(&mut self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
-        let mut close_data: Vec<LineData> = vec![];
-        let mut sma_data: Vec<LineData> = vec![];
+    fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
+        let mut close_data: Vec<Option<LineData>> = vec![];
+        let mut sma_data: Vec<Option<LineData>> = vec![];
 
         let composed_data = self.compose()?;
         let timestamp_position = self.composition_fields.get("timestamp").unwrap().clone();
@@ -78,30 +78,36 @@ impl IComposition for SMA200Composition {
             let close = self.extract_float(data_point[close_position]);
             let sma_200 = self.extract_option_float(data_point[sma_200_position]);
 
-            close_data.push(LineData {
+            close_data.push(Some(LineData {
                 time: timestamp,
                 value: close,
                 color: Some("blue".into()),
-            });
+            }));
 
-            sma_data.push(LineData {
-                time: timestamp,
-                value: sma_200,
-                color: Some("red".into()),
-            });
+            match sma_200 {
+                Some(value) => sma_data.push(Some(LineData {
+                    time: timestamp,
+                    value,
+                    color: Some("red".into()),
+                })),
+                None => {}
+            }
         }
 
-        let charting_data: Vec<ChartingData> =
-            vec![ChartingData::LineChartingData(LineChartingData {
+        let charting_data: Vec<ChartingData> = vec![
+            ChartingData::LineChartingData(LineChartingData {
                 chart_type: "line".into(),
                 height: None,
                 data: close_data,
-            }), 
+                pane: Some(0),
+            }),
             ChartingData::LineChartingData(LineChartingData {
                 chart_type: "line".into(),
                 height: None,
                 data: sma_data,
-            })];
+                pane: Some(0),
+            }),
+        ];
 
         Ok(charting_data)
     }

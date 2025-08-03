@@ -93,12 +93,14 @@ impl StaticResource {
                     chart_type: "ohlcv".into(),
                     height: Some(800),
                     data: candlestick_data,
+                    pane: Some(0),
                 };
 
                 let volume_chart = HistogramChartingData {
                     chart_type: "histogram".into(),
                     height: Some(200),
                     data: volume_data,
+                    pane: Some(1),
                 };
 
                 let charting_data: Vec<ChartingData> = vec![

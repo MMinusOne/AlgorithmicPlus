@@ -33,7 +33,7 @@ pub trait IComposition: Send + Sync {
 
         Ok(composition_data)
     }
-    fn render(&mut self) -> Result<Vec<ChartingData>, Box<dyn Error>>;
+    fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>>;
     fn save(&self) -> Result<(), Box<dyn Error>>;
 
     fn extract_int(&self, compsition_data: CompositionDataType) -> i64 {
@@ -50,9 +50,9 @@ pub trait IComposition: Send + Sync {
         }
     }
 
-    fn extract_option_float(&self, compsition_data: CompositionDataType) -> f32 {
+    fn extract_option_float(&self, compsition_data: CompositionDataType) -> Option<f32> {
         match compsition_data {
-            CompositionDataType::Float(v) => v,
+            CompositionDataType::OptionFloat(v) => v,
             _ => panic!("Invalid compsition type conversion."),
         }
     }

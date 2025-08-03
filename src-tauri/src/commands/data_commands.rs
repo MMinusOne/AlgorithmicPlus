@@ -1,6 +1,6 @@
 use crate::{
-    user::static_resources::{STATIC_RESOURCES},
-    utils::classes::charting::{ChartingData, DataBlock}
+    user::static_resources::STATIC_RESOURCES,
+    utils::classes::charting::{ChartingData, DataBlock},
 };
 use serde::{Deserialize, Serialize};
 
@@ -44,7 +44,6 @@ pub async fn get_static_resources() -> Result<Vec<DownloadMetadata>, tauri::Erro
 #[serde(rename_all = "camelCase")]
 pub struct GetRawDataParams {
     pub id: String,
-    pub item_type: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -58,7 +57,9 @@ pub struct RawDataResponse {
 }
 
 #[tauri::command]
-pub async fn get_static_resource_data(data: GetRawDataParams) -> Result<RawDataResponse, tauri::Error> {
+pub async fn get_static_resource_data(
+    data: GetRawDataParams,
+) -> Result<RawDataResponse, tauri::Error> {
     let mut data_response = RawDataResponse {
         symbol: None,
         timeframe: None,
@@ -70,25 +71,23 @@ pub async fn get_static_resource_data(data: GetRawDataParams) -> Result<RawDataR
 
     for static_resource in &*STATIC_RESOURCES {
         if static_resource.id() == data.id {
-            if data.item_type == "RAWDATA" {
-                if static_resource.data_type() == "OHLCV" {
-                    if let Ok(raw_metadata) = static_resource.load_ohlcv_metadata() {
-                        data_response.symbol = Some(raw_metadata.symbol);
-                        data_response.timeframe = Some(raw_metadata.timeframe);
-                        data_response.start_timestamp = Some(raw_metadata.start_timestamp);
+            if static_resource.data_type() == "OHLCV" {
+                if let Ok(raw_metadata) = static_resource.load_ohlcv_metadata() {
+                    data_response.symbol = Some(raw_metadata.symbol);
+                    data_response.timeframe = Some(raw_metadata.timeframe);
+                    data_response.start_timestamp = Some(raw_metadata.start_timestamp);
 
-                        if let Ok(charting_data) = static_resource.render() {
-                            for chart in charting_data {
-                                data_response.charting_data.push(chart);
-                            }
+                    if let Ok(charting_data) = static_resource.render() {
+                        for chart in charting_data {
+                            data_response.charting_data.push(chart);
                         }
                     }
-                } else {
                 }
             } else {
-                // Add more cases later on
-                continue;
             }
+        } else {
+            // Add more cases later on
+            continue;
         }
     }
 

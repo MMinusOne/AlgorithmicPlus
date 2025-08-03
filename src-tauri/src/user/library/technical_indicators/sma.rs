@@ -47,14 +47,14 @@ impl<T: Num + Copy + FromPrimitive + ToPrimitive> ITechnicalIndicator<T> for SMA
     }
 
     fn render(&self, timestamps: Vec<i64>) -> Result<Vec<ChartingData>, Box<dyn Error>> {
-        let mut line_data: Vec<LineData> = vec![];
+        let mut line_data: Vec<Option<LineData>> = vec![];
 
         for (i, timestamp) in timestamps.iter().enumerate() {
-            line_data.push(LineData {
+            line_data.push(Some(LineData {
                 time: timestamp.clone(),
                 value: self.data_values[i].to_f32().unwrap(),
                 color: None,
-            });
+            }));
         }
 
         let charting_data: Vec<ChartingData> =
@@ -62,6 +62,7 @@ impl<T: Num + Copy + FromPrimitive + ToPrimitive> ITechnicalIndicator<T> for SMA
                 chart_type: "line".into(),
                 height: None,
                 data: line_data,
+                pane: Some(0),
             })];
         Ok(charting_data)
     }

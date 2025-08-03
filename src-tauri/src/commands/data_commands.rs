@@ -1,12 +1,8 @@
 use crate::{
-    library::providers::downloader::OHLCVJSONFileDataStructure,
-    user::static_resources::{self, STATIC_RESOURCES},
-    utils::classes::charting::{ChartingData, DataBlock},
-    APP_HANDLE,
+    user::static_resources::{STATIC_RESOURCES},
+    utils::classes::charting::{ChartingData, DataBlock}
 };
 use serde::{Deserialize, Serialize};
-use tauri::Manager;
-use walkdir::WalkDir;
 
 #[derive(Serialize, Deserialize)]
 pub struct DownloadMetadata {
@@ -20,7 +16,7 @@ pub struct DownloadMetadata {
 }
 
 #[tauri::command]
-pub async fn get_static_resources() -> Vec<DownloadMetadata> {
+pub async fn get_static_resources() -> Result<Vec<DownloadMetadata>, tauri::Error> {
     let mut metadatas: Vec<DownloadMetadata> = vec![];
 
     for static_resource in &*STATIC_RESOURCES {
@@ -41,7 +37,7 @@ pub async fn get_static_resources() -> Vec<DownloadMetadata> {
         }
     }
 
-    return metadatas;
+    Ok(metadatas)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -62,7 +58,7 @@ pub struct RawDataResponse {
 }
 
 #[tauri::command]
-pub async fn get_raw_data(data: GetRawDataParams) -> RawDataResponse {
+pub async fn get_raw_data(data: GetRawDataParams) -> Result<RawDataResponse, tauri::Error> {
     let mut data_response = RawDataResponse {
         symbol: None,
         timeframe: None,
@@ -96,5 +92,5 @@ pub async fn get_raw_data(data: GetRawDataParams) -> RawDataResponse {
         }
     }
 
-    return data_response;
+    Ok(data_response)
 }

@@ -1,14 +1,9 @@
 use std::sync::Arc;
 
-use crate::{
-    library::providers::downloader::{
-        DownloadData, Downloadable, Downloader, OHLCVJSONFileDataStructure, Source, SourceName,
-    },
-    APP_HANDLE,
-};
+use crate::library::providers::downloader::{DownloadData, Downloadable, Downloader, SourceName};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use tauri::{Emitter, Manager};
+use tauri::Emitter;
 use uuid::Uuid;
 // use uuid::Uuid;
 
@@ -17,8 +12,8 @@ lazy_static! {
 }
 
 #[tauri::command]
-pub async fn get_downloadables() -> Vec<Downloadable> {
-    return DOWNLOADER.get_downloadables().await;
+pub async fn get_downloadables() -> Result<Vec<Downloadable>, tauri::Error> {
+    Ok(DOWNLOADER.get_downloadables().await)
 }
 
 #[derive(Serialize, Deserialize)]
@@ -29,7 +24,7 @@ pub struct SourceInfo {
 }
 
 #[tauri::command]
-pub fn get_sources_info() -> Vec<SourceInfo> {
+pub fn get_sources_info() -> Result<Vec<SourceInfo>, tauri::Error> {
     let mut sources_info: Vec<SourceInfo> = vec![];
 
     for source in DOWNLOADER.sources.values() {
@@ -40,7 +35,7 @@ pub fn get_sources_info() -> Vec<SourceInfo> {
         })
     }
 
-    return sources_info;
+    Ok(sources_info)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -69,7 +64,7 @@ pub struct DownloadProgressResponse {
 pub async fn download_request(
     app: tauri::AppHandle,
     data: DownloadRequestParams,
-) -> DownloadRequestResponse {
+) -> Result<DownloadRequestResponse, tauri::Error> {
     let download_id = Uuid::new_v4().to_string();
     let status = "OK".to_string();
     //TODO: make it download the data, normilization feature for charts
@@ -114,7 +109,7 @@ pub async fn download_request(
         .download_all(download_datas, None, Some(on_progress))
         .await;
 
-    return response;
+    Ok(response)
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -127,26 +122,24 @@ pub struct DownloadableTimeframePairAvailableRequestData {
 #[tauri::command]
 pub async fn downloadable_timeframe_pair_available(
     data: DownloadableTimeframePairAvailableRequestData,
-) -> bool {
+) -> Result<bool, tauri::Error> {
     let source_name = data.downloadable.source_name.clone();
 
     match DOWNLOADER.sources.get(&source_name) {
         Some(source) => {
             let timeframes = source.timeframes();
             if timeframes.contains(&data.timeframe.as_str()) {
-                return true;
+                return Ok(true);
             } else {
-                return false;
+                return Ok(false);
             }
         }
-        None => {
-            return false;
-        }
+        None => return Ok(false),
     }
 }
 
 #[tauri::command]
-pub async fn get_available_sources_timeframes() -> Vec<String> {
+pub async fn get_available_sources_timeframes() -> Result<Vec<String>, tauri::Error> {
     let mut all_timeframes: Vec<String> = vec![];
 
     for source in DOWNLOADER.sources.values() {
@@ -157,8 +150,5 @@ pub async fn get_available_sources_timeframes() -> Vec<String> {
         }
     }
 
-    return all_timeframes;
+    Ok(all_timeframes)
 }
-
-
-

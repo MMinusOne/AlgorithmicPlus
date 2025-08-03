@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use crate::{
     user::composer::COMPOSITIONS,
@@ -39,21 +39,22 @@ pub struct CompositionDataResponse {
     pub name: Option<String>,
     pub description: Option<String>,
     pub charting_data: Vec<ChartingData>,
-    pub data_blocks: Vec<DataBlock>,
+    pub data_blocks: Vec<DataBlock>
 }
 
 #[tauri::command]
 pub fn get_composition_data(
     data: GetCompositionData,
 ) -> Result<CompositionDataResponse, tauri::Error> {
-    let start = Instant::now();
     let mut data_response = CompositionDataResponse {
         name: None,
         description: None,
         charting_data: vec![],
-        data_blocks: vec![],
+        data_blocks: vec![]
     };
-    let mut count = 0;
+
+    let start = Instant::now();
+
     for composition in &*COMPOSITIONS {
         if composition.id() == data.id {
             data_response.name = Some(composition.name().into());
@@ -65,12 +66,5 @@ pub fn get_composition_data(
         }
     }
 
-    println!(
-        "
-    Processed composition {:?} in {:?}
-    ",
-        data_response.name,
-        start.elapsed()
-    );
     Ok(data_response)
 }

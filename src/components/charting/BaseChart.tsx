@@ -7,6 +7,7 @@ import {
   AreaSeries,
   BarSeries,
   HistogramSeries,
+  LineWidth,
 } from "lightweight-charts";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 
@@ -70,44 +71,29 @@ export default function BaseChart({
         ? Number(chartingSerieIndex)
         : chartingSerie.pane;
 
-      switch (chartingSerie.chart_type) {
-        case "ohlcv":
-          const candlestickSeries = chart.addSeries(
-            CandlestickSeries,
-            {},
-            paneIndex
-          );
-          candlestickSeries.setData(chartingSerie.data);
-          candlestickSeries.priceScale().applyOptions({
-            autoScale: false,
-          });
-          setStoredSeries((prev) => [...prev, candlestickSeries]);
-          break;
-        case "area":
-          const areaSeries = chart.addSeries(AreaSeries, {}, paneIndex);
-          areaSeries.setData(chartingSerie.data);
-          setStoredSeries((prev) => [...prev, areaSeries]);
-          break;
-        case "bar":
-          const barSeries = chart.addSeries(BarSeries, {}, paneIndex);
-          barSeries.setData(chartingSerie.data);
-          setStoredSeries((prev) => [...prev, barSeries]);
-          break;
-        case "histogram":
-          const histogramSeries = chart.addSeries(
-            HistogramSeries,
-            {},
-            paneIndex
-          );
-          histogramSeries.setData(chartingSerie.data);
-          setStoredSeries((prev) => [...prev, histogramSeries]);
-          break;
-        case "line":
-          const lineSeries = chart.addSeries(LineSeries, {}, paneIndex);
-          lineSeries.setData(chartingSerie.data);
-          setStoredSeries((prev) => [...prev, lineSeries]);
-          break;
-      }
+      const SeriesTypes = {
+        ohlcv: CandlestickSeries,
+        area: AreaSeries,
+        bar: BarSeries,
+        histogram: HistogramSeries,
+        line: LineSeries,
+      };
+
+      const series = chart.addSeries(
+        SeriesTypes[chartingSerie.chart_type],
+        {
+          title: chartingSerie.title,
+          lineWidth: 0.75 as LineWidth,
+        },
+        paneIndex
+      );
+
+      series.setData(chartingSerie.data);
+      series.priceScale().applyOptions({
+        autoScale: false,
+      });
+
+      setStoredSeries((prev) => [...prev, series]);
 
       if (chartingSerie.height) {
         const pane = chart.panes()[paneIndex];

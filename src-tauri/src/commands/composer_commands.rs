@@ -53,8 +53,6 @@ pub fn get_composition_data(
         data_blocks: vec![]
     };
 
-    let start = Instant::now();
-
     for composition in &*COMPOSITIONS {
         if composition.id() == data.id {
             data_response.name = Some(composition.name().into());

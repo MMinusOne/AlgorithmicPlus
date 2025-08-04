@@ -94,6 +94,7 @@ impl StaticResource {
                     height: Some(800),
                     data: candlestick_data,
                     pane: Some(0),
+                    title: Some(format!("{:?} OHLC", self.name())),
                 };
 
                 let volume_chart = HistogramChartingData {
@@ -101,6 +102,7 @@ impl StaticResource {
                     height: Some(200),
                     data: volume_data,
                     pane: Some(1),
+                    title: Some("Volume".into()),
                 };
 
                 let charting_data: Vec<ChartingData> = vec![

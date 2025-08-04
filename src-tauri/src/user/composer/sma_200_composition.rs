@@ -100,12 +100,14 @@ impl IComposition for SMA200Composition {
                 height: None,
                 data: close_data,
                 pane: Some(0),
+                title: Some("ETHUSDT close".into()),
             }),
             ChartingData::LineChartingData(LineChartingData {
                 chart_type: "line".into(),
                 height: None,
                 data: sma_data,
                 pane: Some(0),
+                title: Some("SMA 200".into()),
             }),
         ];
 

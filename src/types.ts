@@ -64,30 +64,35 @@ export type ChartingSeries =
       chart_type: "ohlcv";
       height?: number;
       pane?: number;
+      title?: string;
       data: CandlestickData<Time>[];
     }
   | {
       chart_type: "line";
       height?: number;
       pane?: number;
+      title?: string;
       data: LineData<Time>[];
     }
   | {
       chart_type: "bar";
       height?: number;
       pane?: number;
+      title?: string;
       data: (WhitespaceData<Time> | BarData<Time>)[];
     }
   | {
       chart_type: "histogram";
       height?: number;
       pane?: number;
+      title?: string;
       data: HistogramData<Time>[];
     }
   | {
       chart_type: "area";
       height?: number;
       pane?: number;
+      title?: string;
       data: AreaData<Time>[];
     };
 

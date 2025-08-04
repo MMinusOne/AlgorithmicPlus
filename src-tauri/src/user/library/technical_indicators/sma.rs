@@ -63,6 +63,7 @@ impl<T: Num + Copy + FromPrimitive + ToPrimitive> ITechnicalIndicator<T> for SMA
                 height: None,
                 data: line_data,
                 pane: Some(0),
+                title: Some(format!("SMA {}", self.period))
             })];
         Ok(charting_data)
     }

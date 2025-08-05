@@ -1,10 +1,11 @@
 import { FaMagnifyingGlass } from "react-icons/fa6";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Downloadable, MarketType } from "@/types";
 import { throttle } from "lodash";
 import { invoke } from "@tauri-apps/api/core";
 import Loading from "@/components/Loading";
 import { useDownloadDialogState } from "@/lib/state/downloads";
+import Fuse from "fuse.js";
 
 export default function DownloadablesList({
   onDownload,
@@ -20,25 +21,22 @@ export default function DownloadablesList({
     setDisplayedDownloadables,
     setDownloadablePage,
   } = useDownloadDialogState();
+  const fuse = useMemo(() => {
+    return new Fuse(downloadables, {
+      keys: ["name"],
+      includeScore: true,
+      shouldSort: true,
+    });
+  }, [downloadables]);
 
   const handleSearch = useCallback(
     throttle((searchValue: string) => {
-      const downloadablesSearch = downloadables.filter((downloadable) => {
-        console.log(downloadable);
-        return (
-          downloadable?.name
-            .toLowerCase()
-            .includes(searchValue.toLowerCase()) ||
-          downloadable?.symbol
-            ?.toLowerCase()
-            .includes(searchValue.toLowerCase()) ||
-          downloadable?.source_name
-            ?.toLowerCase()
-            .includes(searchValue.toLowerCase())
-        );
+      const downloadablesFuseSearch = fuse.search(searchValue);
+      const downloadablesDisplayed = downloadablesFuseSearch.map((d) => {
+        return d.item;
       });
 
-      setDisplayedDownloadables(downloadablesSearch);
+      setDisplayedDownloadables(downloadablesDisplayed);
       setDownloadablePage(1);
     }, 1000),
     [downloadables]

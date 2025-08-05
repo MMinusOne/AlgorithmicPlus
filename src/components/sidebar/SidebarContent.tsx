@@ -56,7 +56,7 @@ export default function SidebarContent() {
               },
             }
           );
-          console.log(compositionData);
+          
           setSidebarData({
             name: compositionData.name,
             description: compositionData.description,

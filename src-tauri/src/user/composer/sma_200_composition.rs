@@ -69,6 +69,7 @@ impl IComposition for SMA200Composition {
         let mut sma_data: Vec<Option<LineData>> = vec![];
 
         let composed_data = self.compose()?;
+        
         let timestamp_position = self.composition_fields.get("timestamp").unwrap().clone();
         let close_position = self.composition_fields.get("close").unwrap().clone();
         let sma_200_position = self.composition_fields.get("sma_200").unwrap().clone();

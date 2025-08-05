@@ -43,6 +43,7 @@ It's still lacking alot of features, the only features currently available are t
 
 ### Todo List
 
+- ❌ Reduce the property names on big IPC transfers to reduce bottle-necks.
 - ❌ Add chartring auto-coloring and color-maps.
 - ❌ Implement technical indicators.
 - ❌ Implement standard backtesting.
@@ -51,7 +52,7 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Re-write performance-sensitive parts in C++.
 - ❌ Make the code documentation.
 - ❌ Implement more data providers.
-- ❌ Make the metric formulas.
+- ❌ Make the metric and utils formulas.
 - ❌ Refactor the code as to remove expect, match, and any statement that might crash the whole thing, propogate all the errrs to main and consider using an error library.
 - ❌ Fork `lightweight-charts` and implement time sensitive functions in C++.
 - ❌ Make all the commands return a Result.

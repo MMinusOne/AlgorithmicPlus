@@ -7,13 +7,13 @@ use crate::{
     utils::paths::join_app_data_dir,
 };
 
-pub struct ETHUSDT {
+pub struct BTCUSDT {
     id: String,
     name: String,
     load_path: PathBuf,
 }
 
-impl IStaticResource<OHLCVData> for ETHUSDT {
+impl IStaticResource<OHLCVData> for BTCUSDT {
     fn id(&self) -> &str {
         return &self.id;
     }
@@ -27,17 +27,17 @@ impl IStaticResource<OHLCVData> for ETHUSDT {
     }
 }
 
-impl ETHUSDT {
-    pub fn instance() -> &'static ETHUSDT {
-        static INSTANCE: OnceLock<ETHUSDT> = OnceLock::new();
-        return INSTANCE.get_or_init(|| ETHUSDT::new());
+impl BTCUSDT {
+    pub fn instance() -> &'static BTCUSDT {
+        static INSTANCE: OnceLock<BTCUSDT> = OnceLock::new();
+        return INSTANCE.get_or_init(|| BTCUSDT::new());
     }
 
     pub fn new() -> Self {
         return Self {
             id: Uuid::new_v4().into(),
-            name: "ETHUSDT".into(),
-            load_path: join_app_data_dir("raw/ohlcv/b4b8f998-cc6f-4dc7-a21f-e925e2c8c1cf").unwrap(),
+            name: "BTCUSDT".into(),
+            load_path: join_app_data_dir("raw/ohlcv/6fd42ef6-3d8b-4598-8eab-7014e830742d").unwrap(),
         };
     }
 }

@@ -20,6 +20,10 @@ impl<T: 'static> MmapManager<T> {
     pub fn iter(&self) -> std::slice::Iter<T> {
         return self.data.iter();
     }
+
+    pub fn index(&self, i: usize) -> &T { 
+        return &self.data[i]
+    }
 }
 
 pub fn load_mmap<T: 'static>(path: impl AsRef<Path>) -> Result<MmapManager<T>, Box<dyn Error>> {

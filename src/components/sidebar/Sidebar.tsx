@@ -74,10 +74,15 @@ export default function Sidebar() {
                     return (
                       <li
                         onClick={() => {
-                          sidebarState.setSelectedItem({
-                            itemType: SelectedItemType.Composition,
-                            id: compositionMetadata.id,
-                          });
+                          if (
+                            sidebarState?.selectedItem?.id !==
+                            compositionMetadata.id
+                          ) {
+                            sidebarState.setSelectedItem({
+                              itemType: SelectedItemType.Composition,
+                              id: compositionMetadata.id,
+                            });
+                          }
                         }}
                       >
                         <a className="truncate" title="Item">
@@ -98,10 +103,14 @@ export default function Sidebar() {
                   return (
                     <li
                       onClick={() => {
-                        sidebarState.setSelectedItem({
-                          itemType: SelectedItemType.RawData,
-                          id: staticResource.id,
-                        });
+                        if (
+                          sidebarState?.selectedItem?.id !== staticResource.id
+                        ) {
+                          sidebarState.setSelectedItem({
+                            itemType: SelectedItemType.RawData,
+                            id: staticResource.id,
+                          });
+                        }
                       }}
                     >
                       <a

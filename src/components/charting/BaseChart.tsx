@@ -39,7 +39,10 @@ export default function BaseChart({
           }
         },
       },
-
+      timeScale: {
+        minBarSpacing: 0.01, 
+        maxBarSpacing: Infinity,
+      },
       grid: { horzLines: { visible: true } },
       layout: {
         attributionLogo: false,
@@ -83,7 +86,7 @@ export default function BaseChart({
         SeriesTypes[chartingSerie.chart_type],
         {
           title: chartingSerie.title,
-          lineWidth: 0.75 as LineWidth,
+          lineWidth: 1.50 as LineWidth,
         },
         paneIndex
       );
@@ -99,7 +102,7 @@ export default function BaseChart({
         const pane = chart.panes()[paneIndex];
         pane.setHeight(chartingSerie.height);
       }
-    }
+    }    
 
     chart.timeScale().fitContent();
   }, [chartContainer, chartingData, chartApiRef]);

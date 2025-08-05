@@ -1,0 +1,174 @@
+use crate::user::composer::{CompositionDataType, IComposition};
+use crate::user::library::ITechnicalIndicator;
+use crate::user::static_resources::ohlcv::{BTCUSDT, ETHUSDT};
+use crate::user::static_resources::StaticResource;
+use crate::utils::classes::charting::{CandlestickData, ChartingData, LineChartingData, LineData};
+use crate::utils::formulas::processing::normalize::normalize_inline;
+use std::collections::HashMap;
+use std::error::Error;
+use std::sync::OnceLock;
+use uuid::Uuid;
+
+#[derive(Clone)]
+pub struct ETHBTCSTATARB {
+    id: String,
+    name: String,
+    description: String,
+    composition_fields: HashMap<&'static str, usize>,
+    static_resources: HashMap<&'static str, StaticResource>,
+}
+
+impl IComposition for ETHBTCSTATARB {
+    fn id(&self) -> &str {
+        return &self.id;
+    }
+
+    fn name(&self) -> &str {
+        return &self.name;
+    }
+
+    fn description(&self) -> &str {
+        return &self.description;
+    }
+
+    fn composition_fields(&self) -> HashMap<&'static str, usize> {
+        return self.composition_fields.clone();
+    }
+
+    fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
+        let mut composed_data: Vec<Box<[CompositionDataType]>> = vec![];
+
+        let btcusdt_resource = self.static_resources.get("BTCUSDT").unwrap();
+        let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
+
+        let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
+        let btcusdt_data = btcusdt_resource.load_ohlcv_mmap()?;
+
+        let mut timestamps: Vec<i64> = vec![];
+        let mut btc_normalized_closes: Vec<f32> = vec![];
+        let mut eth_normalized_closes: Vec<f32> = vec![];
+
+        let size = ethusdt_data.len().min(btcusdt_data.len());
+
+        for index in 0..size {
+            let timestamp = btcusdt_data.index(index).timestamp;
+            let btc_close = btcusdt_data.index(index).close;
+            let eth_close = ethusdt_data.index(index).close;
+            btc_normalized_closes.push(btc_close);
+            eth_normalized_closes.push(eth_close);
+            timestamps.push(timestamp);
+        }
+
+        normalize_inline::<f32>(&mut btc_normalized_closes);
+        normalize_inline::<f32>(&mut eth_normalized_closes);
+
+        for index in 0..size {
+            let timestamp = timestamps[index];
+            let btc_normalized_close = btc_normalized_closes[index];
+            let eth_normalized_close = eth_normalized_closes[index];
+
+            let data = Box::new([
+                CompositionDataType::Int(timestamp),
+                CompositionDataType::Float(btc_normalized_close),
+                CompositionDataType::Float(eth_normalized_close),
+            ]);
+
+            composed_data.push(data);
+        }
+
+        Ok(composed_data)
+    }
+
+    fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
+        let mut btc_close_data: Vec<Option<LineData>> = vec![];
+        let mut eth_close_data: Vec<Option<LineData>> = vec![];
+        let mut new_asset: Vec<Option<LineData>> = vec![];
+
+        let composed_data = self.compose()?;
+
+        let timestamp_position = self.composition_fields.get("timestamp").unwrap().clone();
+        let btc_close_position = self.composition_fields.get("btc_close").unwrap().clone();
+        let eth_close_position = self.composition_fields.get("eth_close").unwrap().clone();
+
+        for data_point in composed_data.into_iter() {
+            let timestamp = self.extract_int(data_point[timestamp_position]);
+            let btc_close = self.extract_float(data_point[btc_close_position]);
+            let eth_close = self.extract_float(data_point[eth_close_position]);
+
+            btc_close_data.push(Some(LineData {
+                time: timestamp,
+                value: btc_close,
+                color: Some("orange".into()),
+            }));
+
+            eth_close_data.push(Some(LineData {
+                time: timestamp,
+                value: eth_close,
+                color: Some("blue".into()),
+            }));
+
+            new_asset.push(Some(LineData {
+                time: timestamp,
+                value: (0.5 * btc_close) - (0.5 * eth_close),
+                color: Some("black".into()),
+            }));
+        }
+
+        let charting_data: Vec<ChartingData> = vec![
+            ChartingData::LineChartingData(LineChartingData {
+                chart_type: "line".into(),
+                height: None,
+                data: btc_close_data,
+                pane: Some(0),
+                title: Some("BTC NORMALIZED CLOSE".into()),
+            }),
+            ChartingData::LineChartingData(LineChartingData {
+                chart_type: "line".into(),
+                height: None,
+                data: new_asset,
+                pane: Some(1),
+                title: Some("new asset".into()),
+            }),
+            ChartingData::LineChartingData(LineChartingData {
+                chart_type: "line".into(),
+                height: None,
+                data: eth_close_data,
+                pane: Some(2),
+                title: Some("ETH NORMALIZED CLOSE".into()),
+            }),
+        ];
+
+        Ok(charting_data)
+    }
+
+    fn save(&self) -> Result<(), Box<dyn Error>> {
+        // TODO: Save to file
+        Ok(())
+    }
+}
+
+impl ETHBTCSTATARB {
+    pub fn instance() -> &'static ETHBTCSTATARB {
+        static INSTANCE: OnceLock<ETHBTCSTATARB> = OnceLock::new();
+        return INSTANCE.get_or_init(|| ETHBTCSTATARB::new());
+    }
+
+    pub fn new() -> Self {
+        return Self {
+            name: "BTC ETH STAT ARB".into(),
+            description: "The composition for statistical arbitrage between eth and btc half/half (no co-efficient optimization)".into(),
+            id: Uuid::new_v4().into(),
+            composition_fields: HashMap::from([("timestamp", 0), ("btc_close", 1), ("eth_close", 2)]),
+            static_resources: HashMap::from([
+                (
+                    "BTCUSDT",
+                    StaticResource::OHLCVDataType(BTCUSDT::instance()),
+                ),
+                (
+                    "ETHUSDT",
+                    StaticResource::OHLCVDataType(ETHUSDT::instance()),
+                ),
+            ]),
+        };
+    }
+}

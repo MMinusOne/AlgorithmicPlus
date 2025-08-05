@@ -2,6 +2,7 @@ pub mod ohlcv;
 use crate::library::providers::downloader::{OHLCVJSONFileDataStructure, OHLCVMetaData};
 use crate::library::providers::sources::binance::OHLCVCandleObject;
 use crate::user::static_resources::ohlcv::ethusdt::ETHUSDT;
+use crate::user::static_resources::ohlcv::BTCUSDT;
 use crate::utils::classes::charting::{
     CandlestickChartingData, CandlestickData, ChartingData, HistogramChartingData, HistogramData,
 };
@@ -158,5 +159,9 @@ impl StaticResource {
     // Add more types as it goes on: load_news, etc...
 }
 
-pub static STATIC_RESOURCES: LazyLock<Vec<StaticResource>> =
-    LazyLock::new(|| vec![StaticResource::OHLCVDataType(ETHUSDT::instance())]);
+pub static STATIC_RESOURCES: LazyLock<Vec<StaticResource>> = LazyLock::new(|| {
+    vec![
+        StaticResource::OHLCVDataType(ETHUSDT::instance()),
+        StaticResource::OHLCVDataType(BTCUSDT::instance()),
+    ]
+});

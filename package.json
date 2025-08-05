@@ -16,6 +16,7 @@
     "@tauri-apps/plugin-opener": "^2",
     "@types/ms": "^2.1.0",
     "daisyui": "^5.0.43",
+    "fuse.js": "^7.1.0",
     "lightweight-charts": "^5.0.7",
     "lodash": "^4.17.21",
     "ms": "^2.1.3",

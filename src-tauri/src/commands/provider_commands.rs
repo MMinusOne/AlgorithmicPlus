@@ -67,6 +67,7 @@ pub async fn download_request(
 ) -> Result<DownloadRequestResponse, tauri::Error> {
     let download_id = Uuid::new_v4().to_string();
     let status = "OK".to_string();
+    
     //TODO: make it download the data, normilization feature for charts
     let response = DownloadRequestResponse {
         download_id: download_id.clone(),

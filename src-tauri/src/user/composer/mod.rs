@@ -60,8 +60,9 @@ pub trait IComposition: Send + Sync {
     }
 }
 
-pub static COMPOSITIONS: LazyLock<Vec<Box<dyn IComposition>>> =
-    LazyLock::new(|| vec![
+pub static COMPOSITIONS: LazyLock<Vec<Box<dyn IComposition>>> = LazyLock::new(|| {
+    vec![
         Box::new(SMA200Composition::instance().clone()),
-        Box::new(ETHBTCSTATARB::instance().clone())
-        ]);
+        Box::new(ETHBTCSTATARB::instance().clone()),
+    ]
+});

@@ -48,6 +48,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             get_downloadables,
+            search_downloadables,
             get_sources_info,
             download_request,
             downloadable_timeframe_pair_available,
@@ -55,7 +56,7 @@ pub fn run() {
             get_static_resources,
             get_static_resource_data,
             get_compositions,
-            get_composition_data
+            get_composition_data,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

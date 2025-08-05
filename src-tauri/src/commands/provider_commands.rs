@@ -1,11 +1,10 @@
-use std::sync::Arc;
-
 use crate::library::providers::downloader::{DownloadData, Downloadable, Downloader, SourceName};
+use fuzzy_matcher::FuzzyMatcher;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use std::{f32::INFINITY, sync::Arc};
 use tauri::Emitter;
 use uuid::Uuid;
-// use uuid::Uuid;
 
 lazy_static! {
     static ref DOWNLOADER: Downloader = Downloader::new();
@@ -14,6 +13,38 @@ lazy_static! {
 #[tauri::command]
 pub async fn get_downloadables() -> Result<Vec<Downloadable>, tauri::Error> {
     Ok(DOWNLOADER.get_downloadables().await)
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SearchDownloadablesParams {
+    query: String,
+}
+
+#[tauri::command]
+pub async fn search_downloadables(
+    data: SearchDownloadablesParams,
+) -> Result<Vec<Downloadable>, tauri::Error> {
+    let matcher = fuzzy_matcher::skim::SkimMatcherV2::default();
+
+    let downloadables = DOWNLOADER.get_downloadables().await;
+    let relevant_downloadables: Vec<_> = downloadables
+        .iter()
+        .filter_map(|downloadable| {
+            if downloadable.symbol.to_lowercase() == data.query.to_lowercase() {
+                return Some((downloadable, i64::MAX));
+            }
+            return matcher
+                .fuzzy_match(&downloadable.symbol, &data.query)
+                .map(|score| (downloadable, score));
+        })
+        .collect();
+
+    println!("{:?}", relevant_downloadables);
+
+    Ok(relevant_downloadables
+        .iter()
+        .map(|tuple| tuple.0.clone())
+        .collect())
 }
 
 #[derive(Serialize, Deserialize)]
@@ -67,7 +98,7 @@ pub async fn download_request(
 ) -> Result<DownloadRequestResponse, tauri::Error> {
     let download_id = Uuid::new_v4().to_string();
     let status = "OK".to_string();
-    
+
     //TODO: make it download the data, normilization feature for charts
     let response = DownloadRequestResponse {
         download_id: download_id.clone(),

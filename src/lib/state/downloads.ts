@@ -21,7 +21,7 @@ interface DownloadDialogState {
   isLoading: boolean;
   setIsLoading: (isLoading: boolean) => void;
   displayedDownloadables: Downloadable[];
-  setDisplayedDownloadables: (downloadables: Downloadable[]) => void;
+  setDisplayedDownloadables: (displayedDownloadables: Downloadable[]) => void;
   downloadablePage: number;
   setDownloadablePage: (downloadPage: number) => void;
   currentMarketType: MarketType;
@@ -60,8 +60,8 @@ export const useDownloadDialogState = create<DownloadDialogState>((set) => ({
   selectedEndDate: "2025-06-15",
   availableSelectedDownloadables: [],
 
-  setDisplayedDownloadables: (downloadables: Downloadable[]) =>
-    set((state) => ({ ...state, displayedDownloadables: downloadables })),
+  setDisplayedDownloadables: (displayedDownloadables: Downloadable[]) =>
+    set((state) => ({ ...state, displayedDownloadables })),
   setDownloadablePage: (downloadablePage: number) =>
     set((state) => ({ ...state, downloadablePage })),
   setIsLoading: (isLoading: boolean) =>
@@ -70,8 +70,8 @@ export const useDownloadDialogState = create<DownloadDialogState>((set) => ({
     set((state) => ({ ...state, currentMarketType: marketType })),
   setDownloadables: (downloadables: Downloadable[]) =>
     set((state) => ({ ...state, downloadables })),
-  setSelectedDownloadables: (downloadables: Downloadable[]) =>
-    set((state) => ({ ...state, selectedDownloadables: downloadables })),
+  setSelectedDownloadables: (selectedDownloadables: Downloadable[]) =>
+    set((state) => ({ ...state, selectedDownloadables })),
   setCurrentMenu: (currentMenu: DownloadDialogMenu) =>
     set((state) => ({ ...state, currentMenu: currentMenu })),
   setSelectedDataTypes: (selectedDataTypes: MarketDataType[]) =>

@@ -1,5 +1,5 @@
 import { FaMagnifyingGlass } from "react-icons/fa6";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Downloadable, MarketType } from "@/types";
 import { throttle } from "lodash";
 import { invoke } from "@tauri-apps/api/core";
@@ -19,28 +19,37 @@ export default function DownloadablesList({
     downloadables,
     setDownloadables,
     setDisplayedDownloadables,
+    displayedDownloadables,
     setDownloadablePage,
   } = useDownloadDialogState();
-  const fuse = useMemo(() => {
-    return new Fuse(downloadables, {
-      keys: ["name"],
-      includeScore: true,
-      shouldSort: true,
-    });
-  }, [downloadables]);
+
+  const [downloadableSearchQuery, setDownloadableSearchQuery] = useState("");
 
   const handleSearch = useCallback(
-    throttle((searchValue: string) => {
-      const downloadablesFuseSearch = fuse.search(searchValue);
-      const downloadablesDisplayed = downloadablesFuseSearch.map((d) => {
-        return d.item;
-      });
-
-      setDisplayedDownloadables(downloadablesDisplayed);
-      setDownloadablePage(1);
-    }, 1000),
+    async (searchValue: string) => {
+      setDownloadableSearchQuery(searchValue);
+    },
     [downloadables]
   );
+
+  useEffect(() => {
+    const searchDownloadables = async () => {
+      const searchResults = await invoke<Downloadable[]>(
+        "search_downloadables",
+        {
+          data: {
+            query: downloadableSearchQuery,
+          },
+        }
+      );
+
+      setDisplayedDownloadables([...searchResults]);
+      console.log(searchResults, displayedDownloadables);
+    };
+
+    searchDownloadables();
+    setDownloadablePage(1);
+  }, [downloadableSearchQuery]);
 
   useEffect(() => {
     const getDownloadables = async () => {
@@ -66,7 +75,11 @@ export default function DownloadablesList({
 
   return (
     <>
-      <NavigationBar onDownload={onDownload} handleSearch={handleSearch} />
+      <NavigationBar
+        onDownload={onDownload}
+        handleSearch={handleSearch}
+        downloadableSearchQuery={downloadableSearchQuery}
+      />
 
       <Loading isLoading={isLoading}>
         <div className="overflow-x-auto">
@@ -81,16 +94,18 @@ export default function DownloadablesList({
 export function NavigationBar({
   onDownload,
   handleSearch,
+  downloadableSearchQuery,
 }: {
   onDownload: () => void;
   handleSearch: (searchValue: string) => void;
+  downloadableSearchQuery: string;
 }) {
   const { currentMarketType, setCurrentMarketType, selectedDownloadables } =
     useDownloadDialogState();
 
   return (
     <>
-      <ul className="menu menu-horizontal items-center w-full bg-base-200 p-0 flex justify-between">
+      <ul className="flex justify-between items-center bg-base-200 p-0 w-full menu menu-horizontal">
         <div className="flex">
           <li
             onClick={() => {
@@ -124,13 +139,14 @@ export function NavigationBar({
           </li>
         </div>
 
-        <li className="h-full ml-auto px-2 flex flex-row gap-2 justify-between">
-          <label className="input input-xs w-40">
+        <li className="flex flex-row justify-between gap-2 ml-auto px-2 h-full">
+          <label className="w-40 input input-xs">
             <FaMagnifyingGlass />
             <input
               type="search"
               className="grow"
               placeholder="Search"
+              value={downloadableSearchQuery}
               onChange={(e) => {
                 const { value: searchValue } = e.currentTarget;
 
@@ -180,8 +196,8 @@ export function DownloadablesTable() {
         <tbody className="max-h-72 overflow-y-scroll">
           {displayedDownloadables
             .slice(
-              downloadablePage * DOWNLOAD_PAGE_ITEMS,
-              downloadablePage * DOWNLOAD_PAGE_ITEMS + DOWNLOAD_PAGE_ITEMS
+              (downloadablePage - 1) * DOWNLOAD_PAGE_ITEMS,
+              (downloadablePage - 1) * DOWNLOAD_PAGE_ITEMS + DOWNLOAD_PAGE_ITEMS
             )
             .map((downloadable, downloadableIndex) => {
               const downloadNumber = downloadableIndex + 1;
@@ -226,14 +242,14 @@ export function DownloadablesTable() {
                       }}
                       checked={isSelected ? true : false}
                       type="checkbox"
-                      className="checkbox checkbox-primary animate-none transition-none"
+                      className="transition-none animate-none checkbox checkbox-primary"
                     />
                   </th>
                   <th>
                     {(downloadablePage - 1) * DOWNLOAD_PAGE_ITEMS +
                       downloadNumber}
                   </th>
-                  <td className="truncate max-w-80 w-80">
+                  <td className="w-80 max-w-80 truncate">
                     {downloadable.name}
                   </td>
                   <td>{downloadable.symbol}</td>
@@ -256,17 +272,17 @@ export function Pagination() {
   } = useDownloadDialogState();
   return (
     <>
-      <div className="w-full flex items-center justify-center">
-        <div className="join w-full">
+      <div className="flex justify-center items-center w-full">
+        <div className="w-full join">
           <button
             onClick={() =>
               downloadablePage > 1 && setDownloadablePage(downloadablePage - 1)
             }
-            className="join-item btn w-1/3"
+            className="w-1/3 join-item btn"
           >
             «
           </button>
-          <button className="join-item btn w-1/3">
+          <button className="w-1/3 join-item btn">
             Page {downloadablePage}
           </button>
           <button
@@ -278,7 +294,7 @@ export function Pagination() {
                 setDownloadablePage(downloadablePage + 1);
               }
             }}
-            className="join-item btn w-1/3"
+            className="w-1/3 join-item btn"
           >
             »
           </button>

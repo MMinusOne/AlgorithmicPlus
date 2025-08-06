@@ -25,14 +25,24 @@ pub async fn search_downloadables(
     data: SearchDownloadablesParams,
 ) -> Result<Vec<Downloadable>, tauri::Error> {
     let matcher = fuzzy_matcher::skim::SkimMatcherV2::default();
+    let query = data.query.to_lowercase();
 
     let downloadables = DOWNLOADER.get_downloadables().await;
     let relevant_downloadables: Vec<_> = downloadables
         .iter()
         .filter_map(|downloadable| {
-            if downloadable.symbol.to_lowercase() == data.query.to_lowercase() {
+            if downloadable.symbol.to_lowercase() == query {
                 return Some((downloadable, i64::MAX));
             }
+
+            if downloadable.symbol.starts_with(&query) {
+                return Some((downloadable, i64::MAX - 1));
+            }
+
+            if downloadable.symbol.contains(&query) {
+                return Some((downloadable, i64::MAX - 2));
+            }
+
             return matcher
                 .fuzzy_match(&downloadable.symbol, &data.query)
                 .map(|score| (downloadable, score));

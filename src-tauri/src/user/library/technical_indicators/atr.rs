@@ -44,7 +44,7 @@ impl<T: Num + Copy + FromPrimitive> ITechnicalIndicator<T> for ATR<T> {
 }
 
 impl<T: Num + Copy + FromPrimitive> ATR<T> {
-    fn new(period: usize, current_tr: T) -> Self {
+    fn new(period: usize) -> Self {
         return Self {
             name: "ATR".into(),
             description: "Average True Range.".into(),

@@ -44,14 +44,12 @@ pub trait IComposition: Send + Sync {
             _ => panic!("Invalid compsition type conversion."),
         }
     }
-
     fn extract_float(&self, compsition_data: CompositionDataType) -> f32 {
         match compsition_data {
             CompositionDataType::Float(v) => v,
             _ => panic!("Invalid compsition type conversion."),
         }
     }
-
     fn extract_option_float(&self, compsition_data: CompositionDataType) -> Option<f32> {
         match compsition_data {
             CompositionDataType::OptionFloat(v) => v,

@@ -39,8 +39,8 @@ impl IComposition for SMA200Composition {
         let mut composed_data: Vec<Box<[CompositionDataType]>> = vec![];
 
         let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
-
         let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
+        
         let mut sma = SMA::<f32>::new(200);
 
         composed_data.reserve(ethusdt_data.len());

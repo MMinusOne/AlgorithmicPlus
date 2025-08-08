@@ -1,11 +1,12 @@
 use core::slice;
+use std::sync::Arc;
 use memmap2::{Mmap, MmapOptions};
 use std::error::Error;
 use std::{fs::File, mem, path::Path};
 
 pub struct MmapManager<T: 'static> {
-    _mmap: Mmap,
-    data: &'static [T],
+    _mmap: Arc<Mmap>,
+    data: &'static [T]
 }
 
 impl<T: 'static> MmapManager<T> {
@@ -28,7 +29,7 @@ impl<T: 'static> MmapManager<T> {
 
 pub fn load_mmap<T: 'static>(path: impl AsRef<Path>) -> Result<MmapManager<T>, Box<dyn Error>> {
     let file = File::open(path)?;
-    let mmap = unsafe { MmapOptions::new().map(&file)? };
+    let mmap = Arc::new(unsafe { MmapOptions::new().map(&file)? });
 
     let record_size = mem::size_of::<T>();
     let records_count = mmap.len() / record_size;

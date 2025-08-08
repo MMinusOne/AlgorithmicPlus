@@ -37,7 +37,7 @@ impl BTCUSDT {
         return Self {
             id: Uuid::new_v4().into(),
             name: "BTCUSDT".into(),
-            load_path: join_app_data_dir("raw/ohlcv/6fd42ef6-3d8b-4598-8eab-7014e830742d").unwrap(),
+            load_path: join_app_data_dir("raw/ohlcv/6c3b733f-006b-4bc0-9cd7-cd4c3082beae").unwrap(),
         };
     }
 }

@@ -1,8 +1,6 @@
 use std::error::Error;
-
 use num_traits::{FromPrimitive, Num};
-
-use crate::{user::library::ITechnicalIndicator, utils::classes::charting::ChartingData};
+use crate::{user::library::IInjectable, utils::classes::charting::ChartingData};
 
 pub struct ATR<T: Num + Copy + FromPrimitive> {
     name: String,
@@ -12,7 +10,7 @@ pub struct ATR<T: Num + Copy + FromPrimitive> {
     previous_atr: T,
 }
 
-impl<T: Num + Copy + FromPrimitive> ITechnicalIndicator<T> for ATR<T> {
+impl<T: Num + Copy + FromPrimitive> IInjectable<T> for ATR<T> {
     fn name(&self) -> &str {
         return &self.name;
     }

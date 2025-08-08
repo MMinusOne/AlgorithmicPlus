@@ -56,7 +56,7 @@ export default function SidebarContent() {
               },
             }
           );
-          
+
           setSidebarData({
             name: compositionData.name,
             description: compositionData.description,
@@ -80,7 +80,7 @@ export default function SidebarContent() {
     return (
       <div className="w-full h-screen overflow-hidden overflow-y-scroll">
         <ChartingContent sidebarData={sidebarData} chartRef={chartRef} />
-        {/* <div className="h-[300px] w-full">
+        {/* <div className="w-full h-[300px]">
           <div className="flex flex-col">
             <span>Download Symbol: {sidebarData.symbol}</span>
             <span>Timeframe: {sidebarData.timeframe}</span>

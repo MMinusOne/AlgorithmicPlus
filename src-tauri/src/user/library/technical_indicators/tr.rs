@@ -1,6 +1,5 @@
 use std::error::Error;
-
-use crate::{user::library::ITechnicalIndicator, utils::classes::charting::ChartingData};
+use crate::{user::library::IInjectable, utils::classes::charting::ChartingData};
 use num_traits::{FromPrimitive, Num, Signed};
 
 pub struct TR<T: Num + Copy + FromPrimitive + Ord + Signed> {
@@ -11,7 +10,7 @@ pub struct TR<T: Num + Copy + FromPrimitive + Ord + Signed> {
     previous_close: Option<T>,
 }
 
-impl<T: Num + Copy + FromPrimitive + Ord + Signed> ITechnicalIndicator<T> for TR<T> {
+impl<T: Num + Copy + FromPrimitive + Ord + Signed> IInjectable<T> for TR<T> {
     fn name(&self) -> &str {
         return &self.name;
     }

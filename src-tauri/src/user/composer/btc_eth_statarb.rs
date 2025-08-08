@@ -1,8 +1,7 @@
 use crate::user::composer::{CompositionDataType, IComposition};
-use crate::user::library::ITechnicalIndicator;
 use crate::user::static_resources::ohlcv::{BTCUSDT, ETHUSDT};
 use crate::user::static_resources::StaticResource;
-use crate::utils::classes::charting::{CandlestickData, ChartingData, LineChartingData, LineData};
+use crate::utils::classes::charting::{ChartingData, LineChartingData, LineData};
 use crate::utils::formulas::processing::normalize::normalize_inline;
 use std::collections::HashMap;
 use std::error::Error;

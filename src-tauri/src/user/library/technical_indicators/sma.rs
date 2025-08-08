@@ -1,5 +1,5 @@
 use crate::utils::classes::charting::{LineChartingData, LineData};
-use crate::{user::library::ITechnicalIndicator, utils::classes::charting::ChartingData};
+use crate::{user::library::IInjectable, utils::classes::charting::ChartingData};
 use num_traits::{FromPrimitive, Num, ToPrimitive};
 use std::collections::VecDeque;
 use std::error::Error;
@@ -13,7 +13,7 @@ pub struct SMA<T: Num + Copy + FromPrimitive + ToPrimitive> {
     data_values: Vec<T>,
 }
 
-impl<T: Num + Copy + FromPrimitive + ToPrimitive> ITechnicalIndicator<T> for SMA<T> {
+impl<T: Num + Copy + FromPrimitive + ToPrimitive> IInjectable<T> for SMA<T> {
     fn name(&self) -> &str {
         return &self.name;
     }

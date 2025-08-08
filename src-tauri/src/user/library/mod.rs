@@ -1,12 +1,25 @@
-use crate::utils::classes::charting::ChartingData;
+use crate::{user::library::trade::Trade, utils::classes::charting::ChartingData};
+use num_traits::{FromPrimitive, Num};
+use serde::Deserialize;
 use std::error::Error;
 
-pub trait ITechnicalIndicator<T> { 
+pub trait IInjectable<Input: for<'de> Deserialize<'de>, Output: for<'de> Deserialize<'de>>:
+    Send + Sync
+{
     fn name(&self) -> &str;
     fn description(&self) -> &str;
-    fn allocate(&mut self, data: T);
-    fn get_data(&mut self) -> Option<T>;
+    fn allocate(&mut self, data: Input);
+    fn get_data(&mut self) -> Option<Output>;
     fn render(&self, timestamps: Vec<i64>) -> Result<Vec<ChartingData>, Box<dyn Error>>;
 }
 
+pub mod formulas;
 pub mod technical_indicators;
+pub mod trade;
+
+pub enum Injectable {
+    FloatNumericType(&'static dyn IInjectable<f32, f32>),
+    IntegerNumericType(&'static dyn IInjectable<i64, f32>),
+    TradeNumericType(&'static dyn IInjectable<Trade, f32>),
+    // Add any custom types if needed
+}

@@ -14,6 +14,7 @@ pub enum CompositionDataType {
     Int(i64),
     Float(f32),
     OptionFloat(Option<f32>),
+    Bool(bool),
 }
 
 pub trait IComposition: Send + Sync {
@@ -53,6 +54,12 @@ pub trait IComposition: Send + Sync {
     fn extract_option_float(&self, compsition_data: CompositionDataType) -> Option<f32> {
         match compsition_data {
             CompositionDataType::OptionFloat(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
+    fn extract_bool(&self, compsition_data: CompositionDataType) -> bool {
+        match compsition_data {
+            CompositionDataType::Bool(v) => v,
             _ => panic!("Invalid compsition type conversion."),
         }
     }

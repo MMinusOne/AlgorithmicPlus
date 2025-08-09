@@ -90,9 +90,9 @@ impl IComposition for ETHBTCSTATARB {
         let eth_close_position = self.composition_fields.get("eth_close").unwrap().clone();
 
         for data_point in composed_data.into_iter() {
-            let timestamp = self.extract_int(data_point[timestamp_position]);
-            let btc_close = self.extract_float(data_point[btc_close_position]);
-            let eth_close = self.extract_float(data_point[eth_close_position]);
+            let timestamp = CompositionDataType::extract_int(data_point[timestamp_position]);
+            let btc_close = CompositionDataType::extract_float(data_point[btc_close_position]);
+            let eth_close = CompositionDataType::extract_float(data_point[eth_close_position]);
 
             btc_close_data.push(Some(LineData {
                 time: timestamp,

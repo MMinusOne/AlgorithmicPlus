@@ -1,5 +1,5 @@
 use crate::user::composer::{CompositionDataType, IComposition};
-use crate::user::library::technical_indicators::{SMA};
+use crate::user::library::technical_indicators::SMA;
 use crate::user::library::IInjectable;
 use crate::user::static_resources::ohlcv::ETHUSDT;
 use crate::user::static_resources::StaticResource;
@@ -40,7 +40,7 @@ impl IComposition for SMA200Composition {
 
         let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
         let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
-        
+
         let mut sma = SMA::new(200);
 
         composed_data.reserve(ethusdt_data.len());
@@ -69,15 +69,15 @@ impl IComposition for SMA200Composition {
         let mut sma_data: Vec<Option<LineData>> = vec![];
 
         let composed_data = self.compose()?;
-        
+
         let timestamp_position = self.composition_fields.get("timestamp").unwrap().clone();
         let close_position = self.composition_fields.get("close").unwrap().clone();
         let sma_200_position = self.composition_fields.get("sma_200").unwrap().clone();
 
         for data_point in composed_data.into_iter() {
-            let timestamp = self.extract_int(data_point[timestamp_position]);
-            let close = self.extract_float(data_point[close_position]);
-            let sma_200 = self.extract_option_float(data_point[sma_200_position]);
+            let timestamp = CompositionDataType::extract_int(data_point[timestamp_position]);
+            let close = CompositionDataType::extract_float(data_point[close_position]);
+            let sma_200 = CompositionDataType::extract_option_float(data_point[sma_200_position]);
 
             close_data.push(Some(LineData {
                 time: timestamp,

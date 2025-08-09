@@ -17,13 +17,40 @@ pub enum CompositionDataType {
     Bool(bool),
 }
 
+impl CompositionDataType {
+    pub fn extract_int(compsition_data: CompositionDataType) -> i64 {
+        match compsition_data {
+            Self::Int(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
+    pub fn extract_float(compsition_data: CompositionDataType) -> f32 {
+        match compsition_data {
+            Self::Float(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
+    pub fn extract_option_float(compsition_data: CompositionDataType) -> Option<f32> {
+        match compsition_data {
+            Self::OptionFloat(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
+    pub fn extract_bool(compsition_data: CompositionDataType) -> bool {
+        match compsition_data {
+            Self::Bool(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
+}
+
 pub trait IComposition: Send + Sync {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
     fn description(&self) -> &str;
     fn composition_fields(&self) -> HashMap<&'static str, usize>;
     fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>>;
-    fn safe_compose(&mut self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
+    fn safe_compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
         let composition_data = self.compose()?;
         let composition_fields = self.composition_fields();
         let composition_fields_length = composition_fields.len();
@@ -38,31 +65,6 @@ pub trait IComposition: Send + Sync {
     }
     fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>>;
     fn save(&self) -> Result<(), Box<dyn Error>>;
-
-    fn extract_int(&self, compsition_data: CompositionDataType) -> i64 {
-        match compsition_data {
-            CompositionDataType::Int(v) => v,
-            _ => panic!("Invalid compsition type conversion."),
-        }
-    }
-    fn extract_float(&self, compsition_data: CompositionDataType) -> f32 {
-        match compsition_data {
-            CompositionDataType::Float(v) => v,
-            _ => panic!("Invalid compsition type conversion."),
-        }
-    }
-    fn extract_option_float(&self, compsition_data: CompositionDataType) -> Option<f32> {
-        match compsition_data {
-            CompositionDataType::OptionFloat(v) => v,
-            _ => panic!("Invalid compsition type conversion."),
-        }
-    }
-    fn extract_bool(&self, compsition_data: CompositionDataType) -> bool {
-        match compsition_data {
-            CompositionDataType::Bool(v) => v,
-            _ => panic!("Invalid compsition type conversion."),
-        }
-    }
 }
 
 pub static COMPOSITIONS: LazyLock<Vec<Box<dyn IComposition>>> = LazyLock::new(|| {

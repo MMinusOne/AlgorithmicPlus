@@ -13,6 +13,7 @@ pub struct SMA200Strategy {
     id: String,
     name: String,
     description: String,
+    state_index: usize,
 }
 
 impl IStrategy for SMA200Strategy {
@@ -28,19 +29,26 @@ impl IStrategy for SMA200Strategy {
         return &self.description;
     }
 
+    fn state_index(&self) -> usize { 
+        return self.state_index;
+    }
+
+    fn increment_state_index(&mut self) { 
+        self.state_index += 1;
+    }
+
     fn composition(&self) -> &'static dyn IComposition {
         return SMA200Composition::instance();
     }
 
     fn strategy(
         &self,
-        get: impl Fn(&str) -> Option<StrategyData>,
-        trades: &Vec<Trade>,
     ) -> Option<Vec<Trade>> {
+        
         // let timestamp = StrategyData::extract_composition_int(get("timestamp")?);
-        let close = StrategyData::extract_composition_float(get("close")?);
-        let sma_200 = StrategyData::extract_composition_option_float(get("sma_200")?);
-        let mut latest_trade = trades[trades.len() - 1];
+        let close = StrategyData::extract_composition_float(self.get_data("close")?);
+        let sma_200 = StrategyData::extract_composition_option_float(self.get_data("sma_200")?);
+        let mut latest_trade = self.trades_manager().;
 
         // force trade timestamps after returning Vec<Trade>, <Trade>.freeze_timestamp(i64)
 
@@ -79,6 +87,7 @@ impl SMA200Strategy {
             id: Uuid::new_v4().into(),
             name: "SMA 200 price crossover".into(),
             description: "Long when price > sma200 and short when price < sma200".into(),
+            state_index: 0,
         };
     }
 }

@@ -37,12 +37,14 @@ impl IComposition for ETHBTCSTATARB {
     fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
         let mut composed_data: Vec<Box<[CompositionDataType]>> = vec![];
 
+        // Get the static resource data (OHLCV)
         let btcusdt_resource = self.static_resources.get("BTCUSDT").unwrap();
         let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
 
         let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
         let btcusdt_data = btcusdt_resource.load_ohlcv_mmap()?;
 
+        // Make arrays for only what is relevant (timestamps and closes, NOT OPEN HIGH LOW)
         let mut timestamps: Vec<i64> = vec![];
         let mut btc_normalized_closes: Vec<f32> = vec![];
         let mut eth_normalized_closes: Vec<f32> = vec![];
@@ -53,11 +55,13 @@ impl IComposition for ETHBTCSTATARB {
             let timestamp = btcusdt_data.index(index).timestamp;
             let btc_close = btcusdt_data.index(index).close;
             let eth_close = ethusdt_data.index(index).close;
+            // Push the raw data to the array
             btc_normalized_closes.push(btc_close);
             eth_normalized_closes.push(eth_close);
             timestamps.push(timestamp);
         }
 
+        // Normilize the array of numbers
         normalize_inline::<f32>(&mut btc_normalized_closes);
         normalize_inline::<f32>(&mut eth_normalized_closes);
 
@@ -65,11 +69,12 @@ impl IComposition for ETHBTCSTATARB {
             let timestamp = timestamps[index];
             let btc_normalized_close = btc_normalized_closes[index];
             let eth_normalized_close = eth_normalized_closes[index];
-
+            // Push the data
             let data = Box::new([
                 CompositionDataType::Int(timestamp),
                 CompositionDataType::Float(btc_normalized_close),
                 CompositionDataType::Float(eth_normalized_close),
+                CompositionDataType::Float(0.5 * btc_normalized_close - 0.5 * eth_normalized_close),
             ]);
 
             composed_data.push(data);
@@ -157,7 +162,7 @@ impl ETHBTCSTATARB {
             name: "BTC ETH STAT ARB".into(),
             description: "The composition for statistical arbitrage between eth and btc half/half (no co-efficient optimization)".into(),
             id: Uuid::new_v4().into(),
-            composition_fields: HashMap::from([("timestamp", 0), ("btc_close", 1), ("eth_close", 2)]),
+            composition_fields: HashMap::from([("timestamp", 0), ("btc_close", 1), ("eth_close", 2), ("stationary_asset", 3)]),
             static_resources: HashMap::from([
                 (
                     "BTCUSDT",

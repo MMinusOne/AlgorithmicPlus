@@ -72,6 +72,8 @@ pub trait IStrategy: Send + Sync {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
     fn description(&self) -> &str;
+    fn state_index(&self) -> usize;
+    fn increment_state_index(&mut self);
     fn composition(&self) -> &'static dyn IComposition;
     fn injectables(&mut self) -> HashMap<&'static str, (InjectableState, &'static str)> {
         return HashMap::new();
@@ -82,12 +84,13 @@ pub trait IStrategy: Send + Sync {
     fn optimization_target(&self, backtest_result: BacktestResult) -> i16 {
         return backtest_result.sharpe as i16;
     }
-    fn strategy(
+    fn get_data(
         &self,
-        get: impl FnMut(&str) -> Option<StrategyData>,
-        trades: &Vec<Trade>,
-    ) -> Option<Vec<Trade>>;
-    // fn backtest(&self, optimizer: Option<OptimizationStrategy>) -> Result<BacktestResult, Box<dyn Error>> {
+        data_key: &str,
+    ) -> Option<StrategyData> {
+        
+    }
+    fn strategy(&self) -> Option<Vec<Trade>>;
     fn backtest(&mut self) -> Result<BacktestResult, Box<dyn Error>> {
         let start_instant = Instant::now();
 
@@ -126,10 +129,10 @@ pub trait IStrategy: Send + Sync {
         Ok(backtest_result)
     }
     fn wfo(&self, optimizer: OptimizationStrategy) {}
+    fn optimized_backtest(&self, optimizer: OptimizationStrategy) {}
     fn render(&self) -> Vec<ChartingData>;
     fn save() -> Result<(), Box<dyn Error>>;
 }
 
 pub mod sma_200;
-use serde::de;
 pub use sma_200::SMA200Strategy;

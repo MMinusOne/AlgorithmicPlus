@@ -1,12 +1,16 @@
 use crate::{
     user::{
-        composer::{IComposition, SMA200Composition},
-        library::trade::{Trade, TradeOptions, TradeSide},
-        strategies::{sma_200, IStrategy, StrategyData},
+        composer::{CompositionDataType, IComposition, SMA200Composition},
+        library::{
+            technical_indicators::{sma, SMA, TR},
+            trade::{Trade, TradeOptions, TradeSide},
+            IInjectable, Injectable,
+        },
+        strategies::{BacktestResult, IStrategy, StrategyData},
     },
     utils::classes::charting::ChartingData,
 };
-use std::error::Error;
+use std::{collections::HashMap, error::Error, vec};
 use uuid::Uuid;
 
 pub struct SMA200Strategy {
@@ -14,6 +18,12 @@ pub struct SMA200Strategy {
     name: String,
     description: String,
     state_index: usize,
+}
+
+impl SMA200Strategy {
+    fn strategy(&self) -> Option<Vec<Trade>> {
+        return None;
+    }
 }
 
 impl IStrategy for SMA200Strategy {
@@ -29,54 +39,64 @@ impl IStrategy for SMA200Strategy {
         return &self.description;
     }
 
-    fn state_index(&self) -> usize { 
-        return self.state_index;
-    }
+    fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>> {
+        let backtest_manager = BacktestResult::new();
+        let composition = self.composition();
+        let composition_data = composition.compose()?;
 
-    fn increment_state_index(&mut self) { 
-        self.state_index += 1;
+        let timestamp_position = composition.get_composition_field_position("timestamp");
+        let close_position = composition.get_composition_field_position("close");
+        let sma_200_position = composition.get_composition_field_position("sma_200");
+
+        for composition_point in &composition_data {
+            let timestamp = CompositionDataType::extract_int(composition_point[timestamp_position]);
+            let close = CompositionDataType::extract_float(composition_point[close_position]);
+            let sma_200 =
+                CompositionDataType::extract_option_float(composition_point[sma_200_position]);
+            let trade_manager = backtest_manager.trade_manager();
+
+            trade_manager.update_price(close);
+
+            if sma_200 == None {
+                continue;
+            }
+
+            let sma_200 = sma_200.unwrap();
+            let side = match close > sma_200 {
+                true => TradeSide::LONG,
+                false => TradeSide::SHORT,
+            };
+            let latest_trade = trade_manager.get_last_trade();
+
+            if latest_trade.side != side {
+                latest_trade.close();
+            }
+
+            let capital_allocation = backtest_manager.capital();
+
+            let trade = Trade::new(TradeOptions {
+                side,
+                capital_allocation,
+                stop_loss: None,
+                take_profit: None
+            });
+
+            trade_manager.open_trade(trade);
+        }
+
+        backtest_manager.backtest_ended();
+        Ok(backtest_manager)
     }
 
     fn composition(&self) -> &'static dyn IComposition {
         return SMA200Composition::instance();
     }
 
-    fn strategy(
-        &self,
-    ) -> Option<Vec<Trade>> {
-        
-        // let timestamp = StrategyData::extract_composition_int(get("timestamp")?);
-        let close = StrategyData::extract_composition_float(self.get_data("close")?);
-        let sma_200 = StrategyData::extract_composition_option_float(self.get_data("sma_200")?);
-        let mut latest_trade = self.trades_manager().;
-
-        // force trade timestamps after returning Vec<Trade>, <Trade>.freeze_timestamp(i64)
-
-        if sma_200 == None {
-            return None;
-        }
-
-        let sma_200 = sma_200?;
-
-        let side = match close > sma_200 {
-            true => TradeSide::LONG,
-            false => TradeSide::SHORT,
-        };
-
-        if side != latest_trade.side {
-            latest_trade.close();
-            let trades: Vec<Trade> = vec![Trade::new(TradeOptions { side })];
-            return Some(trades);
-        }
-
-        return None;
-    }
-
     fn render(&self) -> Vec<ChartingData> {
         return vec![];
     }
 
-    fn save() -> Result<(), Box<dyn Error>> {
+    fn save(&self) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
 }

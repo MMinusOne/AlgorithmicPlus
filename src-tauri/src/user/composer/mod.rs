@@ -49,6 +49,9 @@ pub trait IComposition: Send + Sync {
     fn name(&self) -> &str;
     fn description(&self) -> &str;
     fn composition_fields(&self) -> HashMap<&'static str, usize>;
+    fn get_composition_field_position(&self, field_name: &str) -> usize {
+        return self.composition_fields().get(field_name).unwrap().to_owned();
+    }
     fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>>;
     fn safe_compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
         let composition_data = self.compose()?;

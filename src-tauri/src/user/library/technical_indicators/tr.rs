@@ -49,7 +49,7 @@ impl IInjectable<f32, f32> for TR {
 }
 
 impl TR {
-    fn new() -> Self {
+    pub fn new() -> Self {
         return Self {
             name: "True Average".into(),
             description: "The Average Rage".into(),

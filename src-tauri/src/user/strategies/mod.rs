@@ -2,13 +2,12 @@ use crate::{
     library::engines::OptimizationStrategy,
     user::{
         composer::{CompositionDataType, IComposition},
-        library::{trade::Trade, IInjectable, Injectable},
+        library::trade::Trade,
     },
     utils::classes::charting::ChartingData,
 };
 use std::error::Error;
 use std::time::Duration;
-use std::{collections::HashMap, time::Instant};
 
 pub enum StrategyData {
     CompositionDataType(CompositionDataType),
@@ -45,93 +44,65 @@ impl StrategyData {
     }
 }
 
+pub struct TradeManager {}
+
+impl TradeManager {}
+
+impl TradeManager {
+    pub fn new() -> Self {
+        return Self {};
+    }
+}
+
 pub struct BacktestResult {
     trades: Vec<Trade>,
     performance_time: Duration,
+    trade_manager: TradeManager,
     sharpe: i8,
 }
 
-pub struct OptimizationData {
-    pub start: i16,
-    pub end: i16,
-    pub interval: i16,
+impl BacktestResult {
+    pub fn trade_manager(&self) -> &TradeManager {
+        return &self.trade_manager;
+    }
+
+    pub fn backtest_ended(&self) {}
 }
 
-pub enum InjectableState {
-    Initiated(Injectable),
-    Template(Injectable),
+impl BacktestResult {
+    pub fn new() -> Self {
+        return Self {
+            performance_time: Duration::new(0, 0),
+            trades: Vec::new(),
+            trade_manager: TradeManager::new(),
+            sharpe: 0,
+        };
+    }
 }
 
-#[derive(Clone, Copy)]
-pub enum DATA_BELONGING {
-    COMPOSITION,
-    INJECTABLE,
+struct StrategyManager {
+    results: BacktestResult,
+    trades: Vec<Trade>,
 }
+
+impl StrategyManager {}
 
 pub trait IStrategy: Send + Sync {
     fn id(&self) -> &str;
     fn name(&self) -> &str;
     fn description(&self) -> &str;
-    fn state_index(&self) -> usize;
-    fn increment_state_index(&mut self);
     fn composition(&self) -> &'static dyn IComposition;
-    fn injectables(&mut self) -> HashMap<&'static str, (InjectableState, &'static str)> {
-        return HashMap::new();
-    }
-    fn optimizables(&self) -> HashMap<&'static str, (OptimizationData, InjectableState)> {
-        return HashMap::new();
-    }
-    fn optimization_target(&self, backtest_result: BacktestResult) -> i16 {
-        return backtest_result.sharpe as i16;
-    }
-    fn get_data(
-        &self,
-        data_key: &str,
-    ) -> Option<StrategyData> {
-        
-    }
-    fn strategy(&self) -> Option<Vec<Trade>>;
-    fn backtest(&mut self) -> Result<BacktestResult, Box<dyn Error>> {
-        let start_instant = Instant::now();
-
-        let mut backtest_result = BacktestResult {
-            trades: Vec::new(),
-            performance_time: start_instant.elapsed(),
-            sharpe: 0,
-        };
-
-        let composition = self.composition();
-        let composed_data = composition.safe_compose()?;
-
-        let composition_fields = composition.composition_fields();
-        let mut injectables = self.injectables();
-
-        let mut data_fields: HashMap<&'static str, (DATA_BELONGING, usize)> = HashMap::new();
-
-        for (composition_field_key, composition_field_index) in composition_fields.iter() {
-            data_fields.insert(
-                composition_field_key,
-                (DATA_BELONGING::COMPOSITION, *composition_field_index),
-            );
-        }
-
-        for (injectable_index, injectable) in injectables.iter().enumerate() {
-            data_fields.insert(injectable.0, (DATA_BELONGING::INJECTABLE, injectable_index));
-        }
-
-        for point in composed_data.iter() {
-            // let trades = self.strategy(get_fn, &backtest_result.trades);
-
-            for (injectable_name, (injectable_state, injectable_index)) in injectables.iter() {}
-        }
-
-        backtest_result.performance_time = start_instant.elapsed();
-        Ok(backtest_result)
-    }
-    fn wfo(&self, optimizer: OptimizationStrategy) {}
-    fn optimized_backtest(&self, optimizer: OptimizationStrategy) {}
+    // fn optimizables(&self) -> HashMap<&'static str, (OptimizationData, InjectableState)> {
+    //     return HashMap::new();
+    // }
+    // fn optimization_target(&self, backtest_result: BacktestResult) -> i16 {
+    //     return backtest_result.sharpe as i16;
+    // }
+    // fn wfo(&self, optimizer: OptimizationStrategy) {}
+    // fn optimized_backtest(&self, optimizer: OptimizationStrategy) {}
+    fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>>;
     fn render(&self) -> Vec<ChartingData>;
-    fn save() -> Result<(), Box<dyn Error>>;
+    fn save(&self) -> Result<(), Box<dyn Error>>;
 }
 
 pub mod sma_200;

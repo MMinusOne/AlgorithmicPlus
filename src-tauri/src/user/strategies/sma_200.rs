@@ -6,7 +6,7 @@ use crate::{
             trade::{Trade, TradeOptions, TradeSide},
             IInjectable, Injectable,
         },
-        strategies::{BacktestResult, IStrategy, StrategyData},
+        strategies::{BacktestManager, IStrategy, StrategyData},
     },
     utils::classes::charting::ChartingData,
 };
@@ -39,9 +39,9 @@ impl IStrategy for SMA200Strategy {
         return &self.description;
     }
 
-    fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>> {
-        let backtest_manager = BacktestResult::new();
-        let composition = self.composition();
+    fn backtest(&self) -> Result<BacktestManager, Box<dyn Error>> {
+        let backtest_manager = BacktestManager::new();
+        let composition: &'static dyn IComposition = self.composition();
         let composition_data = composition.compose()?;
 
         let timestamp_position = composition.get_composition_field_position("timestamp");
@@ -55,7 +55,7 @@ impl IStrategy for SMA200Strategy {
                 CompositionDataType::extract_option_float(composition_point[sma_200_position]);
             let trade_manager = backtest_manager.trade_manager();
 
-            trade_manager.update_price(close);
+            trade_manager.update_price(timestamp, close);
 
             if sma_200 == None {
                 continue;
@@ -66,22 +66,21 @@ impl IStrategy for SMA200Strategy {
                 true => TradeSide::LONG,
                 false => TradeSide::SHORT,
             };
-            let latest_trade = trade_manager.get_last_trade();
 
-            if latest_trade.side != side {
-                latest_trade.close();
+            if let Some(latest_trade)  = trade_manager.get_last_trade() {
+                if latest_trade.side() != side { 
+                    latest_trade.close();
+                }
             }
 
             let capital_allocation = backtest_manager.capital();
 
-            let trade = Trade::new(TradeOptions {
+            let mut trade = Trade::new(TradeOptions {
                 side,
-                capital_allocation,
-                stop_loss: None,
-                take_profit: None
+                capital_allocation
             });
 
-            trade_manager.open_trade(trade);
+            trade_manager.open_trade(&mut trade);
         }
 
         backtest_manager.backtest_ended();

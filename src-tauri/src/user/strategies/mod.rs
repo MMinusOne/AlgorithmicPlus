@@ -44,32 +44,24 @@ impl StrategyData {
     }
 }
 
-pub struct TradeManager {}
-
-impl TradeManager {}
-
-impl TradeManager {
-    pub fn new() -> Self {
-        return Self {};
-    }
-}
-
-pub struct BacktestResult {
+// MAKE TRADE MANAGER WRAPPER TO GIVE BACKTEST MANAGER AND HANDLE CAPITAL ALLOCATION
+pub struct BacktestManager {
     trades: Vec<Trade>,
     performance_time: Duration,
     trade_manager: TradeManager,
     sharpe: i8,
 }
 
-impl BacktestResult {
-    pub fn trade_manager(&self) -> &TradeManager {
+impl BacktestManager {
+    pub fn trade_manager(&mut self) -> &TradeManager {
         return &self.trade_manager;
     }
 
+    // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
     pub fn backtest_ended(&self) {}
 }
 
-impl BacktestResult {
+impl BacktestManager {
     pub fn new() -> Self {
         return Self {
             performance_time: Duration::new(0, 0),
@@ -80,8 +72,44 @@ impl BacktestResult {
     }
 }
 
+pub struct TradeManager {
+    current_timestamp: Option<i64>,
+    current_price: Option<f32>,
+    trades: Vec<Trade>,
+}
+
+impl TradeManager {
+    pub fn update_price(&mut self, timestamp: i64, price: f32) {
+        self.current_timestamp = Some(timestamp);
+        self.current_price = Some(price);
+    }
+
+    pub fn get_last_trade(&self) -> Option<Trade> {
+        if self.trades.len() == 0 {
+            return None;
+        }
+
+        return Some(self.trades[self.trades.len() - 1]);
+    }
+
+    pub fn open_trade(&self, trade: &mut Trade) {
+        trade.freeze_open_timestamp(self.current_timestamp.unwrap());
+        trade.freeze_open_price(self.current_price.unwrap());
+    }
+}
+
+impl TradeManager {
+    pub fn new() -> Self {
+        return Self {
+            current_timestamp: None,
+            current_price: None,
+            trades: Vec::new(),
+        };
+    }
+}
+
 struct StrategyManager {
-    results: BacktestResult,
+    results: BacktestManager,
     trades: Vec<Trade>,
 }
 
@@ -95,12 +123,12 @@ pub trait IStrategy: Send + Sync {
     // fn optimizables(&self) -> HashMap<&'static str, (OptimizationData, InjectableState)> {
     //     return HashMap::new();
     // }
-    // fn optimization_target(&self, backtest_result: BacktestResult) -> i16 {
+    // fn optimization_target(&self, backtest_result: BacktestManager) -> i16 {
     //     return backtest_result.sharpe as i16;
     // }
     // fn wfo(&self, optimizer: OptimizationStrategy) {}
     // fn optimized_backtest(&self, optimizer: OptimizationStrategy) {}
-    fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>>;
+    fn backtest(&self) -> Result<BacktestManager, Box<dyn Error>>;
     fn render(&self) -> Vec<ChartingData>;
     fn save(&self) -> Result<(), Box<dyn Error>>;
 }

@@ -6,7 +6,7 @@ use crate::{
     },
     utils::classes::charting::ChartingData,
 };
-use std::time::Duration;
+use std::{cell::RefCell, rc::Rc, time::Duration};
 use std::{collections::HashMap, error::Error};
 
 pub enum StrategyData {
@@ -44,17 +44,19 @@ impl StrategyData {
     }
 }
 
+#[derive(Clone)]
 enum Metric {
     Sharpe,
 }
 
 // MAKE TRADE MANAGER WRAPPER TO GIVE BACKTEST MANAGER AND HANDLE CAPITAL ALLOCATION
+#[derive(Clone)]
 pub struct BacktestManager {
     trades: Vec<Trade>,
     initial_capital: u16,
     available_capital: u16,
     performance_time: Duration,
-    trade_manager: TradeManager,
+    trade_manager: Option<TradeManager>,
     metrics: HashMap<Metric, f32>,
 }
 
@@ -68,7 +70,12 @@ impl BacktestManager {
     }
 
     pub fn trade_manager(&mut self) -> TradeManager {
-        return self.trade_manager.clone();
+        if self.trade_manager.is_none() {
+            let backtest_manager_self = Rc::new(RefCell::new(self.clone()));
+            self.trade_manager = Some(TradeManager::new(backtest_manager_self));
+        }
+
+        return self.trade_manager.take().unwrap().clone();
     }
 
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
@@ -80,7 +87,7 @@ impl BacktestManager {
         return Self {
             performance_time: Duration::new(0, 0),
             trades: Vec::new(),
-            trade_manager: TradeManager::new(),
+            trade_manager: None,
             initial_capital: options.initial_capital,
             available_capital: options.initial_capital,
             metrics: HashMap::new(),
@@ -95,6 +102,7 @@ struct BacktestOptions {
 
 #[derive(Clone)]
 pub struct TradeManager {
+    backtest_manager: Rc<RefCell<BacktestManager>>,
     current_timestamp: Option<i64>,
     current_price: Option<f32>,
     trades: Vec<Trade>,
@@ -122,21 +130,15 @@ impl TradeManager {
 }
 
 impl TradeManager {
-    pub fn new() -> Self {
+    pub fn new(backtest_manager: Rc<RefCell<BacktestManager>>) -> Self {
         return Self {
+            backtest_manager,
             current_timestamp: None,
             current_price: None,
             trades: Vec::new(),
         };
     }
 }
-
-struct StrategyManager {
-    results: BacktestManager,
-    trades: Vec<Trade>,
-}
-
-impl StrategyManager {}
 
 pub trait IStrategy: Send + Sync {
     fn id(&self) -> &str;

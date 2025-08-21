@@ -51,24 +51,24 @@ enum Metric {
 // MAKE TRADE MANAGER WRAPPER TO GIVE BACKTEST MANAGER AND HANDLE CAPITAL ALLOCATION
 pub struct BacktestManager {
     trades: Vec<Trade>,
-    initial_capital: i64,
-    available_capital: i64,
+    initial_capital: u16,
+    available_capital: u16,
     performance_time: Duration,
     trade_manager: TradeManager,
     metrics: HashMap<Metric, f32>,
 }
 
 impl BacktestManager {
-    pub fn initial_capital(&self) -> i64 {
+    pub fn initial_capital(&self) -> u16 {
         return self.initial_capital;
     }
 
-    pub fn available_capital(&self) -> i64 {
+    pub fn available_capital(&self) -> u16 {
         return self.available_capital;
     }
 
-    pub fn trade_manager(&mut self) -> &TradeManager {
-        return &self.trade_manager;
+    pub fn trade_manager(&mut self) -> TradeManager {
+        return self.trade_manager.clone();
     }
 
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
@@ -90,9 +90,10 @@ impl BacktestManager {
 }
 
 struct BacktestOptions {
-    pub initial_capital: i64,
+    pub initial_capital: u16,
 }
 
+#[derive(Clone)]
 pub struct TradeManager {
     current_timestamp: Option<i64>,
     current_price: Option<f32>,
@@ -110,7 +111,8 @@ impl TradeManager {
             return None;
         }
 
-        return Some(self.trades[self.trades.len() - 1]);
+        let trade = self.trades[self.trades.len() - 1];
+        return Some(trade.clone());
     }
 
     pub fn open_trade(&self, trade: &mut Trade) {

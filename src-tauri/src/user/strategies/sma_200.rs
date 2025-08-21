@@ -40,7 +40,7 @@ impl IStrategy for SMA200Strategy {
     }
 
     fn backtest(&self) -> Result<BacktestManager, Box<dyn Error>> {
-        let backtest_manager = BacktestManager::new(super::BacktestOptions {
+        let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
             initial_capital: 1_000,
         });
         let composition: &'static dyn IComposition = self.composition();
@@ -55,11 +55,12 @@ impl IStrategy for SMA200Strategy {
             let close = CompositionDataType::extract_float(composition_point[close_position]);
             let sma_200 =
                 CompositionDataType::extract_option_float(composition_point[sma_200_position]);
-            let trade_manager = backtest_manager.trade_manager();
+
+            let mut trade_manager = backtest_manager.trade_manager();
 
             trade_manager.update_price(timestamp, close);
 
-            if sma_200 == None {
+            if sma_200.is_none() {
                 continue;
             }
 
@@ -69,17 +70,17 @@ impl IStrategy for SMA200Strategy {
                 false => TradeSide::SHORT,
             };
 
-            if let Some(latest_trade) = trade_manager.get_last_trade() {
+            if let Some(mut latest_trade) = trade_manager.get_last_trade() {
                 if latest_trade.side() != side {
                     latest_trade.close();
                 }
             }
 
-            let capital_allocation = backtest_manager.available_capital();
+            let capital_allocation = backtest_manager.available_capital().to_owned();
 
             let mut trade = Trade::new(TradeOptions {
                 side,
-                capital_allocation,
+                capital_allocation: Some(capital_allocation),
             });
 
             trade_manager.open_trade(&mut trade);

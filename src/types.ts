@@ -137,3 +137,9 @@ export interface CompositionMetadata {
   name: string;
   description: string;
 }
+
+export interface StrategyMetadata {
+  id: string;
+  name: string;
+  description: string;
+}

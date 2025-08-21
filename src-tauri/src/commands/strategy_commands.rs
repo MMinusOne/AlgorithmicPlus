@@ -10,7 +10,7 @@ pub struct StrategyMetadata {
 }
 
 #[tauri::command]
-async fn get_strategies() -> Result<Vec<StrategyMetadata>, String> {
+pub async fn get_strategies() -> Result<Vec<StrategyMetadata>, String> {
     let mut strategies_metadatas: Vec<StrategyMetadata> = vec![];
 
     for strategy_metadata in STRATEGIES.iter() {

@@ -5,6 +5,7 @@ import {
   StaticResource,
   SelectedItemType,
   CompositionMetadata,
+  StrategyMetadata,
 } from "../../types";
 import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
@@ -26,8 +27,11 @@ export default function Sidebar() {
         "get_compositions"
       );
 
+      const strategies = await invoke<StrategyMetadata[]>("get_strategies");
+
       sidebarState.setStaticResources(staticResources);
       sidebarState.setCompositionMetadatas(compositions);
+      sidebarState.setStrategiesMetadatas(strategies);
       sidebarState.setIsLoading(false);
     };
 
@@ -54,16 +58,28 @@ export default function Sidebar() {
             <details open>
               <SidebarSummary>strategies</SidebarSummary>
               <ul>
-                <li>
-                  <a className="truncate" title="Item">
-                    <span className="truncate">Item</span>
-                  </a>
-                </li>
-                <li>
-                  <a className="truncate" title="Item">
-                    <span className="truncate">Item</span>
-                  </a>
-                </li>
+                {sidebarState.strategiesMetadatas.map((strategyMetadata) => {
+                  return (
+                    <li
+                      onClick={() => {
+                        if (
+                          sidebarState?.selectedItem?.id !== strategyMetadata.id
+                        ) {
+                          sidebarState.setSelectedItem({
+                            itemType: SelectedItemType.Backtest,
+                            id: strategyMetadata.id,
+                          });
+                        }
+                      }}
+                    >
+                      <a className="truncate" title="Item">
+                        <span className="truncate">
+                          {strategyMetadata.name}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </details>
             <details open>

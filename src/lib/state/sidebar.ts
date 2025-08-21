@@ -1,4 +1,9 @@
-import { StaticResource, SelectedItemType, CompositionMetadata } from "@/types";
+import {
+  StaticResource,
+  SelectedItemType,
+  CompositionMetadata,
+  StrategyMetadata,
+} from "@/types";
 import { create } from "zustand";
 
 interface SelectedItem {
@@ -10,11 +15,15 @@ interface SidebarState {
   isLoading: boolean;
   staticResources: StaticResource[];
   compositionMetadatas: CompositionMetadata[];
+  strategiesMetadatas: StrategyMetadata[];
   selectedItem: SelectedItem | null;
 
   setStaticResources: (staticResource: StaticResource[]) => void;
   setIsLoading: (isLoading: boolean) => void;
-  setCompositionMetadatas: (compositionMetadatas: CompositionMetadata[]) => void;
+  setCompositionMetadatas: (
+    compositionMetadatas: CompositionMetadata[]
+  ) => void;
+  setStrategiesMetadatas: (strategiesMetadata: StrategyMetadata[]) => void;
   setSelectedItem: (item: SelectedItem) => void;
 }
 
@@ -22,12 +31,15 @@ export const useSidebarState = create<SidebarState>((set) => ({
   isLoading: true,
   staticResources: [],
   compositionMetadatas: [],
+  strategiesMetadatas: [],
   selectedItem: null,
 
   setStaticResources: (staticResources: StaticResource[]) =>
     set((state) => ({ ...state, staticResources })),
   setCompositionMetadatas: (compositionMetadatas: CompositionMetadata[]) =>
     set((state) => ({ ...state, compositionMetadatas })),
+  setStrategiesMetadatas: (strategiesMetadatas: StrategyMetadata[]) =>
+    set((state) => ({ ...state, strategiesMetadatas })),
   setIsLoading: (isLoading: boolean) =>
     set((state) => ({ ...state, isLoading })),
   setSelectedItem: (selectedItem: SelectedItem) =>

@@ -6,8 +6,8 @@ use crate::{
     },
     utils::classes::charting::ChartingData,
 };
-use std::error::Error;
 use std::time::Duration;
+use std::{collections::HashMap, error::Error};
 
 pub enum StrategyData {
     CompositionDataType(CompositionDataType),
@@ -44,15 +44,29 @@ impl StrategyData {
     }
 }
 
+enum Metric {
+    Sharpe,
+}
+
 // MAKE TRADE MANAGER WRAPPER TO GIVE BACKTEST MANAGER AND HANDLE CAPITAL ALLOCATION
 pub struct BacktestManager {
     trades: Vec<Trade>,
+    initial_capital: i64,
+    available_capital: i64,
     performance_time: Duration,
     trade_manager: TradeManager,
-    sharpe: i8,
+    metrics: HashMap<Metric, f32>,
 }
 
 impl BacktestManager {
+    pub fn initial_capital(&self) -> i64 {
+        return self.initial_capital;
+    }
+
+    pub fn available_capital(&self) -> i64 {
+        return self.available_capital;
+    }
+
     pub fn trade_manager(&mut self) -> &TradeManager {
         return &self.trade_manager;
     }
@@ -62,14 +76,21 @@ impl BacktestManager {
 }
 
 impl BacktestManager {
-    pub fn new() -> Self {
+    pub fn new(options: BacktestOptions) -> Self {
         return Self {
             performance_time: Duration::new(0, 0),
             trades: Vec::new(),
             trade_manager: TradeManager::new(),
-            sharpe: 0,
+            initial_capital: options.initial_capital,
+            available_capital: options.initial_capital,
+            metrics: HashMap::new(),
+            //record_metrics: Vec<Metric>
         };
     }
+}
+
+struct BacktestOptions {
+    pub initial_capital: i64,
 }
 
 pub struct TradeManager {

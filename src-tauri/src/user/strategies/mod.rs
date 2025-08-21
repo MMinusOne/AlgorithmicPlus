@@ -6,7 +6,7 @@ use crate::{
     },
     utils::classes::charting::ChartingData,
 };
-use std::{cell::RefCell, rc::Rc, time::Duration};
+use std::{cell::RefCell, rc::Rc, sync::LazyLock, time::Duration};
 use std::{collections::HashMap, error::Error};
 
 pub enum StrategyData {
@@ -78,6 +78,10 @@ impl BacktestManager {
         return self.trade_manager.take().unwrap().clone();
     }
 
+    pub fn reduce_available_capital(&mut self, reduce_capital: u16) {
+        self.available_capital -= reduce_capital;
+    }
+
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
     pub fn backtest_ended(&self) {}
 }
@@ -124,8 +128,14 @@ impl TradeManager {
     }
 
     pub fn open_trade(&self, trade: &mut Trade) {
-        trade.freeze_open_timestamp(self.current_timestamp.unwrap());
-        trade.freeze_open_price(self.current_price.unwrap());
+        // check if backtest_manager has the allocation needed to open the trade
+        let mut backtest_manager = self.backtest_manager.borrow_mut();
+        let allocation = trade.capital_allocation().unwrap();
+        if backtest_manager.available_capital() >= allocation {
+            trade.freeze_open_timestamp(self.current_timestamp.unwrap());
+            trade.freeze_open_price(self.current_price.unwrap());
+            backtest_manager.reduce_available_capital(allocation);
+        }
     }
 }
 
@@ -160,3 +170,7 @@ pub trait IStrategy: Send + Sync {
 
 pub mod sma_200;
 pub use sma_200::SMA200Strategy;
+
+pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> = LazyLock::new(|| vec![
+    Box::new(SMA200Strategy::new())
+]);

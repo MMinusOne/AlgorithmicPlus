@@ -104,7 +104,7 @@ impl IStrategy for SMA200Strategy {
 }
 
 impl SMA200Strategy {
-    fn new() -> Self {
+    pub fn new() -> Self {
         return Self {
             id: Uuid::new_v4().into(),
             name: "SMA 200 price crossover".into(),

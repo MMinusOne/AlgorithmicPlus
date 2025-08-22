@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::marker::Copy;
 
+use crate::user::library::trade;
+
 #[derive(Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
 pub enum TradeSide {
     LONG,
@@ -28,7 +30,7 @@ impl Trade {
     }
 
     pub fn freeze_open_price(&mut self, open_price: f32) {
-        if self.open_price != None {
+        if self.open_price.is_none() {
             self.open_price = Some(open_price);
         };
     }
@@ -114,6 +116,7 @@ impl Trade {
 }
 
 // Probably make builder pattern
+#[derive(Debug)]
 pub struct TradeOptions {
     pub side: TradeSide,
     pub capital_allocation: Option<u16>,

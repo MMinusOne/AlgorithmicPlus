@@ -9,7 +9,7 @@ use std::error::Error;
 use std::marker::Copy;
 use std::sync::LazyLock;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum CompositionDataType {
     Int(i64),
     Float(f32),

@@ -10,9 +10,9 @@ use crate::{
     },
     utils::classes::charting::ChartingData,
 };
+use std::rc::Rc;
 use std::{collections::HashMap, error::Error, vec};
 use uuid::Uuid;
-use std::rc::Rc;
 
 pub struct SMA200Strategy {
     id: String,
@@ -72,24 +72,41 @@ impl IStrategy for SMA200Strategy {
                 false => TradeSide::SHORT,
             };
 
-            if let Some(mut latest_trade) = backtest_manager.get_last_trade() {
-                if latest_trade.side() != side {
+            let latest_trade = backtest_manager.get_last_trade();
+
+            if !latest_trade.is_none() {
+                let mut latest_trade = latest_trade.unwrap();
+
+                if latest_trade.side() != side && !latest_trade.is_closed() {
                     backtest_manager.close_trade(&mut latest_trade);
+                } else if latest_trade.side() == side && !latest_trade.is_closed() {
+                    continue;
                 }
+
+                let capital_allocation = backtest_manager.initial_capital().to_owned();
+
+                let mut trade = Trade::new(TradeOptions {
+                    side,
+                    capital_allocation: Some(capital_allocation),
+                    leverage: None,
+                });
+
+                backtest_manager.open_trade(&mut trade);
+            } else {
+                let capital_allocation = backtest_manager.initial_capital().to_owned();
+
+                let mut trade = Trade::new(TradeOptions {
+                    side,
+                    capital_allocation: Some(capital_allocation),
+                    leverage: None,
+                });
+
+                backtest_manager.open_trade(&mut trade);
             }
-
-            let capital_allocation = backtest_manager.available_capital().to_owned();
-
-            let mut trade = Trade::new(TradeOptions {
-                side,
-                capital_allocation: Some(capital_allocation),
-                leverage: None,
-            });
-
-            backtest_manager.open_trade(&mut trade);
         }
 
         backtest_manager.backtest_ended();
+        // println!("{:?}", backtest_manager);
         Ok(backtest_manager)
     }
 

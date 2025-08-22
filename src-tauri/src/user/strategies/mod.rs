@@ -98,11 +98,10 @@ impl BacktestManager {
         let allocation = trade.capital_allocation().unwrap();
         let current_price = self.current_price.unwrap();
         let current_timestamp = self.current_timestamp.unwrap();
-        trade.freeze_close_price(current_price);
-        trade.freeze_close_timestamp(current_timestamp);
-        trade.close();
-        println!("{:?}", trade);
-        self.add_available_capital(allocation);
+        if let Some(existing_trade) = self.trades.iter_mut().find(|t| t.id().to_string() == trade.id().to_string()) {
+            existing_trade.close(current_price, current_timestamp);
+            self.add_available_capital(allocation);
+        }
     }
 
     fn reduce_available_capital(&mut self, reduce_capital: u16) {
@@ -114,9 +113,7 @@ impl BacktestManager {
     }
 
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
-    pub fn backtest_ended(&mut self) {
-     
-    }
+    pub fn backtest_ended(&mut self) {}
 }
 
 impl BacktestManager {
@@ -128,8 +125,7 @@ impl BacktestManager {
             metrics: HashMap::new(),
             current_price: None,
             current_timestamp: None,
-            trades: Vec::new()
-            //record_metrics: Vec<Metric>
+            trades: Vec::new(), //record_metrics: Vec<Metric>
         };
     }
 }

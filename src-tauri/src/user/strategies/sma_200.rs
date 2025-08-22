@@ -67,46 +67,55 @@ impl IStrategy for SMA200Strategy {
 
             let sma_200 = sma_200.unwrap();
 
-            let side = match close > sma_200 {
-                true => TradeSide::LONG,
-                false => TradeSide::SHORT,
-            };
-
             let latest_trade = backtest_manager.get_last_trade();
 
-            if !latest_trade.is_none() {
-                let mut latest_trade = latest_trade.unwrap();
+            if close > sma_200 {
+                let side = TradeSide::LONG;
+                if !latest_trade.is_none() {
+                    let mut latest_trade = latest_trade.unwrap();
 
-                if latest_trade.side() != side && !latest_trade.is_closed() {
-                    backtest_manager.close_trade(&mut latest_trade);
-                } else if latest_trade.side() == side && !latest_trade.is_closed() {
-                    continue;
+                    if latest_trade.side() != side && !latest_trade.is_closed() {
+                        backtest_manager.close_trade(&mut latest_trade);
+                        backtest_manager.open_trade(&mut Trade::new(TradeOptions {
+                            side: side,
+                            capital_allocation: Some(backtest_manager.initial_capital()),
+                            leverage: None,
+                        }));
+                        continue;
+                    }
+                } else {
+                    backtest_manager.open_trade(&mut Trade::new(TradeOptions {
+                        side: side,
+                        capital_allocation: Some(backtest_manager.initial_capital()),
+                        leverage: None,
+                    }));
                 }
-
-                let capital_allocation = backtest_manager.initial_capital().to_owned();
-
-                let mut trade = Trade::new(TradeOptions {
-                    side,
-                    capital_allocation: Some(capital_allocation),
-                    leverage: None,
-                });
-
-                backtest_manager.open_trade(&mut trade);
             } else {
-                let capital_allocation = backtest_manager.initial_capital().to_owned();
+                let side = TradeSide::SHORT;
 
-                let mut trade = Trade::new(TradeOptions {
-                    side,
-                    capital_allocation: Some(capital_allocation),
-                    leverage: None,
-                });
+                if !latest_trade.is_none() {
+                    let mut latest_trade = latest_trade.unwrap();
 
-                backtest_manager.open_trade(&mut trade);
+                    if latest_trade.side() != side && !latest_trade.is_closed() {
+                        backtest_manager.close_trade(&mut latest_trade);
+                        backtest_manager.open_trade(&mut Trade::new(TradeOptions {
+                            side: side,
+                            capital_allocation: Some(backtest_manager.initial_capital()),
+                            leverage: None,
+                        }));
+                    }
+                } else {
+                    backtest_manager.open_trade(&mut Trade::new(TradeOptions {
+                        side: side,
+                        capital_allocation: Some(backtest_manager.initial_capital()),
+                        leverage: None,
+                    }));
+                }
             }
         }
 
         backtest_manager.backtest_ended();
-        // println!("{:?}", backtest_manager);
+        println!("{:?}", backtest_manager.trades);
         Ok(backtest_manager)
     }
 

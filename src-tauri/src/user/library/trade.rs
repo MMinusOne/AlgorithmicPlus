@@ -1,7 +1,8 @@
-use serde::{Deserialize, Serialize};
-use std::marker::Copy;
-
 use crate::user::library::trade;
+use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
+use std::marker::Copy;
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
 pub enum TradeSide {
@@ -11,6 +12,7 @@ pub enum TradeSide {
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Trade {
+    id: Uuid,
     open_timestamp: Option<i64>,
     close_timestamp: Option<i64>,
     capital_allocation: Option<u16>,
@@ -23,6 +25,10 @@ pub struct Trade {
 }
 
 impl Trade {
+    pub fn id(&self) -> Uuid {
+        return self.id;
+    }
+
     pub fn freeze_open_timestamp(&mut self, timestamp: i64) {
         if self.open_timestamp.is_none() {
             self.open_timestamp = Some(timestamp)
@@ -35,21 +41,13 @@ impl Trade {
         };
     }
 
-    pub fn freeze_close_timestamp(&mut self, timestamp: i64) {
-        if self.close_timestamp.is_none() {
-            self.close_timestamp = Some(timestamp)
-        };
-    }
-
-    pub fn freeze_close_price(&mut self, close_price: f32) {
-        if self.close_price.is_none() {
-            self.close_price = Some(close_price)
-        };
-    }
-
-    pub fn close(&mut self) {
-        self.pl();
-        self.is_closed = true;
+    pub fn close(&mut self, close_price: f32, close_timestamp: i64) {
+        if !self.is_closed {
+            self.close_price = Some(close_price);
+            self.close_timestamp = Some(close_timestamp);
+            self.pl();
+            self.is_closed = true;
+        }
     }
 
     pub fn pl(&mut self) -> f32 {
@@ -99,6 +97,7 @@ impl Trade {
 impl Trade {
     pub fn new(trade_options: TradeOptions) -> Self {
         return Self {
+            id: Uuid::new_v4(),
             open_timestamp: None,
             close_timestamp: None,
             open_price: None,

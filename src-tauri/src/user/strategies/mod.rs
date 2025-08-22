@@ -44,19 +44,20 @@ impl StrategyData {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum Metric {
     Sharpe,
 }
 
 // MAKE TRADE MANAGER WRAPPER TO GIVE BACKTEST MANAGER AND HANDLE CAPITAL ALLOCATION
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BacktestManager {
-    trades: Vec<Trade>,
+    current_timestamp: Option<i64>,
+    current_price: Option<f32>,
     initial_capital: u16,
     available_capital: u16,
     performance_time: Duration,
-    trade_manager: Option<TradeManager>,
+    trades: Vec<Trade>,
     metrics: HashMap<Metric, f32>,
 }
 
@@ -69,54 +70,6 @@ impl BacktestManager {
         return self.available_capital;
     }
 
-    pub fn trade_manager(&mut self) -> TradeManager {
-        if self.trade_manager.is_none() {
-            let backtest_manager_self = Rc::new(RefCell::new(self.clone()));
-            self.trade_manager = Some(TradeManager::new(backtest_manager_self));
-        }
-
-        return self.trade_manager.take().unwrap().clone();
-    }
-
-    pub fn reduce_available_capital(&mut self, reduce_capital: u16) {
-        self.available_capital -= reduce_capital;
-    }
-
-    pub fn add_available_capital(&mut self, add_capital: u16) {
-        self.available_capital += add_capital;
-    }
-
-    // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
-    pub fn backtest_ended(&self) {}
-}
-
-impl BacktestManager {
-    pub fn new(options: BacktestOptions) -> Self {
-        return Self {
-            performance_time: Duration::new(0, 0),
-            trades: Vec::new(),
-            trade_manager: None,
-            initial_capital: options.initial_capital,
-            available_capital: options.initial_capital,
-            metrics: HashMap::new(),
-            //record_metrics: Vec<Metric>
-        };
-    }
-}
-
-struct BacktestOptions {
-    pub initial_capital: u16,
-}
-
-#[derive(Clone)]
-pub struct TradeManager {
-    backtest_manager: Rc<RefCell<BacktestManager>>,
-    current_timestamp: Option<i64>,
-    current_price: Option<f32>,
-    trades: Vec<Trade>,
-}
-
-impl TradeManager {
     pub fn update_price(&mut self, timestamp: i64, price: f32) {
         self.current_timestamp = Some(timestamp);
         self.current_price = Some(price);
@@ -131,35 +84,55 @@ impl TradeManager {
         return Some(trade.clone());
     }
 
-    pub fn open_trade(&self, trade: &mut Trade) {
-        let mut backtest_manager = self.backtest_manager.borrow_mut();
-        let allocation = trade.capital_allocation().unwrap();
-        if backtest_manager.available_capital() >= allocation {
+    pub fn open_trade(&mut self, trade: &mut Trade) {
+        let allocation = trade.capital_allocation().unwrap().to_owned();
+        if self.available_capital() >= allocation {
             trade.freeze_open_timestamp(self.current_timestamp.unwrap());
             trade.freeze_open_price(self.current_price.unwrap());
-            backtest_manager.reduce_available_capital(allocation);
+            &self.reduce_available_capital(allocation);
+            self.trades.push(*trade);
         }
     }
 
-    pub fn close_trade(&self, trade: &mut Trade) {
+    pub fn close_trade(&mut self, trade: &mut Trade) {
         let allocation = trade.capital_allocation().unwrap();
-        let mut backtest_manager = self.backtest_manager.borrow_mut();
-        backtest_manager.add_available_capital(allocation);
         trade.freeze_close_price(self.current_price.unwrap());
         trade.freeze_close_timestamp(self.current_timestamp.unwrap());
         trade.close();
+        self.add_available_capital(allocation);
+    }
+
+    fn reduce_available_capital(&mut self, reduce_capital: u16) {
+        self.available_capital -= reduce_capital;
+    }
+
+    fn add_available_capital(&mut self, add_capital: u16) {
+        self.available_capital += add_capital;
+    }
+
+    // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
+    pub fn backtest_ended(&mut self) {
+        println!("{:?}", self);
     }
 }
 
-impl TradeManager {
-    pub fn new(backtest_manager: Rc<RefCell<BacktestManager>>) -> Self {
+impl BacktestManager {
+    pub fn new(options: BacktestOptions) -> Self {
         return Self {
-            backtest_manager,
-            current_timestamp: None,
+            performance_time: Duration::new(0, 0),
+            initial_capital: options.initial_capital,
+            available_capital: options.initial_capital,
+            metrics: HashMap::new(),
             current_price: None,
-            trades: Vec::new(),
+            current_timestamp: None,
+            trades: Vec::new()
+            //record_metrics: Vec<Metric>
         };
     }
+}
+
+struct BacktestOptions {
+    pub initial_capital: u16,
 }
 
 pub trait IStrategy: Send + Sync {

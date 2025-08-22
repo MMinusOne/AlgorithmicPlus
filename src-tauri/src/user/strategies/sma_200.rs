@@ -12,6 +12,7 @@ use crate::{
 };
 use std::{collections::HashMap, error::Error, vec};
 use uuid::Uuid;
+use std::rc::Rc;
 
 pub struct SMA200Strategy {
     id: String,
@@ -43,6 +44,7 @@ impl IStrategy for SMA200Strategy {
         let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
             initial_capital: 1_000,
         });
+
         let composition: &'static dyn IComposition = self.composition();
         let composition_data = composition.compose()?;
 
@@ -56,24 +58,23 @@ impl IStrategy for SMA200Strategy {
             let sma_200 =
                 CompositionDataType::extract_option_float(composition_point[sma_200_position]);
 
-            let mut trade_manager = backtest_manager.trade_manager();
             // maybe let the backtest manager handle that
-            trade_manager.update_price(timestamp, close);
+            backtest_manager.update_price(timestamp, close);
 
             if sma_200.is_none() {
                 continue;
             }
 
             let sma_200 = sma_200.unwrap();
-            
+
             let side = match close > sma_200 {
                 true => TradeSide::LONG,
                 false => TradeSide::SHORT,
             };
 
-            if let Some(mut latest_trade) = trade_manager.get_last_trade() {
+            if let Some(mut latest_trade) = backtest_manager.get_last_trade() {
                 if latest_trade.side() != side {
-                    trade_manager.close_trade(&mut latest_trade);
+                    backtest_manager.close_trade(&mut latest_trade);
                 }
             }
 
@@ -85,7 +86,7 @@ impl IStrategy for SMA200Strategy {
                 leverage: None,
             });
 
-            trade_manager.open_trade(&mut trade);
+            backtest_manager.open_trade(&mut trade);
         }
 
         backtest_manager.backtest_ended();

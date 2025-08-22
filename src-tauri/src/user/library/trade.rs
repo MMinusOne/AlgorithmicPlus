@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 use std::marker::Copy;
 
-#[derive(Serialize, Deserialize, PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
 pub enum TradeSide {
     LONG,
     SHORT,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Trade {
     open_timestamp: Option<i64>,
     close_timestamp: Option<i64>,

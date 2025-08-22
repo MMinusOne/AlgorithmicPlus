@@ -115,7 +115,9 @@ impl IStrategy for SMA200Strategy {
         }
 
         backtest_manager.backtest_ended();
-        println!("{:?}", backtest_manager.trades);
+        for trade in backtest_manager.trades.iter() { 
+            println!("{:?}", trade);
+        }
         Ok(backtest_manager)
     }
 

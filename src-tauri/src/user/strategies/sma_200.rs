@@ -65,6 +65,7 @@ impl IStrategy for SMA200Strategy {
             }
 
             let sma_200 = sma_200.unwrap();
+            
             let side = match close > sma_200 {
                 true => TradeSide::LONG,
                 false => TradeSide::SHORT,

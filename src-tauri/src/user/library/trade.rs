@@ -22,7 +22,7 @@ pub struct Trade {
 
 impl Trade {
     pub fn freeze_open_timestamp(&mut self, timestamp: i64) {
-        if self.open_timestamp == None {
+        if self.open_timestamp.is_none() {
             self.open_timestamp = Some(timestamp)
         };
     }
@@ -34,37 +34,36 @@ impl Trade {
     }
 
     pub fn freeze_close_timestamp(&mut self, timestamp: i64) {
-        if self.close_timestamp == None {
+        if self.close_timestamp.is_none() {
             self.close_timestamp = Some(timestamp)
         };
     }
 
     pub fn freeze_close_price(&mut self, close_price: f32) {
-        if self.close_price == None {
+        if self.close_price.is_none() {
             self.close_price = Some(close_price)
         };
     }
 
     pub fn close(&mut self) {
-        let open_price = self.open_price.unwrap();
-        let close_price = self.close_price.unwrap();
-        let leverage = self.leverage;
-
-        let unleveraged_pl = match self.side {
-            TradeSide::LONG => close_price / open_price,
-            TradeSide::SHORT => open_price / close_price,
-        };
-
-        let pl = unleveraged_pl * self.leverage;
-
+        self.pl();
         self.is_closed = true;
     }
 
     pub fn pl(&mut self) -> f32 {
-        if self.open_price != None && self.close_price != None {
-            let pl = self.open_price.unwrap() / self.close_price.unwrap();
+        if !self.open_price.is_none() && !self.close_price.is_none() {
+            let open_price = self.open_price.unwrap();
+            let close_price = self.close_price.unwrap();
+            let leverage = self.leverage;
+
+            let unleveraged_pl = match self.side {
+                TradeSide::LONG => close_price / open_price,
+                TradeSide::SHORT => open_price / close_price,
+            };
+
+            let pl = unleveraged_pl * leverage;
             self.pl = pl;
-            return pl;
+            return self.pl;
         } else {
             return self.pl;
         }
@@ -85,7 +84,7 @@ impl Trade {
     pub fn close_price(&self) -> Option<f32> {
         return self.close_price;
     }
-    
+
     pub fn leverage(&self) -> f32 {
         return self.leverage;
     }
@@ -105,7 +104,7 @@ impl Trade {
             capital_allocation: trade_options.capital_allocation,
             leverage: match trade_options.leverage {
                 Some(l) => l,
-                None => 1.0
+                None => 1.0,
             },
             side: trade_options.side,
             is_closed: false,
@@ -118,5 +117,5 @@ impl Trade {
 pub struct TradeOptions {
     pub side: TradeSide,
     pub capital_allocation: Option<u16>,
-    pub leverage: Option<f32>
+    pub leverage: Option<f32>,
 }

@@ -57,7 +57,7 @@ impl IStrategy for SMA200Strategy {
                 CompositionDataType::extract_option_float(composition_point[sma_200_position]);
 
             let mut trade_manager = backtest_manager.trade_manager();
-
+            // maybe let the backtest manager handle that
             trade_manager.update_price(timestamp, close);
 
             if sma_200.is_none() {
@@ -72,7 +72,7 @@ impl IStrategy for SMA200Strategy {
 
             if let Some(mut latest_trade) = trade_manager.get_last_trade() {
                 if latest_trade.side() != side {
-                    latest_trade.close();
+                    trade_manager.close_trade(&mut latest_trade);
                 }
             }
 
@@ -81,6 +81,7 @@ impl IStrategy for SMA200Strategy {
             let mut trade = Trade::new(TradeOptions {
                 side,
                 capital_allocation: Some(capital_allocation),
+                leverage: None,
             });
 
             trade_manager.open_trade(&mut trade);

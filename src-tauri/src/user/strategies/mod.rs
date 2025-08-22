@@ -82,6 +82,10 @@ impl BacktestManager {
         self.available_capital -= reduce_capital;
     }
 
+    pub fn add_available_capital(&mut self, add_capital: u16) {
+        self.available_capital += add_capital;
+    }
+
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
     pub fn backtest_ended(&self) {}
 }
@@ -128,7 +132,6 @@ impl TradeManager {
     }
 
     pub fn open_trade(&self, trade: &mut Trade) {
-        // check if backtest_manager has the allocation needed to open the trade
         let mut backtest_manager = self.backtest_manager.borrow_mut();
         let allocation = trade.capital_allocation().unwrap();
         if backtest_manager.available_capital() >= allocation {
@@ -136,6 +139,15 @@ impl TradeManager {
             trade.freeze_open_price(self.current_price.unwrap());
             backtest_manager.reduce_available_capital(allocation);
         }
+    }
+
+    pub fn close_trade(&self, trade: &mut Trade) {
+        let allocation = trade.capital_allocation().unwrap();
+        let mut backtest_manager = self.backtest_manager.borrow_mut();
+        backtest_manager.add_available_capital(allocation);
+        trade.freeze_close_price(self.current_price.unwrap());
+        trade.freeze_close_timestamp(self.current_timestamp.unwrap());
+        trade.close();
     }
 }
 
@@ -171,6 +183,5 @@ pub trait IStrategy: Send + Sync {
 pub mod sma_200;
 pub use sma_200::SMA200Strategy;
 
-pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> = LazyLock::new(|| vec![
-    Box::new(SMA200Strategy::new())
-]);
+pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> =
+    LazyLock::new(|| vec![Box::new(SMA200Strategy::new())]);

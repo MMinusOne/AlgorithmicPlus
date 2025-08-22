@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-
-use crate::user::strategies::STRATEGIES;
+use crate::user::strategies::IStrategy;
+use crate::user::strategies::{SMA200Strategy, STRATEGIES};
 
 #[derive(Serialize, Deserialize)]
 pub struct StrategyMetadata {
@@ -12,6 +12,10 @@ pub struct StrategyMetadata {
 #[tauri::command]
 pub async fn get_strategies() -> Result<Vec<StrategyMetadata>, String> {
     let mut strategies_metadatas: Vec<StrategyMetadata> = vec![];
+
+    let strategy_test = SMA200Strategy::new();
+
+    strategy_test.backtest().unwrap();
 
     for strategy_metadata in STRATEGIES.iter() {
         strategies_metadatas.push(StrategyMetadata {

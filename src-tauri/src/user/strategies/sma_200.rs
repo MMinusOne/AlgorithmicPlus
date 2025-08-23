@@ -115,8 +115,13 @@ impl IStrategy for SMA200Strategy {
         }
 
         backtest_manager.backtest_ended();
-        for trade in backtest_manager.trades.iter() { 
-            println!("{:?}", trade);
+        for trade in backtest_manager.trades.iter_mut() { 
+            println!("=======================");
+            println!("Open price {:?}", &trade.open_price());
+            println!("Close price {:?}", &trade.close_price());
+            println!("PL {:?}", &trade.pl());
+            println!("Side {:?}", &trade.side());
+            println!("=======================");
         }
         Ok(backtest_manager)
     }

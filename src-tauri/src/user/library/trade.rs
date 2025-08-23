@@ -57,11 +57,11 @@ impl Trade {
             let leverage = self.leverage;
 
             let unleveraged_pl = match self.side {
-                TradeSide::LONG => close_price / open_price,
-                TradeSide::SHORT => open_price / close_price,
+                TradeSide::LONG => open_price / close_price,
+                TradeSide::SHORT => close_price / open_price,
             };
 
-            let pl = unleveraged_pl * leverage;
+            let pl = 100.0 - ((unleveraged_pl * leverage) * 100.0);
             self.pl = pl;
             return self.pl;
         } else {

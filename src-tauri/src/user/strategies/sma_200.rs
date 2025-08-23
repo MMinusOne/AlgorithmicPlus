@@ -69,53 +69,32 @@ impl IStrategy for SMA200Strategy {
 
             let latest_trade = backtest_manager.get_last_trade();
 
-            if close > sma_200 {
-                let side = TradeSide::LONG;
-                if !latest_trade.is_none() {
-                    let mut latest_trade = latest_trade.unwrap();
+            let side = match close > sma_200 {
+                true => TradeSide::LONG,
+                false => TradeSide::SHORT,
+            };
 
-                    if latest_trade.side() != side && !latest_trade.is_closed() {
-                        backtest_manager.close_trade(&mut latest_trade);
-                        backtest_manager.open_trade(&mut Trade::new(TradeOptions {
-                            side: side,
-                            capital_allocation: Some(backtest_manager.initial_capital()),
-                            leverage: None,
-                        }));
-                        continue;
-                    }
-                } else {
-                    backtest_manager.open_trade(&mut Trade::new(TradeOptions {
-                        side: side,
-                        capital_allocation: Some(backtest_manager.initial_capital()),
-                        leverage: None,
-                    }));
-                }
-            } else {
-                let side = TradeSide::SHORT;
+            let mut new_trade = Trade::new(TradeOptions {
+                side: side,
+                capital_allocation: Some(backtest_manager.initial_capital()),
+                leverage: Some(1.0),
+            });
 
-                if !latest_trade.is_none() {
-                    let mut latest_trade = latest_trade.unwrap();
+            if !latest_trade.is_none() {
+                let mut latest_trade = latest_trade.unwrap();
 
-                    if latest_trade.side() != side && !latest_trade.is_closed() {
-                        backtest_manager.close_trade(&mut latest_trade);
-                        backtest_manager.open_trade(&mut Trade::new(TradeOptions {
-                            side: side,
-                            capital_allocation: Some(backtest_manager.initial_capital()),
-                            leverage: None,
-                        }));
-                    }
-                } else {
-                    backtest_manager.open_trade(&mut Trade::new(TradeOptions {
-                        side: side,
-                        capital_allocation: Some(backtest_manager.initial_capital()),
-                        leverage: None,
-                    }));
+                if !latest_trade.is_closed() && latest_trade.side() != side {
+                    backtest_manager.close_trade(&mut latest_trade);
+                    backtest_manager.open_trade(&mut new_trade);
+                    continue;
                 }
             }
+
+            backtest_manager.open_trade(&mut new_trade);
         }
 
         backtest_manager.backtest_ended();
-        for trade in backtest_manager.trades.iter_mut() { 
+        for trade in backtest_manager.trades.iter_mut() {
             println!("=======================");
             println!("Open price {:?}", &trade.open_price());
             println!("Close price {:?}", &trade.close_price());
@@ -123,6 +102,7 @@ impl IStrategy for SMA200Strategy {
             println!("Side {:?}", &trade.side());
             println!("=======================");
         }
+        println!("{:?}", backtest_manager.trades.len());
         Ok(backtest_manager)
     }
 

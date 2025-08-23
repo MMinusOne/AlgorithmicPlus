@@ -30,7 +30,7 @@ pub fn get_compositions() -> Result<Vec<CompositionMetadata>, tauri::Error> {
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct GetCompositionData {
+pub struct GetCompositionParams {
     pub id: String,
 }
 
@@ -44,7 +44,7 @@ pub struct CompositionDataResponse {
 
 #[tauri::command]
 pub fn get_composition_data(
-    data: GetCompositionData,
+    params: GetCompositionParams,
 ) -> Result<CompositionDataResponse, tauri::Error> {
     let mut data_response = CompositionDataResponse {
         name: None,
@@ -54,7 +54,7 @@ pub fn get_composition_data(
     };
 
     for composition in &*COMPOSITIONS {
-        if composition.id() == data.id {
+        if composition.id() == params.id {
             data_response.name = Some(composition.name().into());
             data_response.description = Some(composition.description().into());
             let charting_data = composition.render().unwrap();

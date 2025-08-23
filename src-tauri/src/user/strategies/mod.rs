@@ -54,23 +54,26 @@ enum Metric {
 pub struct BacktestManager {
     current_timestamp: Option<i64>,
     current_price: Option<f32>,
-    initial_capital: u16,
-    available_capital: u16,
-    performance_time: Duration,
+    initial_capital: f32,
+    available_capital: f32,
     trades: Vec<Trade>,
     metrics: HashMap<Metric, f32>,
+    backtest_ended: bool,
 }
 
 impl BacktestManager {
-    pub fn initial_capital(&self) -> u16 {
+    pub fn initial_capital(&self) -> f32 {
         return self.initial_capital;
     }
 
-    pub fn available_capital(&self) -> u16 {
+    pub fn available_capital(&self) -> f32 {
         return self.available_capital;
     }
 
     pub fn update_price(&mut self, timestamp: i64, price: f32) {
+        if self.backtest_ended {
+            return;
+        }
         self.current_timestamp = Some(timestamp);
         self.current_price = Some(price);
     }
@@ -85,53 +88,111 @@ impl BacktestManager {
     }
 
     pub fn open_trade(&mut self, trade: &mut Trade) {
+        if self.backtest_ended {
+            return;
+        }
         let allocation = trade.capital_allocation().unwrap().to_owned();
         if self.available_capital() >= allocation {
             trade.freeze_open_timestamp(self.current_timestamp.unwrap());
             trade.freeze_open_price(self.current_price.unwrap());
-            self.reduce_available_capital(allocation);
+            self.adjust_available_capital(-allocation);
             self.trades.push(*trade);
         }
     }
 
     pub fn close_trade(&mut self, trade: &mut Trade) {
-        let allocation = trade.capital_allocation().unwrap();
+        if self.backtest_ended {
+            return;
+        }
         let current_price = self.current_price.unwrap();
         let current_timestamp = self.current_timestamp.unwrap();
-        if let Some(existing_trade) = self.trades.iter_mut().find(|t| t.id().to_string() == trade.id().to_string()) {
+        if let Some(existing_trade) = self
+            .trades
+            .iter_mut()
+            .find(|t| t.id().to_string() == trade.id().to_string())
+        {
             existing_trade.close(current_price, current_timestamp);
-            self.add_available_capital(allocation);
+            self.adjust_available_capital(
+                trade.capital_allocation().unwrap() as f32 + trade.pl_fixed(),
+            );
         }
     }
 
-    fn reduce_available_capital(&mut self, reduce_capital: u16) {
-        self.available_capital -= reduce_capital;
+    fn adjust_available_capital(&mut self, change: f32) {
+        if self.backtest_ended {
+            return;
+        }
+        self.available_capital += change;
     }
 
-    fn add_available_capital(&mut self, add_capital: u16) {
-        self.available_capital += add_capital;
+    pub fn trades(&self) -> &Vec<Trade> {
+        return &self.trades;
+    }
+
+    pub fn metrics(&self) -> &HashMap<Metric, f32> {
+        return &self.metrics;
     }
 
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
-    pub fn backtest_ended(&mut self) {}
+    pub fn backtest_ended(&mut self) -> BacktestResult {
+        self.backtest_ended = true;
+        return BacktestResult::from(self.to_owned());
+    }
 }
 
 impl BacktestManager {
     pub fn new(options: BacktestOptions) -> Self {
         return Self {
-            performance_time: Duration::new(0, 0),
             initial_capital: options.initial_capital,
             available_capital: options.initial_capital,
             metrics: HashMap::new(),
             current_price: None,
             current_timestamp: None,
-            trades: Vec::new(), //record_metrics: Vec<Metric>
+            trades: Vec::new(),
+            //record_metrics: Vec<Metric>
+            backtest_ended: false,
         };
     }
 }
 
 struct BacktestOptions {
-    pub initial_capital: u16,
+    pub initial_capital: f32,
+}
+
+struct BacktestResult {
+    initial_capital: f32,
+    growth_capital: f32,
+    trades: Vec<Trade>,
+    metrics: HashMap<Metric, f32>,
+}
+
+impl BacktestResult {
+    pub fn initial_capital(&self) -> f32 {
+        return self.initial_capital;
+    }
+
+    pub fn growth_capital(&self) -> f32 {
+        return self.growth_capital;
+    }
+
+    pub fn trades(&self) -> Vec<Trade> {
+        return self.trades.clone();
+    }
+
+    pub fn metrics(&self) -> HashMap<Metric, f32> {
+        return self.metrics.clone();
+    }
+}
+
+impl BacktestResult {
+    pub fn from(backtest_manager: BacktestManager) -> Self {
+        return Self {
+            initial_capital: backtest_manager.initial_capital(),
+            growth_capital: backtest_manager.available_capital(),
+            trades: backtest_manager.trades().to_vec(),
+            metrics: backtest_manager.metrics().to_owned(),
+        };
+    }
 }
 
 pub trait IStrategy: Send + Sync {
@@ -147,8 +208,8 @@ pub trait IStrategy: Send + Sync {
     // }
     // fn wfo(&self, optimizer: OptimizationStrategy) {}
     // fn optimized_backtest(&self, optimizer: OptimizationStrategy) {}
-    fn backtest(&self) -> Result<BacktestManager, Box<dyn Error>>;
-    fn render(&self) -> Vec<ChartingData>;
+    fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>>;
+    fn render(&self, backtest: BacktestResult) -> Vec<ChartingData>;
     fn save(&self) -> Result<(), Box<dyn Error>>;
 }
 

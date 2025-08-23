@@ -6,7 +6,7 @@ use crate::{
             trade::{Trade, TradeOptions, TradeSide},
             IInjectable, Injectable,
         },
-        strategies::{BacktestManager, IStrategy, StrategyData},
+        strategies::{BacktestManager, BacktestResult, IStrategy, StrategyData},
     },
     utils::classes::charting::ChartingData,
 };
@@ -40,9 +40,9 @@ impl IStrategy for SMA200Strategy {
         return &self.description;
     }
 
-    fn backtest(&self) -> Result<BacktestManager, Box<dyn Error>> {
+    fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>> {
         let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
-            initial_capital: 1_000,
+            initial_capital: 1_000.0,
         });
 
         let composition: &'static dyn IComposition = self.composition();
@@ -94,23 +94,16 @@ impl IStrategy for SMA200Strategy {
         }
 
         backtest_manager.backtest_ended();
-        for trade in backtest_manager.trades.iter_mut() {
-            println!("=======================");
-            println!("Open price {:?}", &trade.open_price());
-            println!("Close price {:?}", &trade.close_price());
-            println!("PL {:?}", &trade.pl());
-            println!("Side {:?}", &trade.side());
-            println!("=======================");
-        }
-        println!("{:?}", backtest_manager.trades.len());
-        Ok(backtest_manager)
+        Ok(BacktestResult::from(backtest_manager))
     }
 
     fn composition(&self) -> &'static dyn IComposition {
         return SMA200Composition::instance();
     }
 
-    fn render(&self) -> Vec<ChartingData> {
+    fn render(&self, backtest: BacktestResult) -> Vec<ChartingData> {
+        let charting_data: Vec<BacktestResult> = Vec::new();
+
         return vec![];
     }
 

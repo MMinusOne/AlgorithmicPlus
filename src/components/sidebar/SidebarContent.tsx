@@ -75,11 +75,10 @@ export default function SidebarContent() {
               },
             }
           );
-          console.log(backtestStrategy);
           setSidebarData({
             name: backtestStrategy.name,
             description: backtestStrategy.description,
-            chartingData: backtestStrategy.portfolio_growth_data,
+            chartingData: backtestStrategy.equity_growth_charting_data,
             dataBlocks: backtestStrategy.data_blocks,
           });
           break;

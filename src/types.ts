@@ -127,7 +127,7 @@ export interface BacktestDataResponse {
   description: string;
   equity_growth_charting_data: ChartingSeries[];
   portfolio_growth_data: ChartingSeries[];
-  percentage_ratio_data: ChartingSeries[];
+  percentage_growth_data: ChartingSeries[];
   data_blocks: DataBlock[];
 }
 

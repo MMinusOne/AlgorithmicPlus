@@ -18,13 +18,6 @@ pub struct SMA200Strategy {
     id: String,
     name: String,
     description: String,
-    state_index: usize,
-}
-
-impl SMA200Strategy {
-    fn strategy(&self) -> Option<Vec<Trade>> {
-        return None;
-    }
 }
 
 impl IStrategy for SMA200Strategy {
@@ -102,21 +95,57 @@ impl IStrategy for SMA200Strategy {
     }
 
     fn render_equity_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
-        let charting_data: Vec<BacktestResult> = Vec::new();
+        let mut charting_data: Vec<ChartingData> = Vec::new();
 
-        return vec![];
+        let mut line_data: Vec<Option<LineData>> = vec![];
+        let mut cumulative_returns: f32 = 0.0;
+
+        for trade in backtest_result.trades() {
+            cumulative_returns += trade.pl_fixed();
+
+            line_data.push(Some(LineData {
+                time: trade.close_timestamp().unwrap(),
+                value: cumulative_returns,
+                color: None,
+            }));
+        }
+
+        charting_data.push(ChartingData::LineChartingData(LineChartingData {
+            chart_type: "line".into(),
+            height: None,
+            data: line_data,
+            pane: None,
+            title: Some("Portfolio equity growth backtest".into()),
+        }));
+
+        return charting_data;
     }
 
     fn render_percentage_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
-        let charting_data: Vec<BacktestResult> = Vec::new();
-        let mut line_graph: Vec<LineData> = vec![];
+        let mut charting_data: Vec<ChartingData> = Vec::new();
+
+        let mut line_data: Vec<Option<LineData>> = vec![];
         let mut cumulative_returns: f32 = 0.0;
 
         for trade in backtest_result.trades() {
             cumulative_returns += trade.pl_ratio();
+
+            line_data.push(Some(LineData {
+                time: trade.close_timestamp().unwrap(),
+                value: cumulative_returns,
+                color: None,
+            }));
         }
 
-        return vec![];
+        charting_data.push(ChartingData::LineChartingData(LineChartingData {
+            chart_type: "line".into(),
+            height: None,
+            data: line_data,
+            pane: None,
+            title: Some("Portfolio percentage growth backtest".into()),
+        }));
+
+        return charting_data;
     }
 
     fn render_portfolio_percentage_growth(
@@ -160,7 +189,6 @@ impl SMA200Strategy {
             id: Uuid::new_v4().into(),
             name: "SMA 200 price crossover".into(),
             description: "Long when price > sma200 and short when price < sma200".into(),
-            state_index: 0,
         };
     }
 }

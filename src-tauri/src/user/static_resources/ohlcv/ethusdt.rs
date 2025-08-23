@@ -37,7 +37,7 @@ impl ETHUSDT {
         return Self {
             id: Uuid::new_v4().into(),
             name: "ETHUSDT".into(),
-            load_path: join_app_data_dir("raw/ohlcv/96ec7c6f-633e-4051-8ad7-ab28b27be6e4").unwrap(),
+            load_path: join_app_data_dir("raw/ohlcv/6c3b733f-006b-4bc0-9cd7-cd4c3082beae").unwrap(),
         };
     }
 }

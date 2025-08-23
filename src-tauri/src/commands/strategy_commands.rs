@@ -36,7 +36,7 @@ pub struct BacktestStrategyResponse {
     pub description: Option<String>,
     pub equity_growth_charting_data: Vec<ChartingData>,
     pub portfolio_growth_data: Vec<ChartingData>,
-    pub percentage_ratio_data: Vec<ChartingData>,
+    pub percentage_growth_data: Vec<ChartingData>,
     pub data_blocks: Vec<DataBlock>,
 }
 
@@ -49,7 +49,7 @@ pub fn backtest_strategy(
         description: None,
         equity_growth_charting_data: Vec::new(),
         portfolio_growth_data: Vec::new(),
-        percentage_ratio_data: Vec::new(),
+        percentage_growth_data: Vec::new(),
         data_blocks: vec![],
     };
 
@@ -64,8 +64,9 @@ pub fn backtest_strategy(
     let backtest_result = strategy.backtest().unwrap();
 
     data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);
-    data_response.equity_growth_charting_data = strategy.render_percentage_growth(&backtest_result);
-    data_response.portfolio_growth_data = strategy.render_portfolio_percentage_growth(&backtest_result);
+    data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest_result);
+    data_response.portfolio_growth_data =
+        strategy.render_portfolio_percentage_growth(&backtest_result);
 
     Ok(data_response)
 }

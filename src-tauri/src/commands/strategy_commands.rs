@@ -1,5 +1,5 @@
 use crate::user::strategies::IStrategy;
-use crate::user::strategies::{SMA200Strategy, STRATEGIES};
+use crate::user::strategies::STRATEGIES;
 use crate::utils::classes::charting::{ChartingData, DataBlock};
 use serde::{Deserialize, Serialize};
 

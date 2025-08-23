@@ -1,5 +1,5 @@
 use crate::{user::library::IInjectable, utils::classes::charting::ChartingData};
-use num_traits::{FromPrimitive, Num, Signed};
+use num_traits::{FromPrimitive, Signed};
 use std::error::Error;
 
 pub struct TR {

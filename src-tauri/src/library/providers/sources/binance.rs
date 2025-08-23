@@ -2,20 +2,15 @@ use std::{error::Error, fs::File, mem};
 
 use crate::{
     library::providers::downloader::{
-        DataType, DownloadData, Downloadable, MarketType, OHLCVJSONFileDataStructure, Source,
+        DownloadData, Downloadable, MarketType, OHLCVJSONFileDataStructure, Source,
         SourceName,
     },
     utils::{classes::logger::LOGGER, date::parse_date_string_to_utc, paths::get_app_data_dir},
-    APP_HANDLE,
 };
-use async_recursion::async_recursion;
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
 use reqwest;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use tauri::http::request;
-use tauri::Manager;
 use uuid::Uuid;
 
 const BINANCE_SYMBOLS_DATA: &str = include_str!(concat!(

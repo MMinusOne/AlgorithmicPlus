@@ -1,6 +1,6 @@
 use crate::utils::classes::charting::{LineChartingData, LineData};
 use crate::{user::library::IInjectable, utils::classes::charting::ChartingData};
-use num_traits::{FromPrimitive, Num, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 use std::collections::VecDeque;
 use std::error::Error;
 

@@ -1,5 +1,5 @@
 use std::error::Error;
-use num_traits::{FromPrimitive, Num};
+use num_traits::FromPrimitive;
 use crate::{user::library::IInjectable, utils::classes::charting::ChartingData};
 
 pub struct ATR {

@@ -2,7 +2,7 @@ use crate::library::providers::downloader::{DownloadData, Downloadable, Download
 use fuzzy_matcher::FuzzyMatcher;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
-use std::{f32::INFINITY, sync::Arc};
+use std::sync::Arc;
 use tauri::Emitter;
 use uuid::Uuid;
 

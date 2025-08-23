@@ -2,16 +2,14 @@ use crate::{
     user::{
         composer::{CompositionDataType, IComposition, SMA200Composition},
         library::{
-            technical_indicators::{sma, SMA, TR},
             trade::{Trade, TradeOptions, TradeSide},
-            IInjectable, Injectable,
+            IInjectable,
         },
-        strategies::{BacktestManager, BacktestResult, IStrategy, StrategyData},
+        strategies::{BacktestManager, BacktestResult, IStrategy},
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
-use std::rc::Rc;
-use std::{collections::HashMap, error::Error, vec};
+use std::{error::Error, vec};
 use uuid::Uuid;
 
 pub struct SMA200Strategy {

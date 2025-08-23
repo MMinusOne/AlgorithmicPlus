@@ -1,16 +1,13 @@
 use crate::{
     library::providers::downloader::{
-        DataType, DownloadData, Downloadable, MarketType, OHLCVJSONFileDataStructure, Source,
+        DownloadData, Downloadable, MarketType, OHLCVJSONFileDataStructure, Source,
         SourceName,
     },
-    utils::{classes::logger::LOGGER, date::parse_date_string_to_offsettime, paths::get_app_data_dir},
-    APP_HANDLE,
+    utils::{date::parse_date_string_to_offsettime, paths::get_app_data_dir},
 };
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use std::{fs::File, io::Write, mem};
-use tauri::Manager;
 use yahoo_finance_api::{self as yahoo};
 
 const YAHOO_SYMBOLS_DATA: &str = include_str!(concat!(

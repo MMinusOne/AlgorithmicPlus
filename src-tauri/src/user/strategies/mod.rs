@@ -1,12 +1,11 @@
 use crate::{
-    library::engines::OptimizationStrategy,
     user::{
         composer::{CompositionDataType, IComposition},
         library::trade::Trade,
     },
     utils::classes::charting::ChartingData,
 };
-use std::{cell::RefCell, rc::Rc, sync::LazyLock, time::Duration};
+use std::sync::LazyLock;
 use std::{collections::HashMap, error::Error};
 
 pub enum StrategyData {
@@ -17,7 +16,7 @@ pub enum StrategyData {
 impl StrategyData {
     pub fn extract_composition_int(strategy_data: StrategyData) -> i64 {
         match strategy_data {
-            StrategyData::CompositionDataType((composition_data)) => {
+            StrategyData::CompositionDataType(composition_data) => {
                 CompositionDataType::extract_int(composition_data)
             }
 
@@ -26,7 +25,7 @@ impl StrategyData {
     }
     pub fn extract_composition_float(strategy_data: StrategyData) -> f32 {
         match strategy_data {
-            StrategyData::CompositionDataType((composition_data)) => {
+            StrategyData::CompositionDataType(composition_data) => {
                 CompositionDataType::extract_float(composition_data)
             }
 
@@ -35,7 +34,7 @@ impl StrategyData {
     }
     pub fn extract_composition_option_float(strategy_data: StrategyData) -> Option<f32> {
         match strategy_data {
-            StrategyData::CompositionDataType((composition_data)) => {
+            StrategyData::CompositionDataType(composition_data) => {
                 CompositionDataType::extract_option_float(composition_data)
             }
 

@@ -1,7 +1,4 @@
-use crate::{
-    library::providers::sources::{binance::Binance, yahoo::Yahoo},
-    utils::classes::logger::{self, LOGGER},
-};
+use crate::library::providers::sources::{binance::Binance, yahoo::Yahoo};
 use async_trait::async_trait;
 use futures::stream::{self, StreamExt};
 use num_traits::AsPrimitive;

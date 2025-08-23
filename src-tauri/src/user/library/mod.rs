@@ -1,5 +1,4 @@
 use crate::{user::library::trade::Trade, utils::classes::charting::ChartingData};
-use num_traits::{FromPrimitive, Num};
 use serde::Deserialize;
 use std::error::Error;
 

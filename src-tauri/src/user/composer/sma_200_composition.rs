@@ -41,7 +41,7 @@ impl IComposition for SMA200Composition {
         let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
         let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
 
-        let mut sma = SMA::new(600);
+        let mut sma = SMA::new(170);
 
         composed_data.reserve(ethusdt_data.len());
 

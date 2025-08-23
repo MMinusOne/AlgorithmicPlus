@@ -67,7 +67,7 @@ impl Trade {
 
             let new_capital = trade_allocation + fixed_pl;
 
-            let portfolio_pl = (new_capital - trade_allocation ) / trade_allocation * 100.0;
+            let portfolio_pl = (fixed_pl / trade_allocation) * 100.0;
             return portfolio_pl;
         } else {
             return self.pl_portfolio;
@@ -81,8 +81,8 @@ impl Trade {
             let leverage = self.leverage;
 
             let unleveraged_pl = match self.side {
-                TradeSide::LONG => close_price - open_price,
-                TradeSide::SHORT => open_price - close_price,
+                TradeSide::LONG => (close_price - open_price) / open_price,
+                TradeSide::SHORT => (open_price - close_price) / open_price,
             };
 
             let pl_fixed = unleveraged_pl * leverage;
@@ -99,11 +99,11 @@ impl Trade {
             let leverage = self.leverage;
 
             let unleveraged_pl = match self.side {
-                TradeSide::LONG => open_price / close_price,
-                TradeSide::SHORT => close_price / open_price,
+                TradeSide::LONG => (close_price - open_price) / open_price,
+                TradeSide::SHORT => (open_price - close_price) / open_price,
             };
 
-            let pl_ratio = 100.0 - ((unleveraged_pl * leverage) * 100.0);
+            let pl_ratio = unleveraged_pl * leverage * 100.0;
             return pl_ratio;
         } else {
             return self.pl_ratio;

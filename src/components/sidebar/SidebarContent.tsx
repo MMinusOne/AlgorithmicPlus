@@ -78,7 +78,7 @@ export default function SidebarContent() {
           setSidebarData({
             name: backtestStrategy.name,
             description: backtestStrategy.description,
-            chartingData: backtestStrategy.equity_growth_charting_data,
+            chartingData: backtestStrategy.percentage_growth_data,
             dataBlocks: backtestStrategy.data_blocks,
           });
           break;

@@ -63,6 +63,7 @@ pub fn backtest_strategy(
 
     let backtest_result = strategy.backtest().unwrap();
 
+    //TODO: make a render(...) function so there isnt a need to loop thrice
     data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);
     data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest_result);
     data_response.portfolio_growth_data =

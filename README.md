@@ -53,5 +53,6 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Make the metric and utils formulas.
 - ❌ Refactor the code file structure.
 - ❌ Fork `lightweight-charts` and implement time sensitive functions in C++.
+- ❌ Make unit tests
 
 I have plans to keep working on this.

@@ -9,6 +9,7 @@ import {
   ChartingSeries,
   SidebarData,
   CompositionDataResponse,
+  BacktestDataResponse,
 } from "@/types";
 import { IChartApi } from "lightweight-charts";
 import ChartingContent from "./content/ChartingContent";
@@ -18,7 +19,7 @@ export default function SidebarContent() {
   const { selectedItem } = useSidebarState();
   // In the future there will be more than raw data responses
   const [sidebarData, setSidebarData] = useState<SidebarData>({
-    newsData: [],
+    dataBlocks: [],
     chartingData: [],
   });
 
@@ -43,7 +44,7 @@ export default function SidebarContent() {
             startTimestamp: rawData.start_timestamp,
             endTimestamp: rawData.end_timestamp,
             chartingData: rawData.charting_data,
-            newsData: rawData.news_data,
+            dataBlocks: rawData.data_blocks,
           });
           break;
 
@@ -61,7 +62,25 @@ export default function SidebarContent() {
             name: compositionData.name,
             description: compositionData.description,
             chartingData: compositionData.charting_data,
-            newsData: compositionData.news_data,
+            dataBlocks: compositionData.data_blocks,
+          });
+          break;
+
+        case SelectedItemType.Backtest:
+          const backtestStrategy = await invoke<BacktestDataResponse>(
+            "backtest_strategy",
+            {
+              data: {
+                id: selectedItem.id,
+              },
+            }
+          );
+
+          setSidebarData({
+            name: backtestStrategy.name,
+            description: backtestStrategy.description,
+            chartingData: backtestStrategy.percentage_ratio_data,
+            dataBlocks: backtestStrategy.data_blocks,
           });
           break;
       }
@@ -97,7 +116,7 @@ export default function SidebarContent() {
     );
   }
 
-  if (sidebarData.newsData.length > 0) {
+  if (sidebarData.dataBlocks.length > 0) {
     return <NewsContent />;
   }
 }

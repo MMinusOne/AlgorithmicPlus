@@ -39,7 +39,7 @@ pub struct CompositionDataResponse {
     pub name: Option<String>,
     pub description: Option<String>,
     pub charting_data: Vec<ChartingData>,
-    pub data_blocks: Vec<DataBlock>
+    pub data_blocks: Vec<DataBlock>,
 }
 
 #[tauri::command]
@@ -50,18 +50,19 @@ pub fn get_composition_data(
         name: None,
         description: None,
         charting_data: vec![],
-        data_blocks: vec![]
+        data_blocks: vec![],
     };
 
-    for composition in &*COMPOSITIONS {
-        if composition.id() == params.id {
-            data_response.name = Some(composition.name().into());
-            data_response.description = Some(composition.description().into());
-            let charting_data = composition.render().unwrap();
-            for chart in charting_data {
-                data_response.charting_data.push(chart);
-            }
-        }
+    let composition = (&*COMPOSITIONS)
+        .into_iter()
+        .find(|composition| composition.id() == params.id)
+        .unwrap();
+
+    data_response.name = Some(composition.name().into());
+    data_response.description = Some(composition.description().into());
+    let charting_data = composition.render().unwrap();
+    for chart in charting_data {
+        data_response.charting_data.push(chart);
     }
 
     Ok(data_response)

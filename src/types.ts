@@ -104,20 +104,31 @@ export enum SelectedItemType {
   Backtest = "BACKTEST",
 }
 
+export interface DataBlock {}
+
 export interface RawDataResponse {
   symbol?: string;
   timeframe?: string;
   start_timestamp?: number;
   end_timestamp?: number;
-  news_data: NewsData[];
   charting_data: ChartingSeries[];
+  data_blocks: DataBlock[];
 }
 
 export interface CompositionDataResponse {
   name: string;
   description: string;
   charting_data: ChartingSeries[];
-  news_data: NewsData[];
+  data_blocks: DataBlock[];
+}
+
+export interface BacktestDataResponse {
+  name: string;
+  description: string;
+  equity_growth_charting_data: ChartingSeries[];
+  portfolio_growth_data: ChartingSeries[];
+  percentage_ratio_data: ChartingSeries[];
+  data_blocks: DataBlock[];
 }
 
 export interface SidebarData {
@@ -128,8 +139,8 @@ export interface SidebarData {
   dataType?: string;
   name?: string;
   description?: string;
-  newsData: NewsData[];
   chartingData: ChartingSeries[];
+  dataBlocks: DataBlock[];
 }
 
 export interface CompositionMetadata {

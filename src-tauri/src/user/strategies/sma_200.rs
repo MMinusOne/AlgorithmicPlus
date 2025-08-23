@@ -8,7 +8,7 @@ use crate::{
         },
         strategies::{BacktestManager, BacktestResult, IStrategy, StrategyData},
     },
-    utils::classes::charting::ChartingData,
+    utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
 use std::rc::Rc;
 use std::{collections::HashMap, error::Error, vec};
@@ -93,18 +93,60 @@ impl IStrategy for SMA200Strategy {
             backtest_manager.open_trade(&mut new_trade);
         }
 
-        backtest_manager.backtest_ended();
-        Ok(BacktestResult::from(backtest_manager))
+        let backtest_result = backtest_manager.backtest_ended();
+        Ok(backtest_result)
     }
 
     fn composition(&self) -> &'static dyn IComposition {
         return SMA200Composition::instance();
     }
 
-    fn render(&self, backtest: BacktestResult) -> Vec<ChartingData> {
+    fn render_equity_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
         let charting_data: Vec<BacktestResult> = Vec::new();
 
         return vec![];
+    }
+
+    fn render_percentage_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
+        let charting_data: Vec<BacktestResult> = Vec::new();
+        let mut line_graph: Vec<LineData> = vec![];
+        let mut cumulative_returns: f32 = 0.0;
+
+        for trade in backtest_result.trades() {
+            cumulative_returns += trade.pl_ratio();
+        }
+
+        return vec![];
+    }
+
+    fn render_portfolio_percentage_growth(
+        &self,
+        backtest_result: &BacktestResult,
+    ) -> Vec<ChartingData> {
+        let mut charting_data: Vec<ChartingData> = Vec::new();
+
+        let mut line_data: Vec<Option<LineData>> = vec![];
+        let mut cumulative_returns: f32 = 0.0;
+
+        for trade in backtest_result.trades() {
+            cumulative_returns += trade.pl_portfolio();
+
+            line_data.push(Some(LineData {
+                time: trade.close_timestamp().unwrap(),
+                value: cumulative_returns,
+                color: None,
+            }));
+        }
+
+        charting_data.push(ChartingData::LineChartingData(LineChartingData {
+            chart_type: "line".into(),
+            height: None,
+            data: line_data,
+            pane: None,
+            title: Some("Portfolio percentage growth backtest".into()),
+        }));
+
+        return charting_data;
     }
 
     fn save(&self) -> Result<(), Box<dyn Error>> {

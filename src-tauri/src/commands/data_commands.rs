@@ -58,7 +58,7 @@ pub struct RawDataResponse {
 
 #[tauri::command]
 pub async fn get_static_resource_data(
-    data: GetRawDataParams,
+    params: GetRawDataParams,
 ) -> Result<RawDataResponse, tauri::Error> {
     let mut data_response = RawDataResponse {
         symbol: None,
@@ -69,25 +69,22 @@ pub async fn get_static_resource_data(
         data_blocks: vec![],
     };
 
-    for static_resource in &*STATIC_RESOURCES {
-        if static_resource.id() == data.id {
-            if static_resource.data_type() == "OHLCV" {
-                if let Ok(raw_metadata) = static_resource.load_ohlcv_metadata() {
-                    data_response.symbol = Some(raw_metadata.symbol);
-                    data_response.timeframe = Some(raw_metadata.timeframe);
-                    data_response.start_timestamp = Some(raw_metadata.start_timestamp);
+    let static_resource = (&*STATIC_RESOURCES)
+        .into_iter()
+        .find(|resource| resource.id() == params.id)
+        .unwrap();
 
-                    if let Ok(charting_data) = static_resource.render() {
-                        for chart in charting_data {
-                            data_response.charting_data.push(chart);
-                        }
-                    }
+    if static_resource.data_type() == "OHLCV" {
+        if let Ok(raw_metadata) = static_resource.load_ohlcv_metadata() {
+            data_response.symbol = Some(raw_metadata.symbol);
+            data_response.timeframe = Some(raw_metadata.timeframe);
+            data_response.start_timestamp = Some(raw_metadata.start_timestamp);
+
+            if let Ok(charting_data) = static_resource.render() {
+                for chart in charting_data {
+                    data_response.charting_data.push(chart);
                 }
-            } else {
             }
-        } else {
-            // Add more cases later on
-            continue;
         }
     }
 

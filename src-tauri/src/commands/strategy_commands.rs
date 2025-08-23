@@ -32,7 +32,9 @@ pub struct BacktestStrategyParams {
 pub struct BacktestStrategyResponse {
     pub name: Option<String>,
     pub description: Option<String>,
-    pub charting_data: Vec<ChartingData>,
+    pub equity_growth_charting_data: Vec<ChartingData>,
+    pub portfolio_growth_data: Vec<ChartingData>,
+    pub percentage_ratio_data: Vec<ChartingData>,
     pub data_blocks: Vec<DataBlock>,
 }
 
@@ -43,16 +45,25 @@ pub async fn backtest_strategy(
     let mut data_response = BacktestStrategyResponse {
         name: None,
         description: None,
-        charting_data: vec![],
+        equity_growth_charting_data: Vec::new(),
+        portfolio_growth_data: Vec::new(),
+        percentage_ratio_data: Vec::new(),
         data_blocks: vec![],
     };
 
-    for strategy in &*STRATEGIES {
-        if strategy.id() == params.id {
-            data_response.name = Some(strategy.name().into());
-            data_response.description = Some(strategy.description().into());
-        }
-    }
+    let strategy = (&*STRATEGIES)
+        .into_iter()
+        .find(|strategy| strategy.id() == params.id)
+        .unwrap();
+
+    data_response.name = Some(strategy.name().into());
+    data_response.description = Some(strategy.description().into());
+
+    let backtest_result = strategy.backtest().unwrap();
+
+    data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);
+    data_response.equity_growth_charting_data = strategy.render_percentage_growth(&backtest_result);
+    data_response.portfolio_growth_data = strategy.render_portfolio_percentage_growth(&backtest_result);
 
     Ok(data_response)
 }

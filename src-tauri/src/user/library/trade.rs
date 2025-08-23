@@ -43,6 +43,14 @@ impl Trade {
         };
     }
 
+    pub fn open_timestamp(&self) -> Option<i64> { 
+        return self.open_timestamp;
+    }
+
+    pub fn close_timestamp(&self) -> Option<i64> { 
+        return self.close_timestamp;
+    }
+
     pub fn close(&mut self, close_price: f32, close_timestamp: i64) {
         if !self.is_closed {
             self.close_price = Some(close_price);
@@ -54,7 +62,7 @@ impl Trade {
         }
     }
 
-    pub fn pl_portfolio(&mut self) -> f32 {
+    pub fn pl_portfolio(&self) -> f32 {
         if !self.open_price.is_none() && !self.close_price.is_none() {
             let fixed_pl = self.pl_fixed();
             let trade_allocation = self.capital_allocation().unwrap() as f32;
@@ -68,7 +76,7 @@ impl Trade {
         }
     }
 
-    pub fn pl_fixed(&mut self) -> f32 {
+    pub fn pl_fixed(&self) -> f32 {
         if !self.open_price.is_none() && !self.close_price.is_none() {
             let open_price = self.open_price.unwrap();
             let close_price = self.close_price.unwrap();
@@ -86,7 +94,7 @@ impl Trade {
         }
     }
 
-    pub fn pl_ratio(&mut self) -> f32 {
+    pub fn pl_ratio(&self) -> f32 {
         if !self.open_price.is_none() && !self.close_price.is_none() {
             let open_price = self.open_price.unwrap();
             let close_price = self.close_price.unwrap();

@@ -155,11 +155,11 @@ impl BacktestManager {
     }
 }
 
-struct BacktestOptions {
+pub struct BacktestOptions {
     pub initial_capital: f32,
 }
 
-struct BacktestResult {
+pub struct BacktestResult {
     initial_capital: f32,
     growth_capital: f32,
     trades: Vec<Trade>,
@@ -189,7 +189,12 @@ impl BacktestResult {
         return Self {
             initial_capital: backtest_manager.initial_capital(),
             growth_capital: backtest_manager.available_capital(),
-            trades: backtest_manager.trades().to_vec(),
+            trades: backtest_manager
+                .trades()
+                .to_vec()
+                .into_iter()
+                .filter(|trade| trade.is_closed())
+                .collect(),
             metrics: backtest_manager.metrics().to_owned(),
         };
     }
@@ -209,7 +214,9 @@ pub trait IStrategy: Send + Sync {
     // fn wfo(&self, optimizer: OptimizationStrategy) {}
     // fn optimized_backtest(&self, optimizer: OptimizationStrategy) {}
     fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>>;
-    fn render(&self, backtest: BacktestResult) -> Vec<ChartingData>;
+    fn render_equity_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
+    fn render_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
+    fn render_portfolio_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn save(&self) -> Result<(), Box<dyn Error>>;
 }
 

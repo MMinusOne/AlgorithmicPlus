@@ -22,10 +22,10 @@ pub struct SearchDownloadablesParams {
 
 #[tauri::command]
 pub async fn search_downloadables(
-    data: SearchDownloadablesParams,
+    params: SearchDownloadablesParams,
 ) -> Result<Vec<Downloadable>, tauri::Error> {
     let matcher = fuzzy_matcher::skim::SkimMatcherV2::default();
-    let query = data.query.to_lowercase();
+    let query = params.query.to_lowercase();
 
     let downloadables = DOWNLOADER.get_downloadables().await;
     let relevant_downloadables: Vec<_> = downloadables
@@ -44,7 +44,7 @@ pub async fn search_downloadables(
             }
 
             return matcher
-                .fuzzy_match(&downloadable.symbol, &data.query)
+                .fuzzy_match(&downloadable.symbol, &params.query)
                 .map(|score| (downloadable, score));
         })
         .collect();
@@ -156,21 +156,21 @@ pub async fn download_request(
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct DownloadableTimeframePairAvailableRequestData {
+pub struct DownloadableTimeframePairAvailableRequestParams {
     downloadable: Downloadable,
     timeframe: String,
 }
 
 #[tauri::command]
 pub async fn downloadable_timeframe_pair_available(
-    data: DownloadableTimeframePairAvailableRequestData,
+    params: DownloadableTimeframePairAvailableRequestParams,
 ) -> Result<bool, tauri::Error> {
-    let source_name = data.downloadable.source_name.clone();
+    let source_name = params.downloadable.source_name.clone();
 
     match DOWNLOADER.sources.get(&source_name) {
         Some(source) => {
             let timeframes = source.timeframes();
-            if timeframes.contains(&data.timeframe.as_str()) {
+            if timeframes.contains(&params.timeframe.as_str()) {
                 return Ok(true);
             } else {
                 return Ok(false);

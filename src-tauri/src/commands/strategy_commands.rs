@@ -25,10 +25,12 @@ pub async fn get_strategies() -> Result<Vec<StrategyMetadata>, String> {
     Ok(strategies_metadatas)
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct BacktestStrategyParams {
     pub id: String,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct BacktestStrategyResponse {
     pub name: Option<String>,
     pub description: Option<String>,
@@ -39,7 +41,7 @@ pub struct BacktestStrategyResponse {
 }
 
 #[tauri::command]
-pub async fn backtest_strategy(
+pub fn backtest_strategy(
     params: BacktestStrategyParams,
 ) -> Result<BacktestStrategyResponse, tauri::Error> {
     let mut data_response = BacktestStrategyResponse {

@@ -37,7 +37,7 @@ export default function DownloadablesList({
       const searchResults = await invoke<Downloadable[]>(
         "search_downloadables",
         {
-          data: {
+          params: {
             query: downloadableSearchQuery,
           },
         }

@@ -32,7 +32,7 @@ export default function SidebarContent() {
           const rawData = await invoke<RawDataResponse>(
             "get_static_resource_data",
             {
-              data: {
+              params: {
                 id: selectedItem.id,
               },
             }
@@ -52,7 +52,7 @@ export default function SidebarContent() {
           const compositionData = await invoke<CompositionDataResponse>(
             "get_composition_data",
             {
-              data: {
+              params: {
                 id: selectedItem.id,
               },
             }
@@ -70,16 +70,16 @@ export default function SidebarContent() {
           const backtestStrategy = await invoke<BacktestDataResponse>(
             "backtest_strategy",
             {
-              data: {
+              params: {
                 id: selectedItem.id,
               },
             }
           );
-
+          console.log(backtestStrategy);
           setSidebarData({
             name: backtestStrategy.name,
             description: backtestStrategy.description,
-            chartingData: backtestStrategy.percentage_ratio_data,
+            chartingData: backtestStrategy.portfolio_growth_data,
             dataBlocks: backtestStrategy.data_blocks,
           });
           break;

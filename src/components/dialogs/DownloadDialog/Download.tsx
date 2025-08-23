@@ -178,7 +178,7 @@ export function DownloadList() {
       for (const downloadable of selectedDownloadables) {
         const isAvailable = await invoke(
           "downloadable_timeframe_pair_available",
-          { data: { downloadable, timeframe: selectedTimeframe } }
+          { params: { downloadable, timeframe: selectedTimeframe } }
         );
 
         if (isAvailable) {

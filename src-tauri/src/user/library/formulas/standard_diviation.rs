@@ -1,15 +1,7 @@
 use crate::{user::library::IInjectable, utils::classes::charting::ChartingData};
 use std::error::Error;
 
-/**
- * Mean = (2+4+6+8+10)/5 = 6
-Squared differences: (2-6)²=16, (4-6)²=4, (6-6)²=0, (8-6)²=4, (10-6)²=16
-Sum = 16+4+0+4+16 = 40
-Population: σ = √(40/5) = √8 = 2.83
-Sample: s = √(40/4) = √10 = 3.16
- */
-
-pub struct StandardDivation {
+pub struct StandardDeviation {
     name: String,
     description: String,
     sum: f32,
@@ -17,7 +9,21 @@ pub struct StandardDivation {
     count: usize,
 }
 
-impl IInjectable<f32, f32> for StandardDivation {
+impl StandardDeviation {
+    pub fn sum(&self) -> f32 {
+        return self.sum;
+    }
+
+    pub fn sum_squared(&self) -> f32 {
+        return self.sum_squared;
+    }
+
+    pub fn count(&self) -> usize {
+        return self.count;
+    }
+}
+
+impl IInjectable<f32, f32> for StandardDeviation {
     fn name(&self) -> &str {
         return &self.name;
     }
@@ -38,9 +44,8 @@ impl IInjectable<f32, f32> for StandardDivation {
         }
 
         let n = self.count as f32;
-        let mean = self.sum / n;
 
-        let variance = (self.sum_squared - n * mean * mean) / (n - 1.0);
+        let variance = (self.sum_squared - (self.sum * self.sum) / n) / (n - 1.0);
         let std_dev = variance.sqrt();
 
         Some(std_dev)
@@ -53,8 +58,8 @@ impl IInjectable<f32, f32> for StandardDivation {
     }
 }
 
-impl StandardDivation {
-    fn new() -> Self {
+impl StandardDeviation {
+    pub fn new() -> Self {
         return Self {
             name: "Standard Divation".into(),
             description: "Standard Divation.".into(),

@@ -56,7 +56,6 @@ pub struct BacktestManager {
     initial_capital: f32,
     available_capital: f32,
     trades: Vec<Trade>,
-    metrics: HashMap<Metric, f32>,
     backtest_ended: bool,
 }
 
@@ -128,12 +127,12 @@ impl BacktestManager {
         return &self.trades;
     }
 
-    pub fn metrics(&self) -> &HashMap<Metric, f32> {
-        return &self.metrics;
-    }
-
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
     pub fn backtest_ended(&mut self) -> BacktestResult {
+        for trade in self.trades.clone().iter_mut() {
+            &self.close_trade(trade);
+        }
+
         self.backtest_ended = true;
         return BacktestResult::from(self.to_owned());
     }
@@ -144,7 +143,6 @@ impl BacktestManager {
         return Self {
             initial_capital: options.initial_capital,
             available_capital: options.initial_capital,
-            metrics: HashMap::new(),
             current_price: None,
             current_timestamp: None,
             trades: Vec::new(),
@@ -185,6 +183,8 @@ impl BacktestResult {
 
 impl BacktestResult {
     pub fn from(backtest_manager: BacktestManager) -> Self {
+        let metrics: HashMap<Metric, f32> = HashMap::new();
+
         return Self {
             initial_capital: backtest_manager.initial_capital(),
             growth_capital: backtest_manager.available_capital(),
@@ -194,7 +194,7 @@ impl BacktestResult {
                 .into_iter()
                 .filter(|trade| trade.is_closed())
                 .collect(),
-            metrics: backtest_manager.metrics().to_owned(),
+            metrics,
         };
     }
 }

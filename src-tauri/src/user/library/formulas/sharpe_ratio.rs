@@ -53,7 +53,7 @@ impl IInjectable<f32, f32> for SharpeRatio {
 }
 
 impl SharpeRatio {
-    fn new(risk_free_rate: Option<f32>) -> Self {
+    pub fn new(risk_free_rate: Option<f32>) -> Self {
         return Self {
             name: "Sharpe Ratio".into(),
             description: "Risk-adjusted return metric".into(),

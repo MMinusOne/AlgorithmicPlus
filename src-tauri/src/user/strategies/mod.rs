@@ -1,7 +1,7 @@
 use crate::{
     user::{
         composer::{CompositionDataType, IComposition},
-        library::trade::Trade,
+        library::{formulas::sharpe_ratio::SharpeRatio, trade::Trade, IInjectable},
     },
     utils::classes::charting::ChartingData,
 };
@@ -43,7 +43,7 @@ impl StrategyData {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 enum Metric {
     Sharpe,
 }
@@ -183,17 +183,26 @@ impl BacktestResult {
 
 impl BacktestResult {
     pub fn from(backtest_manager: BacktestManager) -> Self {
-        let metrics: HashMap<Metric, f32> = HashMap::new();
+        let mut metrics: HashMap<Metric, f32> = HashMap::new();
+        let mut sharpe = SharpeRatio::new(Some(0.0));
+
+        let mut valid_trades: Vec<Trade> = vec![];
+
+        for trade in backtest_manager.trades() {
+            if trade.is_closed() {
+                continue;
+            }
+
+            valid_trades.push(trade.to_owned());
+            sharpe.allocate(trade.pl_ratio());
+        }
+
+        metrics.insert(Metric::Sharpe, sharpe.get_data().unwrap());
 
         return Self {
             initial_capital: backtest_manager.initial_capital(),
             growth_capital: backtest_manager.available_capital(),
-            trades: backtest_manager
-                .trades()
-                .to_vec()
-                .into_iter()
-                .filter(|trade| trade.is_closed())
-                .collect(),
+            trades: valid_trades,
             metrics,
         };
     }

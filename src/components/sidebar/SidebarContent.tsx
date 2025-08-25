@@ -75,6 +75,9 @@ export default function SidebarContent() {
               },
             }
           );
+
+          console.log(backtestStrategy);
+
           setSidebarData({
             name: backtestStrategy.name,
             description: backtestStrategy.description,

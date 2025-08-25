@@ -54,6 +54,7 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Refactor the code file structure.
 - ❌ Fork `lightweight-charts` and implement time sensitive functions in C++.
 - ❌ Make unit tests
--  Figure out a better design for IInejctables `get_data`, such that it doesn't take `&mut self`
+- ❌ Figure out a better design for IInejctables `get_data`, such that it doesn't take `&mut self`.
+-  Optimize and refactor the code once a minimum viable product is done.
 
 I have plans to keep working on this.

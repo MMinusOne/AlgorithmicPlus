@@ -38,7 +38,7 @@ impl IInjectable<f32, f32> for SharpeRatio {
         if volatility == 0.0 {
             return None;
         }
-
+        
         let excess_return = mean_return - self.risk_free_rate;
         let sharpe_ratio = excess_return / volatility;
 

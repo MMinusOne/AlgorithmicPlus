@@ -69,6 +69,7 @@ pub fn backtest_strategy(
     data_response.portfolio_growth_data =
         strategy.render_portfolio_percentage_growth(&backtest_result);
 
+    println!("Metrics {:?}", backtest_result.metrics());
     Ok(data_response)
 }
 

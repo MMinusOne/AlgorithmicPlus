@@ -44,7 +44,7 @@ impl StrategyData {
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-enum Metric {
+pub enum Metric {
     Sharpe,
 }
 
@@ -189,7 +189,7 @@ impl BacktestResult {
         let mut valid_trades: Vec<Trade> = vec![];
 
         for trade in backtest_manager.trades() {
-            if trade.is_closed() {
+            if !trade.is_closed() {
                 continue;
             }
 
@@ -197,7 +197,8 @@ impl BacktestResult {
             sharpe.allocate(trade.pl_ratio());
         }
 
-        metrics.insert(Metric::Sharpe, sharpe.get_data().unwrap());
+        let s = sharpe.get_data().unwrap();
+        metrics.insert(Metric::Sharpe, s);
 
         return Self {
             initial_capital: backtest_manager.initial_capital(),

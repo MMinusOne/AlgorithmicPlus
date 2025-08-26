@@ -214,14 +214,16 @@ pub trait IStrategy: Send + Sync {
     fn name(&self) -> &str;
     fn description(&self) -> &str;
     fn composition(&self) -> &'static dyn IComposition;
-    // fn optimizables(&self) -> HashMap<&'static str, (OptimizationData, InjectableState)> {
-    //     return HashMap::new();
-    // }
-    // fn optimization_target(&self, backtest_result: BacktestManager) -> i16 {
-    //     return backtest_result.sharpe as i16;
-    // }
     // fn wfo(&self, optimizer: OptimizationStrategy) {}
-    // fn optimized_backtest(&self, optimizer: OptimizationStrategy) {}
+    fn optimization_target(&self, backtest_result: BacktestResult) -> f32 {
+        let sharpe = backtest_result
+            .metrics()
+            .get(&Metric::Sharpe)
+            .unwrap()
+            .to_owned();
+
+        return sharpe;
+    }
     fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>>;
     fn render_equity_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn render_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;

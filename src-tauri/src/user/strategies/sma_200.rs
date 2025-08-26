@@ -33,65 +33,69 @@ impl IStrategy for SMA200Strategy {
     }
 
     fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>> {
-        let backtest_handle = thread::spawn(|| {
-            let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
-                initial_capital: 1_000.0,
-            });
+        let composition: &'static dyn IComposition = self.composition();
 
-            let composition: &'static dyn IComposition = self.composition();
-            let composition_data = composition.compose()?;
-
-            let timestamp_position = composition.get_composition_field_position("timestamp");
-            let close_position = composition.get_composition_field_position("close");
-            let sma_200_position = composition.get_composition_field_position("sma_200");
-
-            for composition_point in &composition_data {
-                let timestamp =
-                    CompositionDataType::extract_int(composition_point[timestamp_position]);
-                let close = CompositionDataType::extract_float(composition_point[close_position]);
-                let sma_200 =
-                    CompositionDataType::extract_option_float(composition_point[sma_200_position]);
-
-                // maybe let the backtest manager handle that
-                backtest_manager.update_price(timestamp, close);
-
-                if sma_200.is_none() {
-                    continue;
-                }
-
-                let sma_200 = sma_200.unwrap();
-
-                let latest_trade = backtest_manager.get_last_trade();
-
-                let side = match close > sma_200 {
-                    true => TradeSide::LONG,
-                    false => TradeSide::SHORT,
-                };
-
-                let mut new_trade = Trade::new(TradeOptions {
-                    side: side,
-                    capital_allocation: Some(backtest_manager.initial_capital()),
-                    leverage: Some(1.0),
+        let backtest_handle: thread::JoinHandle<Result<BacktestResult, Box<dyn Error + Send>>> =
+            thread::spawn(|| {
+                let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
+                    initial_capital: 1_000.0,
                 });
 
-                if !latest_trade.is_none() {
-                    let mut latest_trade = latest_trade.unwrap();
+                let composition_data = composition.compose().unwrap();
 
-                    if !latest_trade.is_closed() && latest_trade.side() != side {
-                        backtest_manager.close_trade(&mut latest_trade);
-                        backtest_manager.open_trade(&mut new_trade);
+                let timestamp_position = composition.get_composition_field_position("timestamp");
+                let close_position = composition.get_composition_field_position("close");
+                let sma_200_position = composition.get_composition_field_position("sma_200");
+
+                for composition_point in &composition_data {
+                    let timestamp =
+                        CompositionDataType::extract_int(composition_point[timestamp_position]);
+                    let close =
+                        CompositionDataType::extract_float(composition_point[close_position]);
+                    let sma_200 = CompositionDataType::extract_option_float(
+                        composition_point[sma_200_position],
+                    );
+
+                    // maybe let the backtest manager handle that
+                    backtest_manager.update_price(timestamp, close);
+
+                    if sma_200.is_none() {
                         continue;
                     }
+
+                    let sma_200 = sma_200.unwrap();
+
+                    let latest_trade = backtest_manager.get_last_trade();
+
+                    let side = match close > sma_200 {
+                        true => TradeSide::LONG,
+                        false => TradeSide::SHORT,
+                    };
+
+                    let mut new_trade = Trade::new(TradeOptions {
+                        side: side,
+                        capital_allocation: Some(backtest_manager.initial_capital()),
+                        leverage: Some(1.0),
+                    });
+
+                    if !latest_trade.is_none() {
+                        let mut latest_trade = latest_trade.unwrap();
+
+                        if !latest_trade.is_closed() && latest_trade.side() != side {
+                            backtest_manager.close_trade(&mut latest_trade);
+                            backtest_manager.open_trade(&mut new_trade);
+                            continue;
+                        }
+                    }
+
+                    backtest_manager.open_trade(&mut new_trade);
                 }
 
-                backtest_manager.open_trade(&mut new_trade);
-            }
+                let backtest_result = backtest_manager.backtest_ended();
+                Ok(backtest_result)
+            });
 
-            let backtest_result = backtest_manager.backtest_ended();
-            return backtest_result;
-        });
-
-        let backtest_result = backtest_handle.join().unwrap();
+        let backtest_result = backtest_handle.join().unwrap().unwrap();
 
         Ok(backtest_result)
     }

@@ -17,7 +17,7 @@ impl StrategyData {
     pub fn extract_composition_int(strategy_data: StrategyData) -> i64 {
         match strategy_data {
             StrategyData::CompositionDataType(composition_data) => {
-                CompositionDataType::extract_int(composition_data)
+                CompositionDataType::extract_int(&composition_data)
             }
 
             _ => panic!("Invalid strategy type conversion."),
@@ -26,7 +26,7 @@ impl StrategyData {
     pub fn extract_composition_float(strategy_data: StrategyData) -> f32 {
         match strategy_data {
             StrategyData::CompositionDataType(composition_data) => {
-                CompositionDataType::extract_float(composition_data)
+                CompositionDataType::extract_float(&composition_data)
             }
 
             _ => panic!("Invalid strategy type conversion."),
@@ -35,7 +35,7 @@ impl StrategyData {
     pub fn extract_composition_option_float(strategy_data: StrategyData) -> Option<f32> {
         match strategy_data {
             StrategyData::CompositionDataType(composition_data) => {
-                CompositionDataType::extract_option_float(composition_data)
+                CompositionDataType::extract_option_float(&composition_data)
             }
 
             _ => panic!("Invalid strategy type conversion."),
@@ -224,7 +224,10 @@ pub trait IStrategy: Send + Sync {
 
         return sharpe;
     }
-    fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>>;
+    fn backtest(
+        &self,
+        optimization_map: Option<HashMap<&'static str, CompositionDataType>>,
+    ) -> Result<BacktestResult, Box<dyn Error>>;
     fn render_equity_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn render_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn render_portfolio_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;

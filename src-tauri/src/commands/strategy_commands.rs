@@ -1,5 +1,10 @@
-use crate::user::strategies::IStrategy;
-use crate::user::strategies::STRATEGIES;
+use std::collections::HashMap;
+
+use crate::library::engines::optimizers::grid::{
+    GridOptimizer, NumericOptimizationParameter, OptimizationParameter,
+};
+use crate::library::engines::optimizers::Optimizer;
+use crate::user::strategies::{IStrategy, STRATEGIES};
 use crate::utils::classes::charting::{ChartingData, DataBlock};
 use serde::{Deserialize, Serialize};
 
@@ -61,15 +66,27 @@ pub fn backtest_strategy(
     data_response.name = Some(strategy.name().into());
     data_response.description = Some(strategy.description().into());
 
-    let backtest_result = strategy.backtest().unwrap();
+    let backtest_result = GridOptimizer::optimize(
+        strategy,
+        vec![
+            OptimizationParameter::Numeric(NumericOptimizationParameter {
+                name: "sma_short".into(),
+                range: 1..100
+            }),
+            OptimizationParameter::Numeric(NumericOptimizationParameter {
+                name: "sma_long".into(),
+                range: 100..200
+            }),
+        ],
+    );
 
     //TODO: make a render(...) function so there isnt a need to loop thrice
-    data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);
-    data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest_result);
-    data_response.portfolio_growth_data =
-        strategy.render_portfolio_percentage_growth(&backtest_result);
+    // data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);
+    // data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest_result);
+    // data_response.portfolio_growth_data =
+    //     strategy.render_portfolio_percentage_growth(&backtest_result);
 
-    println!("Metrics {:?}", backtest_result.metrics());
+    // println!("Metrics {:?}", backtest_result.metrics());
     Ok(data_response)
 }
 

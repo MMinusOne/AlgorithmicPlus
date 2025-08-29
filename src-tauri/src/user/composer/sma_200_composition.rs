@@ -75,9 +75,9 @@ impl IComposition for SMA200Composition {
         let sma_200_position = self.composition_fields.get("sma_200").unwrap().clone();
 
         for data_point in composed_data.into_iter() {
-            let timestamp = CompositionDataType::extract_int(data_point[timestamp_position]);
-            let close = CompositionDataType::extract_float(data_point[close_position]);
-            let sma_200 = CompositionDataType::extract_option_float(data_point[sma_200_position]);
+            let timestamp = CompositionDataType::extract_int(&data_point[timestamp_position]);
+            let close = CompositionDataType::extract_float(&data_point[close_position]);
+            let sma_200 = CompositionDataType::extract_option_float(&data_point[sma_200_position]);
 
             close_data.push(Some(LineData {
                 time: timestamp,

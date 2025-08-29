@@ -1,15 +1,18 @@
 use std::io::Error;
 
 use crate::{
-    library::engines::optimizers::Optimizer,
+    library::engines::optimizers::{grid::{OptimizationParameter, OptimizedBacktestResult}, Optimizer},
     user::strategies::{BacktestResult, IStrategy},
 };
 
-pub struct Beysian {}
+pub struct BeysianGridOptimizer {}
 
-impl Optimizer for Beysian {
-    fn optimize<T>(&self, strategy: Box<dyn IStrategy>) -> Result<Vec<Box<BacktestResult>>, Error> {
-        let backtest_results: Vec<Box<BacktestResult>> = vec![];
+impl Optimizer for BeysianGridOptimizer {
+     fn optimize(
+         strategy: &Box<dyn IStrategy>,
+        hyperparameters: Vec<OptimizationParameter>,
+    ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error> {
+        let backtest_results: Vec<Box<OptimizedBacktestResult>> = vec![];
 
         Ok(backtest_results)
     }

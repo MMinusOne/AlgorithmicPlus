@@ -1,44 +1,52 @@
 pub mod sma_200_composition;
 pub use sma_200_composition::SMA200Composition;
 pub mod btc_eth_statarb;
-pub use btc_eth_statarb::ETHBTCSTATARB;
-
 use crate::utils::classes::charting::ChartingData;
+pub use btc_eth_statarb::ETHBTCSTATARB;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::error::Error;
 use std::marker::Copy;
 use std::sync::LazyLock;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub enum CompositionDataType {
     Int(i64),
     Float(f32),
     OptionFloat(Option<f32>),
     Bool(bool),
+    String(String),
 }
 
 impl CompositionDataType {
-    pub fn extract_int(compsition_data: CompositionDataType) -> i64 {
+    pub fn extract_int(compsition_data: &CompositionDataType) -> i64 {
         match compsition_data {
-            Self::Int(v) => v,
+            Self::Int(v) => v.clone(),
             _ => panic!("Invalid compsition type conversion."),
         }
     }
-    pub fn extract_float(compsition_data: CompositionDataType) -> f32 {
+    pub fn extract_float(compsition_data: &CompositionDataType) -> f32 {
         match compsition_data {
-            Self::Float(v) => v,
+            Self::Float(v) => v.clone(),
             _ => panic!("Invalid compsition type conversion."),
         }
     }
-    pub fn extract_option_float(compsition_data: CompositionDataType) -> Option<f32> {
+    pub fn extract_option_float(compsition_data: &CompositionDataType) -> Option<f32> {
         match compsition_data {
-            Self::OptionFloat(v) => v,
+            Self::OptionFloat(v) => v.clone(),
             _ => panic!("Invalid compsition type conversion."),
         }
     }
     pub fn extract_bool(compsition_data: CompositionDataType) -> bool {
         match compsition_data {
             Self::Bool(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
+
+    pub fn extract_string(compsition_data: CompositionDataType) -> String {
+        match compsition_data {
+            Self::String(v) => v,
             _ => panic!("Invalid compsition type conversion."),
         }
     }
@@ -50,7 +58,11 @@ pub trait IComposition: Send + Sync {
     fn description(&self) -> &str;
     fn composition_fields(&self) -> HashMap<&'static str, usize>;
     fn get_composition_field_position(&self, field_name: &str) -> usize {
-        return self.composition_fields().get(field_name).unwrap().to_owned();
+        return self
+            .composition_fields()
+            .get(field_name)
+            .unwrap()
+            .to_owned();
     }
     fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>>;
     fn safe_compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {

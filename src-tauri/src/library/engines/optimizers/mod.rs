@@ -1,9 +1,15 @@
 use std::io::Error;
 
-use crate::user::strategies::{BacktestResult, IStrategy};
+use crate::{
+    library::engines::optimizers::grid::{OptimizationParameter, OptimizedBacktestResult},
+    user::strategies::{BacktestResult, IStrategy},
+};
 
 pub trait Optimizer {
-    fn optimize<T>(&self, strategy: Box<dyn IStrategy>) -> Result<Vec<Box<BacktestResult>>, Error>;
+     fn optimize(
+        strategy: &Box<dyn IStrategy>,
+        hyperparameters: Vec<OptimizationParameter>,
+    ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error>;
 }
 
 pub mod beysian;

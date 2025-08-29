@@ -9,7 +9,7 @@ use crate::{
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
-use std::thread;
+use std::{collections::HashMap, thread};
 use std::{error::Error, vec};
 use uuid::Uuid;
 
@@ -32,7 +32,10 @@ impl IStrategy for SMA200Strategy {
         return &self.description;
     }
 
-    fn backtest(&self) -> Result<BacktestResult, Box<dyn Error>> {
+    fn backtest(
+        &self,
+        optimization_map: Option<HashMap<&'static str, CompositionDataType>>,
+    ) -> Result<BacktestResult, Box<dyn Error>> {
         let composition: &'static dyn IComposition = self.composition();
 
         let backtest_handle: thread::JoinHandle<Result<BacktestResult, Box<dyn Error + Send>>> =
@@ -49,11 +52,11 @@ impl IStrategy for SMA200Strategy {
 
                 for composition_point in &composition_data {
                     let timestamp =
-                        CompositionDataType::extract_int(composition_point[timestamp_position]);
+                        CompositionDataType::extract_int(&composition_point[timestamp_position]);
                     let close =
-                        CompositionDataType::extract_float(composition_point[close_position]);
+                        CompositionDataType::extract_float(&composition_point[close_position]);
                     let sma_200 = CompositionDataType::extract_option_float(
-                        composition_point[sma_200_position],
+                        &composition_point[sma_200_position],
                     );
 
                     // maybe let the backtest manager handle that

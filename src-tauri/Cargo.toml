@@ -41,3 +41,4 @@ walkdir = "2.5.0"
 memmap2 = "0.9.7"
 phf = {version = "0.12.1", features = ["macros"] }
 fuzzy-matcher = "0.3.7"
+rayon = "1.11.0"

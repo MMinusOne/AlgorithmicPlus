@@ -1,5 +1,5 @@
 use std::io::Error;
-
+use crate::library::engines::optimizers::async_trait;
 use crate::{
     library::engines::optimizers::{
         grid::{OptimizationParameter, OptimizedBacktestResult},
@@ -10,8 +10,9 @@ use crate::{
 
 pub struct BeysianGridOptimizer {}
 
+#[async_trait]
 impl Optimizer for BeysianGridOptimizer {
-    fn optimize(
+    async fn optimize(
         strategy: &Box<dyn IStrategy>,
         hyperparameters: &[OptimizationParameter],
     ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error> {

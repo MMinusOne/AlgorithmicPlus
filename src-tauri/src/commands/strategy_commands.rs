@@ -46,7 +46,7 @@ pub struct BacktestStrategyResponse {
 }
 
 #[tauri::command]
-pub fn backtest_strategy(
+pub async fn backtest_strategy(
     params: BacktestStrategyParams,
 ) -> Result<BacktestStrategyResponse, tauri::Error> {
     let mut data_response = BacktestStrategyResponse {
@@ -66,15 +66,14 @@ pub fn backtest_strategy(
     data_response.name = Some(strategy.name().into());
     data_response.description = Some(strategy.description().into());
 
-    let backtest_result = GridOptimizer::optimize(
-        strategy,
-        &[
-            OptimizationParameter::Numeric(NumericOptimizationParameter {
-                name: "sma".into(),
-                range: 1..200,
-            })
-        ],
-    );
+    let parameters = [OptimizationParameter::Numeric(
+        NumericOptimizationParameter {
+            name: "sma".into(),
+            range: 10..200,
+        },
+    )];
+
+    let backtest_result = GridOptimizer::optimize(strategy, &parameters).await;
 
     //TODO: make a render(...) function so there isnt a need to loop thrice
     // data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);

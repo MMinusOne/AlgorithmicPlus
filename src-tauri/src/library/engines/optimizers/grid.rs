@@ -1,3 +1,6 @@
+use futures::{lock::Mutex, stream, StreamExt};
+
+use crate::library::engines::optimizers::async_trait;
 use crate::{
     library::engines::optimizers::Optimizer,
     user::{
@@ -5,8 +8,14 @@ use crate::{
         strategies::{BacktestResult, IStrategy},
     },
 };
+use rayon::prelude::*;
 use std::{
-    collections::{btree_map::Range, HashMap}, fs::File, io::Error, ops::Range as OpsRange
+    collections::{btree_map::Range, HashMap, VecDeque},
+    fs::File,
+    io::Error,
+    ops::Range as OpsRange,
+    sync::Arc,
+    thread,
 };
 
 pub enum OptimizationKind {
@@ -58,28 +67,30 @@ pub struct OptimizedBacktestResult {
     score: f32,
 }
 
+#[async_trait]
 impl Optimizer for GridOptimizer {
-    fn optimize(
+    async fn optimize(
         strategy: &Box<dyn IStrategy>,
         hyperparameters: &[OptimizationParameter],
     ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error> {
-        let mut backtest_results: Vec<Box<OptimizedBacktestResult>> = vec![];
+        let combinations = Self::generate_combinations(hyperparameters);
 
-        let combinations = Self::generate_combinations(&hyperparameters);
-
-        for combination in combinations {
-            let backtest_result = strategy.backtest(Some(&combination)).unwrap();
-            let score = strategy.optimization_target(&backtest_result);
-            backtest_results.push(Box::new(OptimizedBacktestResult {
-                backtest_result,
-                optimized_parameters: combination,
-                score,
-            }));
-        }
-
-        for backtest_result in &backtest_results { 
-            println!("{:?}", backtest_result);
-        }
+        let backtest_results: Vec<Box<OptimizedBacktestResult>> = combinations
+            .into_par_iter()
+            .filter_map(|combination| {
+                strategy
+                    .backtest(Some(&combination))
+                    .map(|backtest_result| {
+                        let score = strategy.optimization_target(&backtest_result);
+                        Box::new(OptimizedBacktestResult {
+                            backtest_result,
+                            optimized_parameters: combination,
+                            score,
+                        })
+                    })
+                    .ok()
+            })
+            .collect();
 
         Ok(backtest_results)
     }

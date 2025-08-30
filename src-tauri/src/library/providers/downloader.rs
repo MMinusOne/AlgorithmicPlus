@@ -44,16 +44,16 @@ impl Downloader {
     pub async fn download_all<F, T>(
         &self,
         download_datas: Vec<DownloadData>,
-        thread_limit: Option<u8>,
+        thread_limit: Option<usize>,
         on_progress: Option<F>,
     ) where
         F: Fn(T) + Send + Sync + 'static,
         T: 'static + Copy + Send + Sync,
         f32: num_traits::AsPrimitive<T>,
     {
-        let thread_count = thread_limit.unwrap_or(
+        let thread_count: usize = thread_limit.unwrap_or(
             std::thread::available_parallelism()
-                .map(|n| n.get() as u8)
+                .map(|n| n.get() as usize)
                 .unwrap_or(8),
         );
         let total_count = download_datas.len();
@@ -88,7 +88,7 @@ impl Downloader {
                     }
                 };
             })
-            .buffer_unordered(thread_count as usize)
+            .buffer_unordered(thread_count)
             .collect()
             .await;
     }

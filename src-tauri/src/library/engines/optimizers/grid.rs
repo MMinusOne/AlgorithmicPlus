@@ -1,6 +1,7 @@
 use futures::{lock::Mutex, stream, StreamExt};
 
 use crate::library::engines::optimizers::async_trait;
+use crate::user::strategies::Metric;
 use crate::{
     library::engines::optimizers::Optimizer,
     user::{
@@ -78,6 +79,7 @@ impl Optimizer for GridOptimizer {
         let backtest_results: Vec<Box<OptimizedBacktestResult>> = combinations
             .into_par_iter()
             .filter_map(|combination| {
+                println!("{:?}", combination);
                 strategy
                     .backtest(Some(&combination))
                     .map(|backtest_result| {
@@ -92,6 +94,10 @@ impl Optimizer for GridOptimizer {
             })
             .collect();
 
+        let sharpes = &backtest_results
+            .iter()
+            .map(|b| b.backtest_result.metrics().get(&Metric::Sharpe).unwrap().to_owned());
+        println!("{:?}", sharpes);
         Ok(backtest_results)
     }
 }

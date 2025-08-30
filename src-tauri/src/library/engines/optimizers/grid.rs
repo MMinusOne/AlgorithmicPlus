@@ -18,7 +18,7 @@ pub enum OptimizationKind {
 
 pub struct NumericOptimizationParameter {
     pub name: String,
-    pub range: OpsRange<i64>,
+    pub range: OpsRange<usize>,
 }
 
 pub struct CategoricOptimizationParameter {
@@ -55,59 +55,70 @@ pub struct GridOptimizer {}
 
 pub struct OptimizedBacktestResult {
     backtest_result: BacktestResult,
-    optimized_parameters: HashMap<&'static str, i64>,
+    optimized_parameters: HashMap<&'static str, CompositionDataType>,
     score: i16,
 }
 
 impl Optimizer for GridOptimizer {
     fn optimize(
         strategy: &Box<dyn IStrategy>,
-        hyperparameters: Vec<OptimizationParameter>,
+        hyperparameters: &[OptimizationParameter],
     ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error> {
         let backtest_results: Vec<Box<OptimizedBacktestResult>> = vec![];
 
         let combinations = Self::generate_combinations(&hyperparameters);
 
-        println!("{:?}", combinations);
+        // println!("{:?}", combinations);
         Ok(backtest_results)
     }
 }
 
 impl GridOptimizer {
     fn generate_combinations(
-        hyperparameters: &Vec<OptimizationParameter>,
+        hyperparameters: &[OptimizationParameter],
     ) -> Vec<HashMap<String, CompositionDataType>> {
-        let mut combinations: Vec<HashMap<String, CompositionDataType>> = vec![];
+        let numeric_params: Vec<_> = hyperparameters
+            .iter()
+            .map(|param| OptimizationParameter::extract_numeric(param))
+            .collect();
 
-        // Maybe reserve here
+        let total_combinations = numeric_params
+            .iter()
+            .map(|param| param.range.end - param.range.start)
+            .product();
 
-        for (parameter_index, parameter) in hyperparameters.iter().enumerate() {
-            let numeric_parameter = OptimizationParameter::extract_numeric(parameter);
+        let mut combinations = Vec::with_capacity(total_combinations);
 
-            for n in numeric_parameter.range.to_owned() {
-                for other_hypermeter_index in (0..hyperparameters.len()).skip(parameter_index) {
-                    let other_hyperparameter = &hyperparameters[other_hypermeter_index];
-                    let other_numeric_parameter =
-                        OptimizationParameter::extract_numeric(other_hyperparameter);
-
-                    for other_n in other_numeric_parameter.range.to_owned() {
-                        let mut combination: HashMap<String, CompositionDataType> = HashMap::new();
-
-                        combination
-                            .insert(numeric_parameter.name.clone(), CompositionDataType::Int(n));
-                        combination.insert(
-                            other_numeric_parameter.name.clone(),
-                            CompositionDataType::Int(other_n),
-                        );
-
-                        combinations.push(combination);
-                    }
-                }
-            }
-        }
-
-        println!("{:?}", combinations.len());
+        Self::generate_recursive(&numeric_params, 0, &mut HashMap::new(), &mut combinations);
 
         return combinations;
+    }
+
+    fn generate_recursive(
+        numeric_params: &Vec<&NumericOptimizationParameter>,
+        param_index: usize,
+        current_combination: &mut HashMap<String, CompositionDataType>,
+        combinations: &mut Vec<HashMap<String, CompositionDataType>>,
+    ) {
+        if param_index == numeric_params.len() {
+            combinations.push(current_combination.clone());
+            return;
+        }
+
+        let current_param = &numeric_params[param_index];
+
+        for value in current_param.range.clone() {
+            let composition_usize = CompositionDataType::Usize(value);
+            current_combination.insert(current_param.name.clone(), composition_usize);
+
+            Self::generate_recursive(
+                numeric_params,
+                param_index + 1,
+                current_combination,
+                combinations,
+            );
+        }
+
+        current_combination.remove(&current_param.name);
     }
 }

@@ -68,14 +68,14 @@ pub fn backtest_strategy(
 
     let backtest_result = GridOptimizer::optimize(
         strategy,
-        vec![
+        &[
             OptimizationParameter::Numeric(NumericOptimizationParameter {
                 name: "sma_short".into(),
-                range: 1..100
+                range: 1..100,
             }),
             OptimizationParameter::Numeric(NumericOptimizationParameter {
                 name: "sma_long".into(),
-                range: 100..200
+                range: 100..200,
             }),
         ],
     );

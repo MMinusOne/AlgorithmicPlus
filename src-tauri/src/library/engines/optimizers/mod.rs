@@ -8,7 +8,7 @@ use crate::{
 pub trait Optimizer {
      fn optimize(
         strategy: &Box<dyn IStrategy>,
-        hyperparameters: Vec<OptimizationParameter>,
+        hyperparameters:&[OptimizationParameter],
     ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error>;
 }
 

@@ -15,6 +15,7 @@ pub enum CompositionDataType {
     Float(f32),
     OptionFloat(Option<f32>),
     Bool(bool),
+    Usize(usize),
     String(String),
 }
 
@@ -47,6 +48,13 @@ impl CompositionDataType {
     pub fn extract_string(compsition_data: CompositionDataType) -> String {
         match compsition_data {
             Self::String(v) => v,
+            _ => panic!("Invalid compsition type conversion."),
+        }
+    }
+
+       pub fn extract_usize(compsition_data: CompositionDataType) -> usize {
+        match compsition_data {
+            Self::Usize(v) => v,
             _ => panic!("Invalid compsition type conversion."),
         }
     }

@@ -6,9 +6,7 @@ use crate::{
     },
 };
 use std::{
-    collections::{btree_map::Range, HashMap},
-    io::Error,
-    ops::Range as OpsRange,
+    collections::{btree_map::Range, HashMap}, fs::File, io::Error, ops::Range as OpsRange
 };
 
 pub enum OptimizationKind {
@@ -53,10 +51,11 @@ impl OptimizationParameter {
 
 pub struct GridOptimizer {}
 
+#[derive(Debug)]
 pub struct OptimizedBacktestResult {
     backtest_result: BacktestResult,
-    optimized_parameters: HashMap<&'static str, CompositionDataType>,
-    score: i16,
+    optimized_parameters: HashMap<String, CompositionDataType>,
+    score: f32,
 }
 
 impl Optimizer for GridOptimizer {
@@ -64,11 +63,24 @@ impl Optimizer for GridOptimizer {
         strategy: &Box<dyn IStrategy>,
         hyperparameters: &[OptimizationParameter],
     ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error> {
-        let backtest_results: Vec<Box<OptimizedBacktestResult>> = vec![];
+        let mut backtest_results: Vec<Box<OptimizedBacktestResult>> = vec![];
 
         let combinations = Self::generate_combinations(&hyperparameters);
 
-        // println!("{:?}", combinations);
+        for combination in combinations {
+            let backtest_result = strategy.backtest(Some(&combination)).unwrap();
+            let score = strategy.optimization_target(&backtest_result);
+            backtest_results.push(Box::new(OptimizedBacktestResult {
+                backtest_result,
+                optimized_parameters: combination,
+                score,
+            }));
+        }
+
+        for backtest_result in &backtest_results { 
+            println!("{:?}", backtest_result);
+        }
+
         Ok(backtest_results)
     }
 }
@@ -77,7 +89,7 @@ impl GridOptimizer {
     fn generate_combinations(
         hyperparameters: &[OptimizationParameter],
     ) -> Vec<HashMap<String, CompositionDataType>> {
-        let numeric_params: Vec<_> = hyperparameters
+        let numeric_params: Vec<&NumericOptimizationParameter> = hyperparameters
             .iter()
             .map(|param| OptimizationParameter::extract_numeric(param))
             .collect();
@@ -105,7 +117,7 @@ impl GridOptimizer {
             return;
         }
 
-        let current_param = &numeric_params[param_index];
+        let current_param = numeric_params[param_index];
 
         for value in current_param.range.clone() {
             let composition_usize = CompositionDataType::Usize(value);

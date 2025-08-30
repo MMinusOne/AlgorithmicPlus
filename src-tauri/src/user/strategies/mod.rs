@@ -155,7 +155,7 @@ impl BacktestManager {
 pub struct BacktestOptions {
     pub initial_capital: f32,
 }
-
+#[derive(Debug)]
 pub struct BacktestResult {
     initial_capital: f32,
     growth_capital: f32,
@@ -215,7 +215,7 @@ pub trait IStrategy: Send + Sync {
     fn description(&self) -> &str;
     fn composition(&self) -> &'static dyn IComposition;
     // fn wfo(&self, optimizer: OptimizationStrategy) {}
-    fn optimization_target(&self, backtest_result: BacktestResult) -> f32 {
+    fn optimization_target(&self, backtest_result: &BacktestResult) -> f32 {
         let sharpe = backtest_result
             .metrics()
             .get(&Metric::Sharpe)
@@ -226,8 +226,9 @@ pub trait IStrategy: Send + Sync {
     }
     fn backtest(
         &self,
-        optimization_map: Option<HashMap<&'static str, CompositionDataType>>,
+        optimization_map: Option<&HashMap<String, CompositionDataType>>,
     ) -> Result<BacktestResult, Box<dyn Error>>;
+    fn composed_data(&self) ->Vec<Box<[CompositionDataType]>>;
     fn render_equity_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn render_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn render_portfolio_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;

@@ -70,13 +70,9 @@ pub fn backtest_strategy(
         strategy,
         &[
             OptimizationParameter::Numeric(NumericOptimizationParameter {
-                name: "sma_short".into(),
-                range: 1..100,
-            }),
-            OptimizationParameter::Numeric(NumericOptimizationParameter {
-                name: "sma_long".into(),
-                range: 100..200,
-            }),
+                name: "sma".into(),
+                range: 1..200,
+            })
         ],
     );
 

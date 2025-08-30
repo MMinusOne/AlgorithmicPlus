@@ -2,6 +2,7 @@ use crate::{
     user::{
         composer::{CompositionDataType, IComposition, SMA200Composition},
         library::{
+            technical_indicators::SMA,
             trade::{Trade, TradeOptions, TradeSide},
             IInjectable,
         },
@@ -17,6 +18,7 @@ pub struct SMA200Strategy {
     id: String,
     name: String,
     description: String,
+    composition_data: Option< Vec<Box<[CompositionDataType]>>>
 }
 
 impl IStrategy for SMA200Strategy {
@@ -34,30 +36,31 @@ impl IStrategy for SMA200Strategy {
 
     fn backtest(
         &self,
-        optimization_map: Option<HashMap<&'static str, CompositionDataType>>,
+        optimization_map: Option<&HashMap<String, CompositionDataType>>,
     ) -> Result<BacktestResult, Box<dyn Error>> {
         let composition: &'static dyn IComposition = self.composition();
+        let composition_data = self.composed_data();
+
+        let sma_comp = optimization_map.unwrap().get("sma").unwrap().to_owned();
+        let sma_period = CompositionDataType::extract_usize(sma_comp);
 
         let backtest_handle: thread::JoinHandle<Result<BacktestResult, Box<dyn Error + Send>>> =
-            thread::spawn(|| {
+            thread::spawn(move || {
                 let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
                     initial_capital: 1_000.0,
                 });
 
-                let composition_data = composition.compose().unwrap();
-
                 let timestamp_position = composition.get_composition_field_position("timestamp");
                 let close_position = composition.get_composition_field_position("close");
-                let sma_200_position = composition.get_composition_field_position("sma_200");
+                let mut sma = SMA::new(sma_period);
 
                 for composition_point in &composition_data {
                     let timestamp =
                         CompositionDataType::extract_int(&composition_point[timestamp_position]);
                     let close =
                         CompositionDataType::extract_float(&composition_point[close_position]);
-                    let sma_200 = CompositionDataType::extract_option_float(
-                        &composition_point[sma_200_position],
-                    );
+                    let sma_200 = &sma.get_data();
+                    sma.allocate(close);
 
                     // maybe let the backtest manager handle that
                     backtest_manager.update_price(timestamp, close);
@@ -105,6 +108,14 @@ impl IStrategy for SMA200Strategy {
 
     fn composition(&self) -> &'static dyn IComposition {
         return SMA200Composition::instance();
+    }
+    
+    fn composed_data(&self) -> Vec<Box<[CompositionDataType]>> {
+        if self.composition_data.is_some() { 
+            return self.composition_data.as_ref().unwrap().to_vec();
+        }
+
+        return self.composition().compose().unwrap();
     }
 
     fn render_equity_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
@@ -202,6 +213,7 @@ impl SMA200Strategy {
             id: Uuid::new_v4().into(),
             name: "SMA 200 price crossover".into(),
             description: "Long when price > sma200 and short when price < sma200".into(),
+            composition_data: None
         };
     }
 }

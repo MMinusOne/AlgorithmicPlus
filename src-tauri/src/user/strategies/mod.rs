@@ -5,8 +5,8 @@ use crate::{
     },
     utils::classes::charting::ChartingData,
 };
-use std::sync::LazyLock;
 use std::{collections::HashMap, error::Error};
+use std::{sync::LazyLock, time::Instant};
 
 pub enum StrategyData {
     CompositionDataType(CompositionDataType),
@@ -45,6 +45,7 @@ impl StrategyData {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum Metric {
+    PerformanceTime,
     Sharpe,
 }
 
@@ -56,6 +57,8 @@ pub struct BacktestManager {
     initial_capital: f32,
     available_capital: f32,
     trades: Vec<Trade>,
+    computational_metrics: HashMap<Metric, f32>,
+    instant: Instant,
     backtest_ended: bool,
 }
 
@@ -107,7 +110,7 @@ impl BacktestManager {
         if let Some(existing_trade) = self
             .trades
             .iter_mut()
-            .find(|t| t.id().to_string() == trade.id().to_string())
+            .find(|t| t.id() == trade.id()) 
         {
             existing_trade.close(current_price, current_timestamp);
             self.adjust_available_capital(
@@ -130,23 +133,30 @@ impl BacktestManager {
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
     pub fn backtest_ended(&mut self) -> BacktestResult {
         for trade in self.trades.clone().iter_mut() {
-            &self.close_trade(trade);
+            self.close_trade(trade);
         }
 
         self.backtest_ended = true;
+        self.computational_metrics.insert(
+            Metric::PerformanceTime,
+            self.instant.elapsed().as_secs_f32(),
+        );
         return BacktestResult::from(self.to_owned());
     }
 }
 
 impl BacktestManager {
     pub fn new(options: BacktestOptions) -> Self {
+        let computational_metrics: HashMap<Metric, f32> = HashMap::new();
+
         return Self {
             initial_capital: options.initial_capital,
             available_capital: options.initial_capital,
             current_price: None,
             current_timestamp: None,
             trades: Vec::new(),
-            //record_metrics: Vec<Metric>
+            computational_metrics,
+            instant: Instant::now(),
             backtest_ended: false,
         };
     }
@@ -184,6 +194,7 @@ impl BacktestResult {
 impl BacktestResult {
     pub fn from(backtest_manager: BacktestManager) -> Self {
         let mut metrics: HashMap<Metric, f32> = HashMap::new();
+
         let mut sharpe = SharpeRatio::new(Some(0.0));
 
         let mut valid_trades: Vec<Trade> = vec![];
@@ -199,6 +210,14 @@ impl BacktestResult {
 
         let sharpe = sharpe.get_data().unwrap();
         metrics.insert(Metric::Sharpe, sharpe);
+        metrics.insert(
+            Metric::PerformanceTime,
+            backtest_manager
+                .computational_metrics
+                .get(&Metric::PerformanceTime)
+                .unwrap()
+                .to_owned(),
+        );
 
         return Self {
             initial_capital: backtest_manager.initial_capital(),
@@ -228,7 +247,7 @@ pub trait IStrategy: Send + Sync {
         &self,
         optimization_map: Option<&HashMap<String, CompositionDataType>>,
     ) -> Result<BacktestResult, Box<dyn Error>>;
-    fn composed_data(&self) ->Vec<Box<[CompositionDataType]>>;
+    fn composed_data(&self) -> Vec<Box<[CompositionDataType]>>;
     fn render_equity_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn render_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn render_portfolio_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;

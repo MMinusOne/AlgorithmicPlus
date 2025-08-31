@@ -52,50 +52,44 @@ impl IStrategy for SMA200Strategy {
         let close_position = composition.get_composition_field_position("close");
         let mut sma = SMA::new(sma_period);
 
+        let mut latest_trade: Option<Trade> = None;
+
         for composition_point in &composition_data {
-            let timestamp =
-                CompositionDataType::extract_int(&composition_point[timestamp_position]);
+            let timestamp = CompositionDataType::extract_int(&composition_point[timestamp_position]);
             let close = CompositionDataType::extract_float(&composition_point[close_position]);
-            let sma_200 = &sma.get_data();
-            sma.allocate(close);
-
-            // maybe let the backtest manager handle that
+            
             backtest_manager.update_price(timestamp, close);
-
-            if sma_200.is_none() {
+            sma.allocate(close);
+            
+            let sma_value = sma.get_data();
+            if sma_value.is_none() {
                 continue;
             }
 
-            let sma_200 = sma_200.unwrap();
+            let sma_value = sma_value.unwrap();
+            let side = if close > sma_value { TradeSide::LONG } else { TradeSide::SHORT };
 
-            let latest_trade = backtest_manager.get_last_trade();
 
-            let side = match close > sma_200 {
-                true => TradeSide::LONG,
-                false => TradeSide::SHORT,
-            };
-
-            let mut new_trade = Trade::new(TradeOptions {
-                side: side,
-                capital_allocation: Some(backtest_manager.initial_capital()),
-                leverage: Some(1.0),
-            });
-
-            if !latest_trade.is_none() {
-                let mut latest_trade = latest_trade.unwrap();
-
-                if !latest_trade.is_closed() && latest_trade.side() != side {
-                    backtest_manager.close_trade(&mut latest_trade);
-                    backtest_manager.open_trade(&mut new_trade);
-                    continue;
+            if let Some(ref mut trade) = latest_trade {
+                if !trade.is_closed() && trade.side() != side {
+                    backtest_manager.close_trade(trade);
+                    latest_trade = None;
                 }
             }
 
-            backtest_manager.open_trade(&mut new_trade);
+         
+            if latest_trade.is_none() {
+                let mut new_trade = Trade::new(TradeOptions {
+                    side,
+                    capital_allocation: Some(backtest_manager.initial_capital()),
+                    leverage: Some(1.0),
+                });
+                backtest_manager.open_trade(&mut new_trade);
+                latest_trade = Some(new_trade);
+            }
         }
 
         let backtest_result = backtest_manager.backtest_ended();
-
         Ok(backtest_result)
     }
 
@@ -202,11 +196,15 @@ impl IStrategy for SMA200Strategy {
 
 impl SMA200Strategy {
     pub fn new() -> Self {
-        return Self {
+        let mut strategy = Self {
             id: Uuid::new_v4().into(),
             name: "SMA 200 price crossover".into(),
             description: "Long when price > sma200 and short when price < sma200".into(),
             composition_data: None,
         };
+        
+        strategy.composition_data = Some(strategy.composition().compose().unwrap());
+        
+        return strategy;
     }
 }

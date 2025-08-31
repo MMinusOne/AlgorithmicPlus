@@ -14,6 +14,13 @@ edition = "2021"
 name = "algorithmicplus_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -39,6 +46,6 @@ url = "2.5.4"
 async-recursion = "1.1.1"
 walkdir = "2.5.0"
 memmap2 = "0.9.7"
-phf = {version = "0.12.1", features = ["macros"] }
+phf = { version = "0.12.1", features = ["macros"] }
 fuzzy-matcher = "0.3.7"
 rayon = "1.11.0"

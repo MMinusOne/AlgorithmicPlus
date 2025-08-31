@@ -38,11 +38,8 @@ impl IInjectable<f32, f32> for SMA {
             return None;
         }
 
-        let period = f32::from_usize(self.period)?;
-        let sma = self.current_sum / period;
-
+        let sma = self.current_sum / self.period as f32;
         self.data_values.push(sma);
-
         return Some(sma);
     }
 

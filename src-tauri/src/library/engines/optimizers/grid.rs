@@ -91,7 +91,10 @@ impl Optimizer for GridOptimizer {
             })
             .collect();
 
-        println!("{:?}", backtest_results);
+        for b in &backtest_results {
+            println!("{:?}", b.backtest_result.metrics());
+        }
+
         Ok(backtest_results)
     }
 }

@@ -53,19 +53,29 @@ impl Trade {
         if !self.is_closed {
             self.close_price = Some(close_price);
             self.close_timestamp = Some(close_timestamp);
-            self.pl_ratio = self.pl_ratio();
-            self.pl_fixed = self.pl_fixed();
-            self.pl_portfolio = self.pl_portfolio();
+            // Only calculate P&L if we have all required data
+            if self.open_price.is_some() && self.capital_allocation.is_some() {
+                let open_price = self.open_price.unwrap();
+                let leverage = self.leverage;
+                let trade_allocation = self.capital_allocation().unwrap() as f32;
+
+                let unleveraged_pl = match self.side {
+                    TradeSide::LONG => (close_price - open_price) / open_price,
+                    TradeSide::SHORT => (open_price - close_price) / open_price,
+                };
+
+                self.pl_ratio = unleveraged_pl * leverage * 100.0;
+                self.pl_fixed = unleveraged_pl * leverage * trade_allocation;
+                self.pl_portfolio = (self.pl_fixed / trade_allocation) * 100.0;
+            }
             self.is_closed = true;
         }
     }
 
     pub fn pl_portfolio(&self) -> f32 {
-        if !self.open_price.is_none() && !self.close_price.is_none() {
+        if !self.open_price.is_none() && !self.close_price.is_none() && !self.capital_allocation.is_none() {
             let fixed_pl = self.pl_fixed();
             let trade_allocation = self.capital_allocation().unwrap() as f32;
-
-            let new_capital = trade_allocation + fixed_pl;
 
             let portfolio_pl = (fixed_pl / trade_allocation) * 100.0;
             return portfolio_pl;
@@ -75,17 +85,18 @@ impl Trade {
     }
 
     pub fn pl_fixed(&self) -> f32 {
-        if !self.open_price.is_none() && !self.close_price.is_none() {
+        if !self.open_price.is_none() && !self.close_price.is_none() && !self.capital_allocation.is_none() {
             let open_price = self.open_price.unwrap();
             let close_price = self.close_price.unwrap();
             let leverage = self.leverage;
+            let trade_allocation = self.capital_allocation().unwrap() as f32;
 
             let unleveraged_pl = match self.side {
                 TradeSide::LONG => (close_price - open_price) / open_price,
                 TradeSide::SHORT => (open_price - close_price) / open_price,
             };
 
-            let pl_fixed = unleveraged_pl * leverage;
+            let pl_fixed = unleveraged_pl * leverage * trade_allocation;
             return pl_fixed;
         } else {
             return self.pl_fixed;

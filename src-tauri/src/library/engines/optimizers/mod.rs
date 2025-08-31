@@ -10,7 +10,7 @@ pub trait Optimizer {
      async fn optimize(
         strategy: &Box<dyn IStrategy>,
         hyperparameters:&[OptimizationParameter],
-    ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error>;
+    ) -> Result<Vec<OptimizedBacktestResult>, Error>;
 }
 
 pub mod beysian;

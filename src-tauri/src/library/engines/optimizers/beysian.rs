@@ -15,8 +15,8 @@ impl Optimizer for BeysianGridOptimizer {
     async fn optimize(
         strategy: &Box<dyn IStrategy>,
         hyperparameters: &[OptimizationParameter],
-    ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error> {
-        let backtest_results: Vec<Box<OptimizedBacktestResult>> = vec![];
+    ) -> Result<Vec<OptimizedBacktestResult>, Error> {
+        let backtest_results: Vec<OptimizedBacktestResult> = vec![];
 
         Ok(backtest_results)
     }

@@ -73,31 +73,26 @@ impl Optimizer for GridOptimizer {
     async fn optimize(
         strategy: &Box<dyn IStrategy>,
         hyperparameters: &[OptimizationParameter],
-    ) -> Result<Vec<Box<OptimizedBacktestResult>>, Error> {
+    ) -> Result<Vec<OptimizedBacktestResult>, Error> {
         let combinations = Self::generate_combinations(hyperparameters);
 
-        let backtest_results: Vec<Box<OptimizedBacktestResult>> = combinations
+        let backtest_results: Vec<OptimizedBacktestResult> = combinations
             .into_par_iter()
             .filter_map(|combination| {
-                println!("{:?}", combination);
                 strategy
                     .backtest(Some(&combination))
                     .map(|backtest_result| {
                         let score = strategy.optimization_target(&backtest_result);
-                        Box::new(OptimizedBacktestResult {
+                        OptimizedBacktestResult {
                             backtest_result,
                             optimized_parameters: combination,
                             score,
-                        })
+                        }
                     })
                     .ok()
             })
             .collect();
 
-        let sharpes = &backtest_results
-            .iter()
-            .map(|b| b.backtest_result.metrics().get(&Metric::Sharpe).unwrap().to_owned());
-        println!("{:?}", sharpes);
         Ok(backtest_results)
     }
 }

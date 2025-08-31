@@ -197,8 +197,8 @@ impl BacktestResult {
             sharpe.allocate(trade.pl_ratio());
         }
 
-        let s = sharpe.get_data().unwrap();
-        metrics.insert(Metric::Sharpe, s);
+        let sharpe = sharpe.get_data().unwrap();
+        metrics.insert(Metric::Sharpe, sharpe);
 
         return Self {
             initial_capital: backtest_manager.initial_capital(),

@@ -61,8 +61,8 @@ impl IInjectable<f32, f32> for StandardDeviation {
 impl StandardDeviation {
     pub fn new() -> Self {
         return Self {
-            name: "Standard Divation".into(),
-            description: "Standard Divation.".into(),
+            name: "Standard Deviation".into(),
+            description: "Standard Deviation calculation.".into(),
             sum: 0 as f32,
             sum_squared: 0 as f32,
             count: 0,

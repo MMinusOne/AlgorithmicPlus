@@ -1,5 +1,3 @@
-use futures::{lock::Mutex, stream, StreamExt};
-
 use crate::library::engines::optimizers::async_trait;
 use crate::user::strategies::Metric;
 use crate::{
@@ -68,9 +66,8 @@ pub struct OptimizedBacktestResult {
     score: f32,
 }
 
-#[async_trait]
 impl Optimizer for GridOptimizer {
-    async fn optimize(
+    fn optimize(
         strategy: &Box<dyn IStrategy>,
         hyperparameters: &[OptimizationParameter],
     ) -> Result<Vec<OptimizedBacktestResult>, Error> {
@@ -79,6 +76,7 @@ impl Optimizer for GridOptimizer {
         let backtest_results: Vec<OptimizedBacktestResult> = combinations
             .into_par_iter()
             .filter_map(|combination| {
+                println!("{:?}", combination);
                 strategy
                     .backtest(Some(&combination))
                     .map(|backtest_result| {
@@ -93,6 +91,7 @@ impl Optimizer for GridOptimizer {
             })
             .collect();
 
+        println!("{:?}", backtest_results);
         Ok(backtest_results)
     }
 }

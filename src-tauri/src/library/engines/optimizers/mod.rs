@@ -1,15 +1,14 @@
-use std::io::Error;
-use async_trait::async_trait;
 use crate::{
     library::engines::optimizers::grid::{OptimizationParameter, OptimizedBacktestResult},
     user::strategies::{BacktestResult, IStrategy},
 };
+use async_trait::async_trait;
+use std::io::Error;
 
-#[async_trait]
 pub trait Optimizer {
-     async fn optimize(
+    fn optimize(
         strategy: &Box<dyn IStrategy>,
-        hyperparameters:&[OptimizationParameter],
+        hyperparameters: &[OptimizationParameter],
     ) -> Result<Vec<OptimizedBacktestResult>, Error>;
 }
 

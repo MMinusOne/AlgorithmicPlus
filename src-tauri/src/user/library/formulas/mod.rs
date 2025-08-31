@@ -1,2 +1,2 @@
-pub mod standard_diviation;
+pub mod standard_deviation;
 pub mod sharpe_ratio;

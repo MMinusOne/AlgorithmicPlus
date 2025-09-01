@@ -45,16 +45,19 @@ It's still lacking alot of features, the only features currently available are t
 
 - ❌ Reduce the property names on big IPC transfers to reduce bottle-necks.
 - ❌ Add chartring auto-coloring and color-maps.
-- ❌ Implement technical indicators.
-- ❌ Implement optimization Algorithmic.
+- ❌ Implement more technical indicators.
+- ❌ Implement `Beysian` and `Genetic` optimization Algorithmic.
 - ❌ GUI Settings Menu.
 - ❌ Make the code documentation.
 - ❌ Implement more data providers.
 - ❌ Make the metric and utils formulas.
 - ❌ Refactor the code file structure.
-- ❌ Fork `lightweight-charts` and implement time sensitive functions in C++.
-- ❌ Make unit tests
+- ❌ Look into replacing `lightweight-charts` with `uPlot`.
+- ❌Implement chart down sampling and move chart rendering to web worker.
+- ❌ Implement websocket to stream the charts.
 - ❌ Figure out a better design for IInejctables `get_data`, such that it doesn't take `&mut self`.
--  Optimize and refactor the code once a minimum viable product is done.
+- ❌ Optimize and refactor the code once a minimum viable product is done.
+- ❌ Make a good starter-examples examples
+- ❌ Write the user and the developer documentation
 
 I have plans to keep working on this.

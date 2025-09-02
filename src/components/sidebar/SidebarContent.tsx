@@ -14,111 +14,24 @@ import {
 import { IChartApi } from "lightweight-charts";
 import ChartingContent from "./content/ChartingContent";
 import NewsContent from "./content/NewsContent";
+import StaticResourceContent from "../content/StaticResourceContent";
+import CompositionContent from "../content/CompositionContent";
+import BacktestContent from "../content/BacktestContent";
 
 export default function SidebarContent() {
   const { selectedItem } = useSidebarState();
-  // In the future there will be more than raw data responses
-  const [sidebarData, setSidebarData] = useState<SidebarData>({
-    dataBlocks: [],
-    chartingData: [],
-  });
 
-  const chartRef = useRef<IChartApi>();
+  //TODO: Display download informaton and not just chart (symbol name, downloaded at, start timestamp, end timestamp, download size, download location), news, metrics
 
-  useEffect(() => {
-    const getSidebarData = async () => {
-      switch (selectedItem?.itemType) {
-        case SelectedItemType.RawData:
-          const rawData = await invoke<RawDataResponse>(
-            "get_static_resource_data",
-            {
-              params: {
-                id: selectedItem.id,
-              },
-            }
-          );
-
-          setSidebarData({
-            symbol: rawData.symbol,
-            timeframe: rawData.timeframe,
-            startTimestamp: rawData.start_timestamp,
-            endTimestamp: rawData.end_timestamp,
-            chartingData: rawData.charting_data,
-            dataBlocks: rawData.data_blocks,
-          });
-          break;
-
-        case SelectedItemType.Composition:
-          const compositionData = await invoke<CompositionDataResponse>(
-            "get_composition_data",
-            {
-              params: {
-                id: selectedItem.id,
-              },
-            }
-          );
-
-          setSidebarData({
-            name: compositionData.name,
-            description: compositionData.description,
-            chartingData: compositionData.charting_data,
-            dataBlocks: compositionData.data_blocks,
-          });
-          break;
-
-        case SelectedItemType.Backtest:
-          const backtestStrategy = await invoke<BacktestDataResponse>(
-            "backtest_strategy",
-            {
-              params: {
-                id: selectedItem.id,
-              },
-            }
-          );
-
-          console.log(backtestStrategy);
-
-          setSidebarData({
-            name: backtestStrategy.name,
-            description: backtestStrategy.description,
-            chartingData: backtestStrategy.percentage_growth_data,
-            dataBlocks: backtestStrategy.data_blocks,
-          });
-          break;
-      }
-    };
-
-    getSidebarData();
-  }, [selectedItem]);
-
-  useEffect(() => {
-    if (!chartRef.current) return;
-  }, [chartRef]);
-
-  //TODO: Display download informaton and not just chart (symbol name, downloaded at, start timestamp, end timestamp, download size, download location)
-
-  if (sidebarData.chartingData.length > 0) {
-    return (
-      <div className="w-full h-screen overflow-hidden overflow-y-scroll">
-        <ChartingContent sidebarData={sidebarData} chartRef={chartRef} />
-        {/* <div className="w-full h-[300px]">
-          <div className="flex flex-col">
-            <span>Download Symbol: {sidebarData.symbol}</span>
-            <span>Timeframe: {sidebarData.timeframe}</span>
-            <span>Data Type: {sidebarData.dataType}</span>
-            <span>
-              Start Date: {new Date(sidebarData.startTimestamp!).getUTCDate()}
-            </span>
-            <span>
-              End Date: {new Date(sidebarData.endTimestamp!).getUTCDate()}
-            </span>
-          </div>
-        </div> */}
-      </div>
-    );
+  if (selectedItem?.itemType == SelectedItemType.RawData) {
+    return <StaticResourceContent />;
   }
 
-  if (sidebarData.dataBlocks.length > 0) {
-    return <NewsContent />;
+  if (selectedItem?.itemType == SelectedItemType.Composition) {
+    return <CompositionContent />;
+  }
+
+  if (selectedItem?.itemType == SelectedItemType.Backtest) {
+    return <BacktestContent />;
   }
 }

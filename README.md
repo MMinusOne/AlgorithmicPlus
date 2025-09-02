@@ -52,7 +52,7 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Make the metric and utils formulas.
 - ❌ Refactor the code file structure.
 - ❌ Look into replacing `lightweight-charts` with `uPlot`.
-- ❌Implement chart down sampling and move chart rendering to web worker.
+- ❌ Implement chart down sampling and move chart rendering to web worker.
 - ❌ Implement websocket to stream the charts.
 - ❌ Figure out a better design for IInejctables `get_data`, such that it doesn't take `&mut self`.
 - ❌ Optimize and refactor the code once a minimum viable product is done.

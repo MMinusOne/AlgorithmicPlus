@@ -61,6 +61,7 @@ export default function Sidebar() {
                 {sidebarState.strategiesMetadatas.map((strategyMetadata) => {
                   return (
                     <li
+                      key={strategyMetadata.id}
                       onClick={() => {
                         if (
                           sidebarState?.selectedItem?.id !== strategyMetadata.id
@@ -89,6 +90,7 @@ export default function Sidebar() {
                   (compositionMetadata) => {
                     return (
                       <li
+                        key={compositionMetadata.id}
                         onClick={() => {
                           if (
                             sidebarState?.selectedItem?.id !==
@@ -118,6 +120,7 @@ export default function Sidebar() {
                 {sidebarState.staticResources.map((staticResource) => {
                   return (
                     <li
+                      key={staticResource.id}
                       onClick={() => {
                         if (
                           sidebarState?.selectedItem?.id !== staticResource.id

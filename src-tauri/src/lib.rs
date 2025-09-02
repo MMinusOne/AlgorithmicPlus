@@ -19,6 +19,7 @@ use tauri::AppHandle;
 use tauri::Manager;
 
 static APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
+static DEFAULT_THREAD_COUNT: usize = 8;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

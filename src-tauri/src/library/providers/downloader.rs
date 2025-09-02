@@ -1,15 +1,23 @@
-use crate::library::providers::sources::{binance::Binance, yahoo::Yahoo};
+use crate::{
+    library::providers::sources::{binance::Binance, yahoo::Yahoo},
+    DEFAULT_THREAD_COUNT,
+};
 use async_trait::async_trait;
-use futures::stream::{self, StreamExt};
+use futures::{
+    join,
+    stream::{self, StreamExt},
+};
 use num_traits::AsPrimitive;
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     sync::{
         atomic::{AtomicUsize, Ordering},
-        Arc,
+        Arc, Mutex,
     },
 };
+use tokio::sync::Semaphore;
 
 pub struct Downloader {
     pub sources: HashMap<SourceName, Box<dyn Source>>,
@@ -53,47 +61,47 @@ impl Downloader {
     {
         let thread_count: usize = thread_limit.unwrap_or(
             std::thread::available_parallelism()
-                .map(|n| n.get() as usize)
-                .unwrap_or(8),
+                .map(|n: std::num::NonZero<usize>| n.get() as usize)
+                .unwrap_or(DEFAULT_THREAD_COUNT),
         );
         let total_count = download_datas.len();
-        let completed_count = Arc::new(AtomicUsize::new(0));
+        let completed_count = Arc::new(Mutex::new(0usize));
+        let semaphore = Arc::new(Semaphore::new(thread_count));
 
-        let task_results: Vec<_> = stream::iter(download_datas)
+        let tasks: Vec<_> = stream::iter(download_datas)
             .map(|download_data| {
-                let counter = Arc::clone(&completed_count);
-                let on_progress = &on_progress;
+                let semaphore = semaphore.clone();
+                let completed_count = completed_count.clone();
+                let on_progress = on_progress.as_ref();
 
                 return async move {
+                    let _permit = semaphore.acquire().await.unwrap();
+
                     for download_data_type in &download_data.data_types {
                         match download_data_type.as_str() {
-                            "OHLCV" => {
-                                self.download_ohlcv(download_data.clone()).await;
-                            }
-                            "bidask" => {
-                                //TODO: make bidask download
-                            }
-                            "news" => {
-                                //TODO: make news download */
-                            }
+                            "OHLCV" => self.download_ohlcv(&download_data).await,
+
+                            "bidask" => {}
+
+                            "news" => {}
+
                             _ => {}
                         }
                     }
 
-                    let current = counter.fetch_add(1, Ordering::Relaxed) + 1;
-                    let progress: T = ((current * 100) as f32 / (total_count) as f32).as_();
-
-                    if let Some(progress_callback) = on_progress {
-                        progress_callback(progress);
+                    if let Some(p_callback) = on_progress {
+                        let mut count = completed_count.lock().unwrap();
+                        *count += 1;
+                        let progress: T = ((*count * 100) as f32 / total_count as f32).as_();
+                        p_callback(progress);
                     }
                 };
             })
             .buffer_unordered(thread_count)
-            .collect()
-            .await;
+            .collect().await;
     }
 
-    pub async fn download_ohlcv(&self, download_data: DownloadData) {
+    pub async fn download_ohlcv(&self, download_data: &DownloadData) {
         match self.sources.get(&download_data.source_name) {
             Some(source) => {
                 let ohlcv_download_path = source.download_ohlcv(download_data).await;
@@ -183,7 +191,7 @@ pub trait Source: Send + Sync {
     fn timeframes(&self) -> Vec<&str>;
     async fn download_ohlcv(
         &self,
-        download_data: DownloadData,
+        download_data: &DownloadData,
     ) -> Result<(), Box<dyn std::error::Error>>;
     // fn format_raw_data(&self, data: Vec<>) -> Vec<Vec<String>>;
     async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn std::error::Error>>;

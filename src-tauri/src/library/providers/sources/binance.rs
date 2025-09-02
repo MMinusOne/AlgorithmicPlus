@@ -38,7 +38,7 @@ impl Source for Binance {
         return self.timeframes.clone();
     }
 
-    async fn download_ohlcv(&self, download_data: DownloadData) -> Result<(), Box<dyn Error>> {
+    async fn download_ohlcv(&self, download_data: &DownloadData) -> Result<(), Box<dyn Error>> {
         let start_timestamp = parse_date_string_to_utc(&download_data.start_date)?.timestamp();
         let end_timestamp = parse_date_string_to_utc(&download_data.end_date)?.timestamp(); 
 

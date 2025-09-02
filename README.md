@@ -47,7 +47,6 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Add chartring auto-coloring and color-maps.
 - ❌ Implement more technical indicators.
 - ❌ Implement `Beysian` and `Genetic` optimization Algorithmic.
-- ❌ GUI Settings Menu.
 - ❌ Make the code documentation.
 - ❌ Implement more data providers.
 - ❌ Make the metric and utils formulas.

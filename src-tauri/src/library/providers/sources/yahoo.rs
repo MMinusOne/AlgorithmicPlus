@@ -1,7 +1,6 @@
 use crate::{
     library::providers::downloader::{
-        DownloadData, Downloadable, MarketType, OHLCVJSONFileDataStructure, Source,
-        SourceName,
+        DownloadData, Downloadable, MarketType, OHLCVJSONFileDataStructure, Source, SourceName,
     },
     utils::{date::parse_date_string_to_offsettime, paths::get_app_data_dir},
 };
@@ -38,7 +37,7 @@ impl Source for Yahoo {
     //TODO: change all download's to download_ohlcv
     async fn download_ohlcv(
         &self,
-        download_data: DownloadData,
+        download_data: &DownloadData,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let yahoo_connector = yahoo::YahooConnector::new()?;
         let start_date = parse_date_string_to_offsettime(&download_data.start_date)?;
@@ -52,7 +51,7 @@ impl Source for Yahoo {
 
         let mut ohlcv_json_data = OHLCVJSONFileDataStructure {
             symbol: download_data.symbol.clone(),
-            timeframe: download_data.timeframe,
+            timeframe: download_data.timeframe.clone(),
             start_timestamp: start_date.unix_timestamp(),
             end_timestamp: end_date.unix_timestamp(),
             timestamps: Vec::new(),

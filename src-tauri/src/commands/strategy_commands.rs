@@ -4,7 +4,7 @@ use crate::library::engines::optimizers::grid::{
     GridOptimizer, NumericOptimizationParameter, OptimizationParameter,
 };
 use crate::library::engines::optimizers::Optimizer;
-use crate::user::strategies::{IStrategy, STRATEGIES};
+use crate::user::strategies::{IStrategy, Metric, STRATEGIES};
 use crate::utils::classes::charting::{ChartingData, DataBlock};
 use serde::{Deserialize, Serialize};
 
@@ -36,6 +36,12 @@ pub struct BacktestStrategyParams {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct MetricPair {
+    key: Metric,
+    value: f32,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct BacktestStrategyResponse {
     pub name: Option<String>,
     pub description: Option<String>,
@@ -43,6 +49,7 @@ pub struct BacktestStrategyResponse {
     pub portfolio_growth_data: Vec<ChartingData>,
     pub percentage_growth_data: Vec<ChartingData>,
     pub data_blocks: Vec<DataBlock>,
+    pub metrics: Vec<MetricPair>,
 }
 
 #[tauri::command]
@@ -55,7 +62,8 @@ pub fn backtest_strategy(
         equity_growth_charting_data: Vec::new(),
         portfolio_growth_data: Vec::new(),
         percentage_growth_data: Vec::new(),
-        data_blocks: vec![],
+        data_blocks: Vec::new(),
+        metrics: Vec::new(),
     };
 
     let strategy = (&*STRATEGIES)
@@ -66,14 +74,22 @@ pub fn backtest_strategy(
     data_response.name = Some(strategy.name().into());
     data_response.description = Some(strategy.description().into());
 
-    let parameters = [OptimizationParameter::Numeric(
-        NumericOptimizationParameter {
-            name: "sma".into(),
-            range: 80..85,
-        },
-    )];
+    // let parameters = [OptimizationParameter::Numeric(
+    //     NumericOptimizationParameter {
+    //         name: "sma".into(),
+    //         range: 80..85,
+    //     },
+    // )];
 
-    let backtest_result = GridOptimizer::optimize(strategy, &parameters);
+    // let backtest_result = GridOptimizer::optimize(strategy, &parameters);
+    let backtest_result = strategy.backtest(None).unwrap();
+
+    for (metric_key, metric_value) in backtest_result.metrics() {
+        data_response.metrics.push(MetricPair {
+            key: metric_key,
+            value: metric_value,
+        });
+    }
 
     //TODO: make a render(...) function so there isnt a need to loop thrice
     // data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);

@@ -43,7 +43,7 @@ impl StrategyData {
     }
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 pub enum Metric {
     PerformanceTime,
     Sharpe,
@@ -107,11 +107,7 @@ impl BacktestManager {
         }
         let current_price = self.current_price.unwrap();
         let current_timestamp = self.current_timestamp.unwrap();
-        if let Some(existing_trade) = self
-            .trades
-            .iter_mut()
-            .find(|t| t.id() == trade.id()) 
-        {
+        if let Some(existing_trade) = self.trades.iter_mut().find(|t| t.id() == trade.id()) {
             existing_trade.close(current_price, current_timestamp);
             self.adjust_available_capital(
                 trade.capital_allocation().unwrap() as f32 + trade.pl_fixed(),
@@ -255,6 +251,7 @@ pub trait IStrategy: Send + Sync {
 }
 
 pub mod sma_200;
+use serde::{Deserialize, Serialize};
 pub use sma_200::SMA200Strategy;
 
 pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> =

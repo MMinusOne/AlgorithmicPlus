@@ -126,6 +126,15 @@ impl Source for Binance {
         Ok(())
     }
 
+        async fn download_bidask(
+        &self,
+        download_data: &DownloadData,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+                
+
+        Ok(())
+    }
+
     async fn get_downloadables(&self) -> Result<Vec<Downloadable>, Box<dyn Error>> {
         let mut downloadables: Vec<Downloadable> = vec![];
 

@@ -122,6 +122,11 @@ export interface CompositionDataResponse {
   data_blocks: DataBlock[];
 }
 
+export interface Metric {
+  key: string;
+  value: string;
+}
+
 export interface BacktestDataResponse {
   name: string;
   description: string;
@@ -129,6 +134,7 @@ export interface BacktestDataResponse {
   portfolio_growth_data: ChartingSeries[];
   percentage_growth_data: ChartingSeries[];
   data_blocks: DataBlock[];
+  metrics: Metric[];
 }
 
 export interface SidebarData {

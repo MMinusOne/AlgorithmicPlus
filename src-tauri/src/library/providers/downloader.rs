@@ -81,7 +81,7 @@ impl Downloader {
                         match download_data_type.as_str() {
                             "OHLCV" => self.download_ohlcv(&download_data).await,
 
-                            "bidask" => {}
+                            "bidask" => self.download_bidask(&download_data).await,
 
                             "news" => {}
 
@@ -98,7 +98,8 @@ impl Downloader {
                 };
             })
             .buffer_unordered(thread_count)
-            .collect().await;
+            .collect()
+            .await;
     }
 
     pub async fn download_ohlcv(&self, download_data: &DownloadData) {
@@ -108,6 +109,15 @@ impl Downloader {
             }
             None => {}
         };
+    }
+
+    pub async fn download_bidask(&self, download_data: &DownloadData) {
+        match self.sources.get(&download_data.source_name) {
+            Some(source) => {
+                let ohlcv_download_path = source.download_bidask(download_data).await;
+            }
+            _ => {}
+        }
     }
 }
 
@@ -190,6 +200,10 @@ pub trait Source: Send + Sync {
     fn source_url(&self) -> &str;
     fn timeframes(&self) -> Vec<&str>;
     async fn download_ohlcv(
+        &self,
+        download_data: &DownloadData,
+    ) -> Result<(), Box<dyn std::error::Error>>;
+    async fn download_bidask(
         &self,
         download_data: &DownloadData,
     ) -> Result<(), Box<dyn std::error::Error>>;

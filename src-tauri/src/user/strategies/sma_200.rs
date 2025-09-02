@@ -41,8 +41,8 @@ impl IStrategy for SMA200Strategy {
         let composition: &'static dyn IComposition = self.composition();
         let composition_data = self.composed_data();
 
-        let sma_comp = optimization_map.unwrap().get("sma").unwrap().to_owned();
-        let sma_period = CompositionDataType::extract_usize(sma_comp);
+        // let sma_comp = optimization_map.unwrap().get("sma").unwrap().to_owned();
+        // let sma_period = CompositionDataType::extract_usize(sma_comp);
 
         let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
             initial_capital: 1_000.0,
@@ -50,23 +50,24 @@ impl IStrategy for SMA200Strategy {
 
         let timestamp_position = composition.get_composition_field_position("timestamp");
         let close_position = composition.get_composition_field_position("close");
-        let mut sma = SMA::new(sma_period);
+        let sma_position = composition.get_composition_field_position("sma_200");
+        // let mut sma = SMA::new(sma_period);
 
         let mut latest_trade: Option<Trade> = None;
 
         for composition_point in &composition_data {
             let timestamp = CompositionDataType::extract_int(&composition_point[timestamp_position]);
             let close = CompositionDataType::extract_float(&composition_point[close_position]);
-            
+            let sma = CompositionDataType::extract_option_float(&composition_point[sma_position]);
             backtest_manager.update_price(timestamp, close);
-            sma.allocate(close);
+            // sma.allocate(close);
             
-            let sma_value = sma.get_data();
-            if sma_value.is_none() {
+            // let sma_value = sma.get_data();
+            if sma.is_none() {
                 continue;
             }
 
-            let sma_value = sma_value.unwrap();
+            let sma_value = sma.unwrap();
             let side = if close > sma_value { TradeSide::LONG } else { TradeSide::SHORT };
 
 

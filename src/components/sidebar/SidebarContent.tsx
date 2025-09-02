@@ -1,19 +1,5 @@
 import { useSidebarState } from "@/lib/state/sidebar";
-import BaseChart from "../charting/BaseChart";
-import { useEffect, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import {
-  SelectedItemType,
-  RawDataResponse,
-  NewsData,
-  ChartingSeries,
-  SidebarData,
-  CompositionDataResponse,
-  BacktestDataResponse,
-} from "@/types";
-import { IChartApi } from "lightweight-charts";
-import ChartingContent from "./content/ChartingContent";
-import NewsContent from "./content/NewsContent";
+import { SelectedItemType } from "@/types";
 import StaticResourceContent from "../content/StaticResourceContent";
 import CompositionContent from "../content/CompositionContent";
 import BacktestContent from "../content/BacktestContent";

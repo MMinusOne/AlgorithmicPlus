@@ -7,13 +7,13 @@ use crate::{
     utils::paths::join_app_data_dir,
 };
 
-pub struct ETHUSDT {
+pub struct ETHUSDT_4YEARS_15M {
     id: String,
     name: String,
     load_path: PathBuf,
 }
 
-impl IStaticResource<OHLCVData> for ETHUSDT {
+impl IStaticResource<OHLCVData> for ETHUSDT_4YEARS_15M {
     fn id(&self) -> &str {
         return &self.id;
     }
@@ -27,17 +27,17 @@ impl IStaticResource<OHLCVData> for ETHUSDT {
     }
 }
 
-impl ETHUSDT {
-    pub fn instance() -> &'static ETHUSDT {
-        static INSTANCE: OnceLock<ETHUSDT> = OnceLock::new();
-        return INSTANCE.get_or_init(|| ETHUSDT::new());
+impl ETHUSDT_4YEARS_15M {
+    pub fn instance() -> &'static ETHUSDT_4YEARS_15M {
+        static INSTANCE: OnceLock<ETHUSDT_4YEARS_15M> = OnceLock::new();
+        return INSTANCE.get_or_init(|| ETHUSDT_4YEARS_15M::new());
     }
 
     pub fn new() -> Self {
         return Self {
             id: Uuid::new_v4().into(),
-            name: "ETHUSDT".into(),
-            load_path: join_app_data_dir("raw/ohlcv/5ec2642c-b0e7-4fe2-89ab-72f1e3a09461").unwrap(),
+            name: "ETHUSDT_4YEARS_15M".into(),
+            load_path: join_app_data_dir("raw/ohlcv/ethusdt_01_01_2021_06_15_2025_15m").unwrap(),
         };
     }
 }

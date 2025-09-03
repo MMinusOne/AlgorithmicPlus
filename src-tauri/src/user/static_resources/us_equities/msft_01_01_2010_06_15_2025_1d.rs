@@ -7,13 +7,13 @@ use crate::{
     utils::paths::join_app_data_dir,
 };
 
-pub struct BTCUSDT {
+pub struct MSFT_15YEARS_1D {
     id: String,
     name: String,
     load_path: PathBuf,
 }
 
-impl IStaticResource<OHLCVData> for BTCUSDT {
+impl IStaticResource<OHLCVData> for MSFT_15YEARS_1D {
     fn id(&self) -> &str {
         return &self.id;
     }
@@ -27,17 +27,17 @@ impl IStaticResource<OHLCVData> for BTCUSDT {
     }
 }
 
-impl BTCUSDT {
-    pub fn instance() -> &'static BTCUSDT {
-        static INSTANCE: OnceLock<BTCUSDT> = OnceLock::new();
-        return INSTANCE.get_or_init(|| BTCUSDT::new());
+impl MSFT_15YEARS_1D {
+    pub fn instance() -> &'static MSFT_15YEARS_1D {
+        static INSTANCE: OnceLock<MSFT_15YEARS_1D> = OnceLock::new();
+        return INSTANCE.get_or_init(|| MSFT_15YEARS_1D::new());
     }
 
     pub fn new() -> Self {
         return Self {
             id: Uuid::new_v4().into(),
-            name: "BTCUSDT".into(),
-            load_path: join_app_data_dir("raw/ohlcv/6c3b733f-006b-4bc0-9cd7-cd4c3082beae").unwrap(),
+            name: "MSFT_15YEARS_1D".into(),
+            load_path: join_app_data_dir("raw/ohlcv/msft_01_01_2010_06_15_2025_1d").unwrap(),
         };
     }
 }

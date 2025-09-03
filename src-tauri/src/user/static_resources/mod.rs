@@ -1,8 +1,8 @@
-pub mod ohlcv;
+pub mod us_equities;
+pub mod crypto;
+
 use crate::library::providers::downloader::{OHLCVJSONFileDataStructure, OHLCVMetaData};
 use crate::library::providers::sources::binance::OHLCVCandleObject;
-use crate::user::static_resources::ohlcv::ethusdt::ETHUSDT;
-use crate::user::static_resources::ohlcv::BTCUSDT;
 use crate::utils::classes::charting::{
     CandlestickChartingData, CandlestickData, ChartingData, HistogramChartingData, HistogramData,
 };
@@ -161,7 +161,40 @@ impl StaticResource {
 
 pub static STATIC_RESOURCES: LazyLock<Vec<StaticResource>> = LazyLock::new(|| {
     vec![
-        StaticResource::OHLCVDataType(ETHUSDT::instance()),
-        StaticResource::OHLCVDataType(BTCUSDT::instance()),
+        // Crypto assets
+        StaticResource::OHLCVDataType(
+            crypto::ethusdt_01_01_2021_06_15_2025_15m::ETHUSDT_4YEARS_15M::instance(),
+        ),
+        StaticResource::OHLCVDataType(
+            crypto::ethusdt_01_01_2021_06_15_2025_4h::ETHUSDT_4YEARS_4H::instance(),
+        ),
+        StaticResource::OHLCVDataType(
+            crypto::solusdt_01_01_2021_06_15_2025_15m::SOLUSDT_4YEARS_15M::instance(),
+        ),
+        StaticResource::OHLCVDataType(
+            crypto::btcusdt_01_01_2021_06_15_2025_15m::BTCUSDT_4YEARS_15M::instance(),
+        ),
+        StaticResource::OHLCVDataType(
+            crypto::btcusdt_01_01_2021_06_15_2025_4h::BTCUSDT_4YEARS_4H::instance(),
+        ),
+        // US equity assets
+        StaticResource::OHLCVDataType(
+            us_equities::aapl_01_01_2010_06_15_2025_1d::AAPL_15YEARS_1D::instance(),
+        ),
+        StaticResource::OHLCVDataType(
+            us_equities::nvda_01_01_2010_06_15_2025_1d::NVDA_15YEARS_1D::instance(),
+        ),
+        StaticResource::OHLCVDataType(
+            us_equities::msft_01_01_2010_06_15_2025_1d::MSFT_15YEARS_1D::instance(),
+        ),
+        StaticResource::OHLCVDataType(
+            us_equities::tsla_01_01_2010_06_15_2025_1d::TSLA_15YEARS_1D::instance(),
+        ),
+        StaticResource::OHLCVDataType(
+            us_equities::spy_01_01_2010_06_15_2025_1d::SPY_15YEARS_1D::instance(),
+        ),
+        StaticResource::OHLCVDataType(
+            us_equities::wmt_01_01_2010_06_15_2025_1d::WMT_15YEARS_1D::instance(),
+        ),
     ]
 });

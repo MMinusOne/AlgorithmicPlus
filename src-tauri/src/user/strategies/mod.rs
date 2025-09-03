@@ -250,9 +250,12 @@ pub trait IStrategy: Send + Sync {
     fn save(&self) -> Result<(), Box<dyn Error>>;
 }
 
-pub mod sma_200;
+// pub mod sma_200;
 use serde::{Deserialize, Serialize};
-pub use sma_200::SMA200Strategy;
+// pub use sma_200::SMA200Strategy;
 
-pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> =
-    LazyLock::new(|| vec![Box::new(SMA200Strategy::new())]);
+pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> = LazyLock::new(|| {
+    vec![
+    // Box::new(SMA200Strategy::new())
+    ]
+});

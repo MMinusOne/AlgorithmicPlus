@@ -1,13 +1,13 @@
 pub mod sma_200_composition;
-pub use sma_200_composition::SMA200Composition;
-pub mod btc_eth_statarb;
-use crate::utils::classes::charting::ChartingData;
-pub use btc_eth_statarb::ETHBTCSTATARB;
-use std::borrow::Cow;
+// pub use sma_200_composition::SMA200Composition;
+// pub mod btc_eth_statarb;
+// use crate::utils::classes::charting::ChartingData;
+// pub use btc_eth_statarb::ETHBTCSTATARB;
 use std::collections::HashMap;
 use std::error::Error;
-use std::marker::Copy;
 use std::sync::LazyLock;
+
+use crate::utils::classes::charting::ChartingData;
 
 #[derive(Clone, Debug)]
 pub enum CompositionDataType {
@@ -92,7 +92,7 @@ pub trait IComposition: Send + Sync {
 
 pub static COMPOSITIONS: LazyLock<Vec<Box<dyn IComposition>>> = LazyLock::new(|| {
     vec![
-        Box::new(SMA200Composition::instance().clone()),
-        Box::new(ETHBTCSTATARB::instance().clone()),
+        // Box::new(SMA200Composition::instance().clone()),
+        // Box::new(ETHBTCSTATARB::instance().clone()),
     ]
 });

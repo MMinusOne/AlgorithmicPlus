@@ -7,6 +7,9 @@ use crate::{
 };
 use std::{collections::HashMap, error::Error};
 use std::{sync::LazyLock, time::Instant};
+pub mod double_sma_optimize_strategy;
+pub mod sma_200_strategy;
+pub mod sma_optimizable_period_strategy;
 
 pub enum StrategyData {
     CompositionDataType(CompositionDataType),
@@ -256,6 +259,8 @@ use serde::{Deserialize, Serialize};
 
 pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> = LazyLock::new(|| {
     vec![
-    // Box::new(SMA200Strategy::new())
+        Box::new(sma_200_strategy::Sma200Strategy::new()),
+        Box::new(sma_optimizable_period_strategy::SmaOptimizablePeriodStrategy::new()),
+        Box::new(double_sma_optimize_strategy::DoubleSmaOptimizablePeriodStrategy::new()),
     ]
 });

@@ -1,13 +1,16 @@
-pub mod sma_200_composition;
-// pub use sma_200_composition::SMA200Composition;
-// pub mod btc_eth_statarb;
-// use crate::utils::classes::charting::ChartingData;
-// pub use btc_eth_statarb::ETHBTCSTATARB;
+pub mod btc_eth_statarb_4h_4y_composition;
+pub mod eth_sma_200_4h_4y_composition;
+pub mod eth_standalone_4h_4y_composition;
+
+use crate::user::composer::{
+    btc_eth_statarb_4h_4y_composition::BTC_ETH_STATARB_4H_4Y,
+    eth_sma_200_4h_4y_composition::ETH_SMA_200_4H_4Y,
+    eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y,
+};
+use crate::utils::classes::charting::ChartingData;
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::LazyLock;
-
-use crate::utils::classes::charting::ChartingData;
 
 #[derive(Clone, Debug)]
 pub enum CompositionDataType {
@@ -52,7 +55,7 @@ impl CompositionDataType {
         }
     }
 
-       pub fn extract_usize(compsition_data: CompositionDataType) -> usize {
+    pub fn extract_usize(compsition_data: CompositionDataType) -> usize {
         match compsition_data {
             Self::Usize(v) => v,
             _ => panic!("Invalid compsition type conversion."),
@@ -92,7 +95,8 @@ pub trait IComposition: Send + Sync {
 
 pub static COMPOSITIONS: LazyLock<Vec<Box<dyn IComposition>>> = LazyLock::new(|| {
     vec![
-        // Box::new(SMA200Composition::instance().clone()),
-        // Box::new(ETHBTCSTATARB::instance().clone()),
+        Box::new(ETH_SMA_200_4H_4Y::instance().clone()),
+        Box::new(BTC_ETH_STATARB_4H_4Y::instance().clone()),
+        Box::new(ETH_STANDALONE_4H_4Y::instance().clone()),
     ]
 });

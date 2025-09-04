@@ -61,9 +61,9 @@ pub struct GridOptimizer {}
 
 #[derive(Debug)]
 pub struct OptimizedBacktestResult {
-    backtest_result: BacktestResult,
-    optimized_parameters: HashMap<String, CompositionDataType>,
-    score: f32,
+    pub backtest_result: BacktestResult,
+    pub optimized_parameters: HashMap<String, CompositionDataType>,
+    pub score: f32,
 }
 
 impl Optimizer for GridOptimizer {

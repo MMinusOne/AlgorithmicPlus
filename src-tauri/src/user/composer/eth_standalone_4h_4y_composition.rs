@@ -59,7 +59,6 @@ impl IComposition for ETH_STANDALONE_4H_4Y {
 
     fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
         let mut close_data: Vec<Option<LineData>> = vec![];
-        let mut sma_data: Vec<Option<LineData>> = vec![];
 
         let composed_data = self.compose()?;
 
@@ -103,8 +102,8 @@ impl ETH_STANDALONE_4H_4Y {
 
     pub fn new() -> Self {
         return Self {
-            name: "SMA 200 Composition".into(),
-            description: "The composition for the SMA 200 strategy".into(),
+            name: "ETH Standalone composition".into(),
+            description: "ETH Standalone".into(),
             id: Uuid::new_v4().into(),
             composition_fields: HashMap::from([("timestamp", 0), ("close", 1)]),
             static_resources: HashMap::from([(

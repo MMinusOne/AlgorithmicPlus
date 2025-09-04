@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use crate::library::engines::optimizers::grid::{
@@ -74,22 +75,52 @@ pub fn backtest_strategy(
     data_response.name = Some(strategy.name().into());
     data_response.description = Some(strategy.description().into());
 
-    // let parameters = [OptimizationParameter::Numeric(
-    //     NumericOptimizationParameter {
-    //         name: "sma".into(),
-    //         range: 80..85,
-    //     },
-    // )];
+    let parameters = [OptimizationParameter::Numeric(
+        NumericOptimizationParameter {
+            name: "sma_period".into(),
+            range: 10..300,
+        },
+    )];
 
     // let backtest_result = GridOptimizer::optimize(strategy, &parameters);
-    let backtest_result = strategy.backtest(None).unwrap();
+    println!("Executing strategy {:?}", strategy.name());
 
-    for (metric_key, metric_value) in backtest_result.metrics() {
-        data_response.metrics.push(MetricPair {
-            key: metric_key,
-            value: metric_value,
-        });
+    let mut backtest_results = GridOptimizer::optimize(strategy, &parameters).unwrap();
+
+    backtest_results.sort_by(|a, b| {
+        let backtest_results_a = a.backtest_result.metrics();
+        let sharpe_a = backtest_results_a.get(&Metric::Sharpe).unwrap();
+        let backtest_results_b = b.backtest_result.metrics();
+        let sharpe_b = backtest_results_b.get(&Metric::Sharpe).unwrap();
+
+        if sharpe_a < sharpe_b {
+            Ordering::Less
+        } else if sharpe_a > sharpe_b {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    });
+
+    for backtest in backtest_results {
+        println!(
+            "
+        ================================
+        Parameters: {:?}
+        Metrics: {:?}
+        ================================
+        ",
+            backtest.optimized_parameters,
+            backtest.backtest_result.metrics()
+        );
     }
+
+    // for (metric_key, metric_value) in backtest_result.metrics() {
+    //     data_response.metrics.push(MetricPair {
+    //         key: metric_key,
+    //         value: metric_value,
+    //     });
+    // }
 
     //TODO: make a render(...) function so there isnt a need to loop thrice
     // data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);

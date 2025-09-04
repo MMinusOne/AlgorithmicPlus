@@ -48,10 +48,10 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
         let composition: &'static dyn IComposition = self.composition();
         let composition_data = self.composed_data();
 
-        let sma_short_comp = optimization_map.unwrap().get("sma_short").unwrap().to_owned();
+        let sma_short_comp = optimization_map.unwrap().get("sma_short_period").unwrap().to_owned();
         let sma_short_period = CompositionDataType::extract_usize(sma_short_comp);
 
-        let sma_long_comp = optimization_map.unwrap().get("sma_long").unwrap().to_owned();
+        let sma_long_comp = optimization_map.unwrap().get("sma_long_period").unwrap().to_owned();
         let sma_long_period = CompositionDataType::extract_usize(sma_long_comp);
 
         let timestamp_position = composition.get_composition_field_position("timestamp");

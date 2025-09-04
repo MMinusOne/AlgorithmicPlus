@@ -48,7 +48,7 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
         let composition: &'static dyn IComposition = self.composition();
         let composition_data = self.composed_data();
 
-        let sma_comp = optimization_map.unwrap().get("sma").unwrap().to_owned();
+        let sma_comp = optimization_map.unwrap().get("sma_period").unwrap().to_owned();
         let sma_period = CompositionDataType::extract_usize(sma_comp);
 
         let timestamp_position = composition.get_composition_field_position("timestamp");

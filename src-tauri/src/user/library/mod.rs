@@ -19,6 +19,7 @@ pub mod trade;
 #[derive(Clone)]
 pub enum Injectable {
     FloatNumericType(&'static dyn IInjectable<f32, f32>),
+    TupleFloatNumericType(&'static dyn IInjectable<f32, (f32, f32)>),
     IntegerNumericType(&'static dyn IInjectable<i64, f32>),
     TradeNumericType(&'static dyn IInjectable<Trade, f32>),
     // Add any custom types if needed

@@ -1,4 +1,6 @@
 use crate::user::composer::{CompositionDataType, IComposition};
+use crate::user::library::technical_indicators::{bollinger_bands, BollingerBands};
+use crate::user::library::IInjectable;
 use crate::user::static_resources::{crypto, StaticResource};
 use crate::utils::classes::charting::{ChartingData, LineChartingData, LineData};
 use crate::utils::formulas::processing::normalize::normalize_inline;
@@ -64,16 +66,37 @@ impl IComposition for BTC_ETH_STATARB_4H_4Y {
         normalize_inline::<f32>(&mut btc_normalized_closes);
         normalize_inline::<f32>(&mut eth_normalized_closes);
 
+        let mut bollinger_bands_injectable = BollingerBands::new(100);
+
         for index in 0..size {
             let timestamp = timestamps[index];
             let btc_normalized_close = btc_normalized_closes[index];
             let eth_normalized_close = eth_normalized_closes[index];
+            let stationary_asset_price = 0.5 * btc_normalized_close - 0.5 * eth_normalized_close;
+
+            bollinger_bands_injectable.allocate(stationary_asset_price);
+
+            let bounds = bollinger_bands_injectable.get_data();
+
+            let mut upper_bound: Option<f32> = None;
+            let mut lower_bound: Option<f32> = None;
+
+            match bounds {
+                Some((u_b, l_b)) => {
+                    upper_bound = Some(u_b);
+                    lower_bound = Some(l_b);
+                }
+                None => {}
+            }
+
             // Push the data
             let data = Box::new([
                 CompositionDataType::Int(timestamp),
                 CompositionDataType::Float(btc_normalized_close),
                 CompositionDataType::Float(eth_normalized_close),
-                CompositionDataType::Float(0.5 * btc_normalized_close - 0.5 * eth_normalized_close),
+                CompositionDataType::OptionFloat(upper_bound),
+                CompositionDataType::OptionFloat(lower_bound),
+                CompositionDataType::Float(stationary_asset_price),
             ]);
 
             composed_data.push(data);
@@ -85,18 +108,41 @@ impl IComposition for BTC_ETH_STATARB_4H_4Y {
     fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
         let mut btc_close_data: Vec<Option<LineData>> = vec![];
         let mut eth_close_data: Vec<Option<LineData>> = vec![];
+        let mut upper_bound_data: Vec<Option<LineData>> = vec![];
+        let mut lower_bound_data: Vec<Option<LineData>> = vec![];
         let mut new_asset: Vec<Option<LineData>> = vec![];
 
         let composed_data = self.compose()?;
 
-        let timestamp_position = self.composition_fields.get("timestamp").unwrap().clone();
-        let btc_close_position = self.composition_fields.get("btc_close").unwrap().clone();
-        let eth_close_position = self.composition_fields.get("eth_close").unwrap().clone();
+        let timestamp_position = self.composition_fields.get("timestamp").unwrap().to_owned();
+        let btc_close_position = self.composition_fields.get("btc_close").unwrap().to_owned();
+        let eth_close_position = self.composition_fields.get("eth_close").unwrap().to_owned();
+        let std_upper_bound_position = self
+            .composition_fields
+            .get("stddev_upperbound")
+            .unwrap()
+            .to_owned();
+        let std_lower_bound_position = self
+            .composition_fields
+            .get("stddev_lowerbound")
+            .unwrap()
+            .to_owned();
+        let stationary_asset_position = self
+            .composition_fields
+            .get("stationary_asset")
+            .unwrap()
+            .to_owned();
 
         for data_point in composed_data.into_iter() {
             let timestamp = CompositionDataType::extract_int(&data_point[timestamp_position]);
             let btc_close = CompositionDataType::extract_float(&data_point[btc_close_position]);
             let eth_close = CompositionDataType::extract_float(&data_point[eth_close_position]);
+            let std_upper_bound =
+                CompositionDataType::extract_option_float(&data_point[std_upper_bound_position]);
+            let std_lower_bound =
+                CompositionDataType::extract_option_float(&data_point[std_lower_bound_position]);
+            let stationary_asset =
+                CompositionDataType::extract_float(&data_point[stationary_asset_position]);
 
             btc_close_data.push(Some(LineData {
                 time: timestamp,
@@ -110,9 +156,27 @@ impl IComposition for BTC_ETH_STATARB_4H_4Y {
                 color: Some("blue".into()),
             }));
 
+            match std_upper_bound {
+                Some(value) => upper_bound_data.push(Some(LineData {
+                    time: timestamp,
+                    value,
+                    color: Some("red".into()),
+                })),
+                None => {}
+            }
+
+            match std_lower_bound {
+                Some(value) => lower_bound_data.push(Some(LineData {
+                    time: timestamp,
+                    value,
+                    color: Some("green".into()),
+                })),
+                None => {}
+            }
+
             new_asset.push(Some(LineData {
                 time: timestamp,
-                value: (0.5 * btc_close) - (0.5 * eth_close),
+                value: stationary_asset,
                 color: Some("black".into()),
             }));
         }
@@ -130,7 +194,21 @@ impl IComposition for BTC_ETH_STATARB_4H_4Y {
                 height: None,
                 data: new_asset,
                 pane: Some(1),
-                title: Some("new asset".into()),
+                title: Some("New Asset".into()),
+            }),
+            ChartingData::LineChartingData(LineChartingData {
+                chart_type: "line".into(),
+                height: None,
+                data: upper_bound_data,
+                pane: Some(1),
+                title: Some("Upper bounds".into()),
+            }),
+            ChartingData::LineChartingData(LineChartingData {
+                chart_type: "line".into(),
+                height: None,
+                data: lower_bound_data,
+                pane: Some(1),
+                title: Some("Lower bounds".into()),
             }),
             ChartingData::LineChartingData(LineChartingData {
                 chart_type: "line".into(),
@@ -161,7 +239,7 @@ impl BTC_ETH_STATARB_4H_4Y {
             name: "BTC ETH STAT ARB".into(),
             description: "The composition for statistical arbitrage between eth and btc half/half (no co-efficient optimization)".into(),
             id: Uuid::new_v4().into(),
-            composition_fields: HashMap::from([("timestamp", 0), ("btc_close", 1), ("eth_close", 2), ("stationary_asset", 3)]),
+            composition_fields: HashMap::from([("timestamp", 0), ("btc_close", 1), ("eth_close", 2), ("stddev_upperbound", 3), ("stddev_lowerbound", 4), ("stationary_asset", 5)]),
             static_resources: HashMap::from([
                 (
                     "BTCUSDT",

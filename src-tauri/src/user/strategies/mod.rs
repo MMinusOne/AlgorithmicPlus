@@ -49,7 +49,47 @@ impl StrategyData {
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 pub enum Metric {
     PerformanceTime,
-    Sharpe,
+
+    // Consistency
+    StabilityRatio,
+
+    // Market comparasion
+    Alpha,
+    Beta,
+    TimingRatio,
+
+    // Portfolio Activity
+    TurnoverRate,
+
+    // Return,
+    APR,
+    TotalReturns,
+    CumulativeReturns,
+    CGAR,
+    IntervalReturns,
+
+    // Risk
+    MaxDrawdown,
+    PainIndex,
+    StandardDeviation,
+
+    // Risk Adjusted Returns
+    BurkeRatio,
+    CalmarRatio,
+    KappaRatio,
+    RarmddRatio,
+    SortinoRatio,
+    SterlingRatio,
+    TreynorRatio,
+    SharpeRatio,
+
+    // Trade analysis
+    AverageTradeDuration,
+    ConsecutiveWinsLoses,
+    ProfitFactor,
+    RecoveryFactor,
+    RiskRewardRatio,
+    WinRate,
 }
 
 // MAKE TRADE MANAGER WRAPPER TO GIVE BACKTEST MANAGER AND HANDLE CAPITAL ALLOCATION
@@ -208,7 +248,7 @@ impl BacktestResult {
         }
 
         let sharpe = sharpe.get_data().unwrap();
-        metrics.insert(Metric::Sharpe, sharpe);
+        metrics.insert(Metric::SharpeRatio, sharpe);
         metrics.insert(
             Metric::PerformanceTime,
             backtest_manager
@@ -236,7 +276,7 @@ pub trait IStrategy: Send + Sync {
     fn optimization_target(&self, backtest_result: &BacktestResult) -> f32 {
         let sharpe = backtest_result
             .metrics()
-            .get(&Metric::Sharpe)
+            .get(&Metric::SharpeRatio)
             .unwrap()
             .to_owned();
 

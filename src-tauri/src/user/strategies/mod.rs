@@ -171,7 +171,7 @@ impl BacktestManager {
 
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
     pub fn backtest_ended(&mut self) -> BacktestResult {
-        for trade in self.trades.clone().iter_mut() {
+        for trade in &mut self.trades.clone().iter_mut() {
             self.close_trade(trade);
         }
 
@@ -221,12 +221,12 @@ impl BacktestResult {
         return self.growth_capital;
     }
 
-    pub fn trades(&self) -> Vec<Trade> {
-        return self.trades.clone();
+    pub fn trades(&self) -> &Vec<Trade> {
+        return &self.trades;
     }
 
-    pub fn metrics(&self) -> HashMap<Metric, f32> {
-        return self.metrics.clone();
+    pub fn metrics(&self) -> &HashMap<Metric, f32> {
+        return &self.metrics;
     }
 }
 

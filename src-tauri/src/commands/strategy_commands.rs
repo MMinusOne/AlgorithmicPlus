@@ -93,9 +93,9 @@ pub fn backtest_strategy(
 
     backtest_results.sort_by(|a, b| {
         let backtest_results_a = a.backtest_result.metrics();
-        let sharpe_a = backtest_results_a.get(&Metric::Sharpe).unwrap();
+        let sharpe_a = backtest_results_a.get(&Metric::SharpeRatio).unwrap();
         let backtest_results_b = b.backtest_result.metrics();
-        let sharpe_b = backtest_results_b.get(&Metric::Sharpe).unwrap();
+        let sharpe_b = backtest_results_b.get(&Metric::SharpeRatio).unwrap();
 
         if sharpe_a < sharpe_b {
             Ordering::Less

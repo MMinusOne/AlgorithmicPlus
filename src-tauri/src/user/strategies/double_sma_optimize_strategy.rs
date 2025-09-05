@@ -1,7 +1,8 @@
 use crate::{
     user::{
         composer::{
-            eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y, CompositionDataType,
+            eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y,
+            CompositionDataType,
             IComposition,
         },
         library::{

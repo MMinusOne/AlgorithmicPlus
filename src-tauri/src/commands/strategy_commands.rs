@@ -75,12 +75,16 @@ pub fn backtest_strategy(
     data_response.name = Some(strategy.name().into());
     data_response.description = Some(strategy.description().into());
 
-    let parameters = [OptimizationParameter::Numeric(
-        NumericOptimizationParameter {
-            name: "sma_period".into(),
-            range: 10..300,
-        },
-    )];
+    let parameters = [
+        OptimizationParameter::Numeric(NumericOptimizationParameter {
+            name: "sma_short_period".into(),
+            range: 10..100,
+        }),
+        OptimizationParameter::Numeric(NumericOptimizationParameter {
+            name: "sma_long_period".into(),
+            range: 100..200,
+        }),
+    ];
 
     // let backtest_result = GridOptimizer::optimize(strategy, &parameters);
     println!("Executing strategy {:?}", strategy.name());

@@ -69,7 +69,6 @@ pub trait IComposition: Send + Sync {
     fn description(&self) -> &str;
     fn composition_fields(&self) -> HashMap<&'static str, usize>;
     fn get_composition_field_position(&self, field_name: &str) -> usize {
-        println!("{field_name} {:?}", self.composition_fields());
         return self
             .composition_fields()
             .get(field_name)

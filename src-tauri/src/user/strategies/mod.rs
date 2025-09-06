@@ -202,7 +202,6 @@ pub enum Metric {
     // Return,
     APR,
     TotalReturns,
-    CumulativeReturns,
     CGAR,
     IntervalReturns,
 
@@ -405,17 +404,25 @@ impl BacktestResult {
             standard_deviation.allocate(trade.pl_portfolio());
         }
 
-        let sharpe = sharpe.get_data().unwrap();
-        let standard_deviation = standard_deviation.get_data().unwrap();
+        let sharpe = match sharpe.get_data() {
+            Some(e) => e,
+            None => 0.0,
+        };
+        let standard_deviation = match standard_deviation.get_data() {
+            Some(sd) => sd,
+            None => 0.0,
+        };
         let performance_time = backtest_manager
             .computational_metrics
             .get(&Metric::PerformanceTime)
             .unwrap()
             .to_owned();
+        let total_returns = backtest_manager.available_capital();
 
         metrics.insert(Metric::StandardDeviation, standard_deviation);
         metrics.insert(Metric::SharpeRatio, sharpe);
         metrics.insert(Metric::PerformanceTime, performance_time);
+        metrics.insert(Metric::TotalReturns, total_returns);
 
         return Self {
             initial_capital: backtest_manager.initial_capital(),

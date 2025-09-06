@@ -89,59 +89,59 @@ pub fn backtest_strategy(
     // let backtest_result = GridOptimizer::optimize(strategy, &parameters);
     println!("Executing strategy {:?}", strategy.name());
 
-    let mut backtest_results = strategy.backtest(None).unwrap();
-    // let mut backtest_results = GridOptimizer::optimize(strategy, &parameters).unwrap();
+    // let mut backtest_results = strategy.backtest(None).unwrap();
+    let mut backtest_results = GridOptimizer::optimize(strategy, &parameters).unwrap();
 
-    for trade in backtest_results.trades() {
-        println!(
-            "
-        ============
-        Capital: {:.2}
-        PL Portfolio {:.2}
-        PL Ratio {:.2}
-        PL Fixed {:.2}
-        Side: {:?}
-        Entry Price {:.2}
-        Exit Price {:.2}
-        ============
-        ",
-            trade.capital_allocation().unwrap(),
-            trade.pl_portfolio(),
-            trade.pl_ratio(),
-            trade.pl_fixed(),
-            trade.side(),
-            trade.open_price().unwrap(),
-            trade.close_price().unwrap()
-        );
-    }
-
-    // backtest_results.sort_by(|a, b| {
-    //     let backtest_results_a = a.backtest_result.metrics();
-    //     let sharpe_a = backtest_results_a.get(&Metric::SharpeRatio).unwrap();
-    //     let backtest_results_b = b.backtest_result.metrics();
-    //     let sharpe_b = backtest_results_b.get(&Metric::SharpeRatio).unwrap();
-
-    //     if sharpe_a < sharpe_b {
-    //         Ordering::Less
-    //     } else if sharpe_a > sharpe_b {
-    //         Ordering::Greater
-    //     } else {
-    //         Ordering::Equal
-    //     }
-    // });
-
-    // for backtest in backtest_results {
+    // for trade in backtest_results.trades() {
     //     println!(
     //         "
-    //     ================================
-    //     Parameters: {:?}
-    //     Metrics: {:?}
-    //     ================================
+    //     ============
+    //     Capital: {:.2}
+    //     PL Portfolio {:.2}
+    //     PL Ratio {:.2}
+    //     PL Fixed {:.2}
+    //     Side: {:?}
+    //     Entry Price {:.2}
+    //     Exit Price {:.2}
+    //     ============
     //     ",
-    //         backtest.optimized_parameters,
-    //         backtest.backtest_result.metrics()
+    //         trade.capital_allocation().unwrap(),
+    //         trade.pl_portfolio(),
+    //         trade.pl_ratio(),
+    //         trade.pl_fixed(),
+    //         trade.side(),
+    //         trade.open_price().unwrap(),
+    //         trade.close_price().unwrap()
     //     );
     // }
+
+    backtest_results.sort_by(|a, b| {
+        let backtest_results_a = a.backtest_result.metrics();
+        let sharpe_a = backtest_results_a.get(&Metric::SharpeRatio).unwrap();
+        let backtest_results_b = b.backtest_result.metrics();
+        let sharpe_b = backtest_results_b.get(&Metric::SharpeRatio).unwrap();
+
+        if sharpe_a < sharpe_b {
+            Ordering::Less
+        } else if sharpe_a > sharpe_b {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    });
+
+    for backtest in backtest_results {
+        println!(
+            "
+        ================================
+        Parameters: {:?}
+        Metrics: {:?}
+        ================================
+        ",
+            backtest.optimized_parameters,
+            backtest.backtest_result.metrics()
+        );
+    }
 
     // for (metric_key, metric_value) in backtest_result.metrics() {
     //     data_response.metrics.push(MetricPair {

@@ -188,6 +188,7 @@ pub struct TradeOptions {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 pub enum Metric {
+    //Computational
     PerformanceTime,
 
     // Consistency
@@ -392,6 +393,7 @@ impl BacktestResult {
     pub fn from(backtest_manager: BacktestManager) -> Self {
         let mut metrics: HashMap<Metric, f32> = HashMap::new();
 
+        // Maybe compute these on backtest_manager side as to have an O(1) metrics compute solution
         let mut sharpe = SharpeRatio::new(Some(0.0));
         let mut standard_deviation = StandardDeviation::new();
         let mut apr = APR::new();

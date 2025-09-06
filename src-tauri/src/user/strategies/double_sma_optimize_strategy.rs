@@ -5,7 +5,7 @@ use crate::{
             eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y, CompositionDataType,
             IComposition,
         },
-        library::{technical_indicators::SMA, IInjectable},
+        library::{formulas::sharpe_ratio, technical_indicators::SMA, IInjectable},
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
@@ -115,6 +115,19 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
 
     fn composition(&self) -> &'static dyn IComposition {
         return ETH_STANDALONE_4H_4Y::instance();
+    }
+
+    fn optimization_target(&self, backtest_result: &BacktestResult) -> f32 {
+        if let (Some(sharpe_ratio), Some(ratio_return)) = (
+            backtest_result.metrics.get(&super::Metric::SharpeRatio),
+            backtest_result
+                .metrics
+                .get(&super::Metric::TotalRatioReturn),
+        ) {
+            return (sharpe_ratio * 0.8) + (ratio_return * 0.2);
+        } else {
+            return -1.0;
+        }
     }
 
     fn composed_data(&self) -> Vec<Box<[CompositionDataType]>> {

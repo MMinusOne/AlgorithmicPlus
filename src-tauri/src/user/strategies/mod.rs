@@ -2,7 +2,9 @@ use crate::{
     user::{
         composer::{CompositionDataType, IComposition},
         library::{
-            formulas::{sharpe_ratio::SharpeRatio, standard_deviation::StandardDeviation},
+            formulas::{
+                apr::APR, sharpe_ratio::SharpeRatio, standard_deviation::StandardDeviation,
+            },
             IInjectable,
         },
     },
@@ -201,7 +203,8 @@ pub enum Metric {
 
     // Return,
     APR,
-    TotalReturns,
+    TotalDollarReturn,
+    TotalRatioReturn,
     CGAR,
     IntervalReturns,
 
@@ -391,6 +394,7 @@ impl BacktestResult {
 
         let mut sharpe = SharpeRatio::new(Some(0.0));
         let mut standard_deviation = StandardDeviation::new();
+        let mut apr = APR::new();
 
         let mut valid_trades: Vec<Trade> = vec![];
 
@@ -400,8 +404,10 @@ impl BacktestResult {
             }
 
             valid_trades.push(trade.to_owned());
-            sharpe.allocate(trade.pl_portfolio());
-            standard_deviation.allocate(trade.pl_portfolio());
+            let pl_portfolio = trade.pl_portfolio();
+            apr.allocate(pl_portfolio / 100.0);
+            sharpe.allocate(pl_portfolio);
+            standard_deviation.allocate(pl_portfolio);
         }
 
         let sharpe = match sharpe.get_data() {
@@ -412,17 +418,25 @@ impl BacktestResult {
             Some(sd) => sd,
             None => 0.0,
         };
+        let apr = match apr.get_data() {
+            Some(a) => a,
+            None => 0.0,
+        };
         let performance_time = backtest_manager
             .computational_metrics
             .get(&Metric::PerformanceTime)
             .unwrap()
             .to_owned();
-        let total_returns = backtest_manager.available_capital();
+        let total_dollar_returns = backtest_manager.available_capital();
+        let total_ratio_returns =
+            (total_dollar_returns / backtest_manager.initial_capital()) * 100.0;
 
         metrics.insert(Metric::StandardDeviation, standard_deviation);
         metrics.insert(Metric::SharpeRatio, sharpe);
         metrics.insert(Metric::PerformanceTime, performance_time);
-        metrics.insert(Metric::TotalReturns, total_returns);
+        metrics.insert(Metric::TotalDollarReturn, total_dollar_returns);
+        metrics.insert(Metric::TotalRatioReturn, total_ratio_returns);
+        metrics.insert(Metric::APR, apr);
 
         return Self {
             initial_capital: backtest_manager.initial_capital(),

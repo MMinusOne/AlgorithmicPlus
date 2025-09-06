@@ -21,7 +21,7 @@ pub enum Injectable {
     TupleFloatNumericType(&'static dyn IInjectable<f32, (f32, f32)>),
     IntegerNumericType(&'static dyn IInjectable<i64, f32>),
     TradeNumericType(&'static dyn IInjectable<Trade, f32>),
-    // Add any custom types if needed
+    TupleIntegerType(&'static dyn IInjectable<f32, (i32, i32)>), // Add any custom types if needed
 }
 
 impl Injectable {

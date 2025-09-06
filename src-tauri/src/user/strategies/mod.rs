@@ -3,7 +3,10 @@ use crate::{
         composer::{CompositionDataType, IComposition},
         library::{
             formulas::{
-                apr::APR, sharpe_ratio::SharpeRatio, standard_deviation::StandardDeviation,
+                apr::APR,
+                consecutive_wins_losses::{self, ConsecutiveWinsLosses},
+                sharpe_ratio::SharpeRatio,
+                standard_deviation::StandardDeviation,
             },
             IInjectable,
         },
@@ -226,7 +229,8 @@ pub enum Metric {
 
     // Trade analysis
     AverageTradeDuration,
-    ConsecutiveWinsLoses,
+    MostConsecutiveWins,
+    MostConsecutiveLosses,
     ProfitFactor,
     RecoveryFactor,
     RiskRewardRatio,
@@ -397,6 +401,7 @@ impl BacktestResult {
         let mut sharpe = SharpeRatio::new(Some(0.0));
         let mut standard_deviation = StandardDeviation::new();
         let mut apr = APR::new();
+        let mut consecutive_wins_losses = ConsecutiveWinsLosses::new();
 
         let mut valid_trades: Vec<Trade> = vec![];
 
@@ -406,10 +411,14 @@ impl BacktestResult {
             }
 
             valid_trades.push(trade.to_owned());
+
             let pl_portfolio = trade.pl_portfolio();
+            let pl_ratio = trade.pl_ratio();
+
             apr.allocate(pl_portfolio / 100.0);
             sharpe.allocate(pl_portfolio);
             standard_deviation.allocate(pl_portfolio);
+            consecutive_wins_losses.allocate(pl_ratio);
         }
 
         let sharpe = match sharpe.get_data() {
@@ -424,6 +433,11 @@ impl BacktestResult {
             Some(a) => a,
             None => 0.0,
         };
+        let consecutive_wins_losses = match consecutive_wins_losses.get_data() {
+            Some(cwl) => cwl,
+            None => (0, 0),
+        };
+
         let performance_time = backtest_manager
             .computational_metrics
             .get(&Metric::PerformanceTime)
@@ -433,12 +447,15 @@ impl BacktestResult {
         let total_ratio_returns =
             (total_dollar_returns / backtest_manager.initial_capital()) * 100.0;
 
+        // Maybe expand upon metrics with MetricType
         metrics.insert(Metric::StandardDeviation, standard_deviation);
         metrics.insert(Metric::SharpeRatio, sharpe);
         metrics.insert(Metric::PerformanceTime, performance_time);
         metrics.insert(Metric::TotalDollarReturn, total_dollar_returns);
         metrics.insert(Metric::TotalRatioReturn, total_ratio_returns);
         metrics.insert(Metric::APR, apr);
+        metrics.insert(Metric::MostConsecutiveWins, consecutive_wins_losses.0 as f32);
+        metrics.insert(Metric::MostConsecutiveLosses, consecutive_wins_losses.1 as f32);
 
         return Self {
             initial_capital: backtest_manager.initial_capital(),

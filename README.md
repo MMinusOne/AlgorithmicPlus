@@ -54,7 +54,7 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Look into replacing `lightweight-charts` with `uPlot`.
 - ❌ Implement chart down sampling and move chart rendering to web worker.
 - ❌ Implement websocket to stream the charts.
-- ❌ Figure out a better design for IInejctables `get_data`, such that it doesn't take `&mut self`.
+- ❌ Figure out a better design for IInejctables `get_data(&mut self)`, a global parameter set for `render` and re-think `data_values`
 - ❌ Optimize and refactor the code once a minimum viable product is done.
 - ❌ Write the user and the developer documentation
 

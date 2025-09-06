@@ -1,7 +1,11 @@
 use crate::{
     user::{
         composer::{CompositionDataType, IComposition},
-        library::{formulas::sharpe_ratio::SharpeRatio, trade::Trade, IInjectable},
+        library::{
+            formulas::{sharpe_ratio::SharpeRatio, standard_deviation::StandardDeviation},
+            trade::Trade,
+            IInjectable,
+        },
     },
     utils::classes::charting::ChartingData,
 };
@@ -10,41 +14,6 @@ use std::{sync::LazyLock, time::Instant};
 pub mod double_sma_optimize_strategy;
 pub mod sma_200_strategy;
 pub mod sma_optimizable_period_strategy;
-
-pub enum StrategyData {
-    CompositionDataType(CompositionDataType),
-    InjectableFloatData(Option<f32>),
-}
-
-impl StrategyData {
-    pub fn extract_composition_int(strategy_data: StrategyData) -> i64 {
-        match strategy_data {
-            StrategyData::CompositionDataType(composition_data) => {
-                CompositionDataType::extract_int(&composition_data)
-            }
-
-            _ => panic!("Invalid strategy type conversion."),
-        }
-    }
-    pub fn extract_composition_float(strategy_data: StrategyData) -> f32 {
-        match strategy_data {
-            StrategyData::CompositionDataType(composition_data) => {
-                CompositionDataType::extract_float(&composition_data)
-            }
-
-            _ => panic!("Invalid strategy type conversion."),
-        }
-    }
-    pub fn extract_composition_option_float(strategy_data: StrategyData) -> Option<f32> {
-        match strategy_data {
-            StrategyData::CompositionDataType(composition_data) => {
-                CompositionDataType::extract_option_float(&composition_data)
-            }
-
-            _ => panic!("Invalid strategy type conversion."),
-        }
-    }
-}
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Serialize, Deserialize)]
 pub enum Metric {
@@ -152,9 +121,12 @@ impl BacktestManager {
         let current_timestamp = self.current_timestamp.unwrap();
         if let Some(existing_trade) = self.trades.iter_mut().find(|t| t.id() == trade.id()) {
             existing_trade.close(current_price, current_timestamp);
-            self.adjust_available_capital(
-                trade.capital_allocation().unwrap() as f32 + trade.pl_fixed(),
-            );
+            
+            let fixed_pl = existing_trade.pl_fixed();
+            let trade_capital_allocation = existing_trade.capital_allocation().unwrap();
+            let new_capital = trade_capital_allocation + fixed_pl;
+
+            self.adjust_available_capital(new_capital);
         }
     }
 
@@ -172,7 +144,9 @@ impl BacktestManager {
     // OPEN, CLOSE, DEDUCES AND ADDS BACKTEST MANGER CAPITAL ALLOC
     pub fn backtest_ended(&mut self) -> BacktestResult {
         for trade in &mut self.trades.clone().iter_mut() {
-            self.close_trade(trade);
+            if !trade.is_closed() {
+                self.close_trade(trade);
+            }
         }
 
         self.backtest_ended = true;
@@ -235,6 +209,7 @@ impl BacktestResult {
         let mut metrics: HashMap<Metric, f32> = HashMap::new();
 
         let mut sharpe = SharpeRatio::new(Some(0.0));
+        let mut standard_deviation = StandardDeviation::new();
 
         let mut valid_trades: Vec<Trade> = vec![];
 
@@ -244,19 +219,21 @@ impl BacktestResult {
             }
 
             valid_trades.push(trade.to_owned());
-            sharpe.allocate(trade.pl_ratio());
+            sharpe.allocate(trade.pl_portfolio());
+            standard_deviation.allocate(trade.pl_portfolio());
         }
 
         let sharpe = sharpe.get_data().unwrap();
+        let standard_deviation = standard_deviation.get_data().unwrap();
+        let performance_time = backtest_manager
+            .computational_metrics
+            .get(&Metric::PerformanceTime)
+            .unwrap()
+            .to_owned();
+
+        metrics.insert(Metric::StandardDeviation, standard_deviation);
         metrics.insert(Metric::SharpeRatio, sharpe);
-        metrics.insert(
-            Metric::PerformanceTime,
-            backtest_manager
-                .computational_metrics
-                .get(&Metric::PerformanceTime)
-                .unwrap()
-                .to_owned(),
-        );
+        metrics.insert(Metric::PerformanceTime, performance_time);
 
         return Self {
             initial_capital: backtest_manager.initial_capital(),

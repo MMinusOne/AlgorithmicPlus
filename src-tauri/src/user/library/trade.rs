@@ -41,11 +41,11 @@ impl Trade {
         };
     }
 
-    pub fn open_timestamp(&self) -> Option<i64> { 
+    pub fn open_timestamp(&self) -> Option<i64> {
         return self.open_timestamp;
     }
 
-    pub fn close_timestamp(&self) -> Option<i64> { 
+    pub fn close_timestamp(&self) -> Option<i64> {
         return self.close_timestamp;
     }
 
@@ -73,7 +73,10 @@ impl Trade {
     }
 
     pub fn pl_portfolio(&self) -> f32 {
-        if !self.open_price.is_none() && !self.close_price.is_none() && !self.capital_allocation.is_none() {
+        if !self.open_price.is_none()
+            && !self.close_price.is_none()
+            && !self.capital_allocation.is_none()
+        {
             let fixed_pl = self.pl_fixed();
             let trade_allocation = self.capital_allocation().unwrap() as f32;
 
@@ -85,7 +88,10 @@ impl Trade {
     }
 
     pub fn pl_fixed(&self) -> f32 {
-        if !self.open_price.is_none() && !self.close_price.is_none() && !self.capital_allocation.is_none() {
+        if self.open_price.is_some()
+            && self.close_price.is_some()
+            && self.capital_allocation.is_some()
+        {
             let open_price = self.open_price.unwrap();
             let close_price = self.close_price.unwrap();
             let leverage = self.leverage;

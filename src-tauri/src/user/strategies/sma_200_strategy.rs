@@ -79,9 +79,10 @@ impl IStrategy for Sma200Strategy {
             }
 
             if latest_trade.is_none() {
+                let available_capital = backtest_manager.available_capital();
                 let mut new_trade = Trade::new(TradeOptions {
                     side,
-                    capital_allocation: Some(backtest_manager.initial_capital()),
+                    capital_allocation: Some(available_capital),
                     leverage: Some(1.0),
                 });
                 backtest_manager.open_trade(&mut new_trade);

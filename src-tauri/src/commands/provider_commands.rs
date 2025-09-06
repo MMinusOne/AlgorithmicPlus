@@ -49,8 +49,6 @@ pub async fn search_downloadables(
         })
         .collect();
 
-    println!("{:?}", relevant_downloadables);
-
     Ok(relevant_downloadables
         .iter()
         .map(|tuple| tuple.0.clone())

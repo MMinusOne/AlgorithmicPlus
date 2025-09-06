@@ -96,18 +96,22 @@ pub fn backtest_strategy(
         println!(
             "
         ============
-        Capital: {:?}
-        PL Portfolio {:?}
-        PL Ratio {:?}
-        Entry Price {:?}
-        Exit Price {:?}
+        Capital: {:.2}
+        PL Portfolio {:.2}
+        PL Ratio {:.2}
+        PL Fixed {:.2}
+        Side: {:?}
+        Entry Price {:.2}
+        Exit Price {:.2}
         ============
         ",
-            trade.capital_allocation(),
+            trade.capital_allocation().unwrap(),
             trade.pl_portfolio(),
             trade.pl_ratio(),
-            trade.open_price(),
-            trade.close_price()
+            trade.pl_fixed(),
+            trade.side(),
+            trade.open_price().unwrap(),
+            trade.close_price().unwrap()
         );
     }
 

@@ -1,15 +1,11 @@
+use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
 use crate::{
     user::{
         composer::{
             eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y, CompositionDataType,
             IComposition,
         },
-        library::{
-            technical_indicators::SMA,
-            trade::{Trade, TradeOptions, TradeSide},
-            IInjectable,
-        },
-        strategies::{BacktestManager, BacktestResult, IStrategy},
+        library::{technical_indicators::SMA, IInjectable},
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };

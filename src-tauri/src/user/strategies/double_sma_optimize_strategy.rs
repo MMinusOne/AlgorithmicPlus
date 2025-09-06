@@ -1,16 +1,11 @@
+use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
 use crate::{
     user::{
         composer::{
-            eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y,
-            CompositionDataType,
+            eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y, CompositionDataType,
             IComposition,
         },
-        library::{
-            technical_indicators::SMA,
-            trade::{Trade, TradeOptions, TradeSide},
-            IInjectable,
-        },
-        strategies::{BacktestManager, BacktestResult, IStrategy},
+        library::{technical_indicators::SMA, IInjectable},
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
@@ -49,10 +44,18 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
         let composition: &'static dyn IComposition = self.composition();
         let composition_data = self.composed_data();
 
-        let sma_short_comp = optimization_map.unwrap().get("sma_short_period").unwrap().to_owned();
+        let sma_short_comp = optimization_map
+            .unwrap()
+            .get("sma_short_period")
+            .unwrap()
+            .to_owned();
         let sma_short_period = CompositionDataType::extract_usize(sma_short_comp);
 
-        let sma_long_comp = optimization_map.unwrap().get("sma_long_period").unwrap().to_owned();
+        let sma_long_comp = optimization_map
+            .unwrap()
+            .get("sma_long_period")
+            .unwrap()
+            .to_owned();
         let sma_long_period = CompositionDataType::extract_usize(sma_long_comp);
 
         let timestamp_position = composition.get_composition_field_position("timestamp");
@@ -186,7 +189,7 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
         let mut cumulative_returns: f32 = 0.0;
 
         for trade in backtest_result.trades() {
-            cumulative_returns += trade.pl_portfolio();
+            cumulative_returns += trade.pl_fixed();
 
             line_data.push(Some(LineData {
                 time: trade.close_timestamp().unwrap(),

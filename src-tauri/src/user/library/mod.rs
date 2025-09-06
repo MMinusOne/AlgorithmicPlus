@@ -1,4 +1,4 @@
-use crate::{user::library::trade::Trade, utils::classes::charting::ChartingData};
+use crate::{user::strategies::Trade, utils::classes::charting::ChartingData};
 use serde::Deserialize;
 use std::error::Error;
 
@@ -14,7 +14,6 @@ pub trait IInjectable<Input: for<'de> Deserialize<'de>, Output: for<'de> Deseria
 
 pub mod formulas;
 pub mod technical_indicators;
-pub mod trade;
 
 #[derive(Clone)]
 pub enum Injectable {

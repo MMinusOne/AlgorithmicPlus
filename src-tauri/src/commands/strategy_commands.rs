@@ -77,12 +77,8 @@ pub fn backtest_strategy(
 
     let parameters = [
         OptimizationParameter::Numeric(NumericOptimizationParameter {
-            name: "sma_short_period".into(),
-            range: 10..100,
-        }),
-        OptimizationParameter::Numeric(NumericOptimizationParameter {
-            name: "sma_long_period".into(),
-            range: 100..200,
+            name: "theilsen_window_length".into(),
+            range: 10..200,
         }),
     ];
 

@@ -16,9 +16,9 @@ pub enum ChartingData {
 pub struct CandlestickChartingData {
     pub chart_type: String,
     pub height: Option<i16>,
-    pub data: Vec<CandlestickData>,
+    pub data: Vec<Option<CandlestickData>>,
     pub pane: Option<i8>,
-    pub title: Option<String>
+    pub title: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -36,11 +36,11 @@ pub struct CandlestickData {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct LineChartingData {
-    pub chart_type:  String,
+    pub chart_type: String,
     pub height: Option<i16>,
     pub data: Vec<Option<LineData>>,
     pub pane: Option<i8>,
-    pub title: Option<String>
+    pub title: Option<String>,
 }
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -59,7 +59,7 @@ pub struct HistogramChartingData {
     pub height: Option<i16>,
     pub data: Vec<HistogramData>,
     pub pane: Option<i8>,
-    pub title: Option<String>
+    pub title: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

@@ -18,7 +18,7 @@ use std::{sync::LazyLock, time::Instant};
 pub mod double_sma_optimize_strategy;
 pub mod sma_200_strategy;
 pub mod sma_optimizable_period_strategy;
-
+pub mod theilsen_optimize_strategy;
 use serde::{Deserialize, Serialize};
 use std::marker::Copy;
 use uuid::Uuid;
@@ -424,7 +424,7 @@ impl BacktestResult {
         let sharpe = sharpe.get_data().unwrap_or(0.0);
         let standard_deviation = standard_deviation.get_data().unwrap_or(0.0);
         let apr = apr.get_data().unwrap_or(0.0);
-        let consecutive_wins_losses = consecutive_wins_losses.get_data().unwrap_or((0,0));
+        let consecutive_wins_losses = consecutive_wins_losses.get_data().unwrap_or((0, 0));
 
         let performance_time = backtest_manager
             .computational_metrics
@@ -491,5 +491,6 @@ pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> = LazyLock::new(|| {
         Box::new(sma_200_strategy::Sma200Strategy::new()),
         Box::new(sma_optimizable_period_strategy::SmaOptimizablePeriodStrategy::new()),
         Box::new(double_sma_optimize_strategy::DoubleSmaOptimizablePeriodStrategy::new()),
+        Box::new(theilsen_optimize_strategy::TheilSenOptimizeableStrategy::new()),
     ]
 });

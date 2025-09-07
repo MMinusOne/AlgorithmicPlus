@@ -1,5 +1,5 @@
-pub mod us_equities;
 pub mod crypto;
+pub mod us_equities;
 
 use crate::library::providers::downloader::{OHLCVJSONFileDataStructure, OHLCVMetaData};
 use crate::library::providers::sources::binance::OHLCVCandleObject;
@@ -57,7 +57,7 @@ impl StaticResource {
     pub fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
         match self {
             StaticResource::OHLCVDataType(_resource) => {
-                let mut candlestick_data: Vec<CandlestickData> = vec![];
+                let mut candlestick_data: Vec<Option<CandlestickData>> = vec![];
                 let mut volume_data: Vec<HistogramData> = vec![];
 
                 let mmap_data: MmapManager<OHLCVCandleObject> = self.load_ohlcv_mmap().unwrap();
@@ -72,7 +72,7 @@ impl StaticResource {
                     let close: f32 = candle.close as f32;
                     let volume: f32 = candle.volume as f32;
 
-                    candlestick_data.push(CandlestickData {
+                    candlestick_data.push(Some(CandlestickData {
                         open,
                         high,
                         low,
@@ -81,7 +81,7 @@ impl StaticResource {
                         border_color: None,
                         color: None,
                         wick_color: None,
-                    });
+                    }));
 
                     volume_data.push(HistogramData {
                         time: timestamp,

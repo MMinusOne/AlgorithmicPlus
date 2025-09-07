@@ -421,22 +421,10 @@ impl BacktestResult {
             consecutive_wins_losses.allocate(pl_ratio);
         }
 
-        let sharpe = match sharpe.get_data() {
-            Some(e) => e,
-            None => 0.0,
-        };
-        let standard_deviation = match standard_deviation.get_data() {
-            Some(sd) => sd,
-            None => 0.0,
-        };
-        let apr = match apr.get_data() {
-            Some(a) => a,
-            None => 0.0,
-        };
-        let consecutive_wins_losses = match consecutive_wins_losses.get_data() {
-            Some(cwl) => cwl,
-            None => (0, 0),
-        };
+        let sharpe = sharpe.get_data().unwrap_or(0.0);
+        let standard_deviation = standard_deviation.get_data().unwrap_or(0.0);
+        let apr = apr.get_data().unwrap_or(0.0);
+        let consecutive_wins_losses = consecutive_wins_losses.get_data().unwrap_or((0,0));
 
         let performance_time = backtest_manager
             .computational_metrics

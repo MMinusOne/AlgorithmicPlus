@@ -1,11 +1,12 @@
 pub mod btc_eth_statarb_4h_4y_composition;
 pub mod eth_sma_200_4h_4y_composition;
 pub mod eth_standalone_4h_4y_composition;
-
+pub mod testing_composition;
 use crate::user::composer::{
     btc_eth_statarb_4h_4y_composition::BTC_ETH_STATARB_4H_4Y,
     eth_sma_200_4h_4y_composition::ETH_SMA_200_4H_4Y,
     eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y,
+    testing_composition::TESTING_COMPOSITION,
 };
 use crate::utils::classes::charting::ChartingData;
 use std::collections::HashMap;
@@ -98,5 +99,6 @@ pub static COMPOSITIONS: LazyLock<Vec<Box<dyn IComposition>>> = LazyLock::new(||
         Box::new(ETH_SMA_200_4H_4Y::instance().clone()),
         Box::new(BTC_ETH_STATARB_4H_4Y::instance().clone()),
         Box::new(ETH_STANDALONE_4H_4Y::instance().clone()),
+        Box::new(TESTING_COMPOSITION::instance().clone()),
     ]
 });

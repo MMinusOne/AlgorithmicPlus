@@ -5,7 +5,7 @@ use crate::{
             eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y, CompositionDataType,
             IComposition,
         },
-        library::{formulas::sharpe_ratio, technical_indicators::SMA, IInjectable},
+        library::{sma::SMA, IInjectable},
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };

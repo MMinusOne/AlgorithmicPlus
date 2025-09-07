@@ -1,6 +1,8 @@
 use crate::{
     user::library::{
-        formulas::standard_deviation::StandardDeviation, technical_indicators::SMA, IInjectable,
+        standard_deviation::StandardDeviation,
+        sma::SMA,
+        IInjectable
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };

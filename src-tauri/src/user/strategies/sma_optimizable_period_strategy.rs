@@ -5,7 +5,7 @@ use crate::{
             eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y, CompositionDataType,
             IComposition,
         },
-        library::{technical_indicators::SMA, IInjectable},
+        library::{sma::SMA, IInjectable},
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
@@ -44,7 +44,11 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
         let composition: &'static dyn IComposition = self.composition();
         let composition_data = self.composed_data();
 
-        let sma_comp = optimization_map.unwrap().get("sma_period").unwrap().to_owned();
+        let sma_comp = optimization_map
+            .unwrap()
+            .get("sma_period")
+            .unwrap()
+            .to_owned();
         let sma_period = CompositionDataType::extract_usize(sma_comp);
 
         let timestamp_position = composition.get_composition_field_position("timestamp");

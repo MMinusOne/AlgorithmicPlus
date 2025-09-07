@@ -1,5 +1,5 @@
 use crate::user::composer::{CompositionDataType, IComposition};
-use crate::user::library::technical_indicators::SMA;
+use crate::user::library::sma::SMA;
 use crate::user::library::IInjectable;
 use crate::user::static_resources::{crypto, StaticResource};
 use crate::utils::classes::charting::{ChartingData, LineChartingData, LineData};

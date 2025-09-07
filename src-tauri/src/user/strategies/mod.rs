@@ -2,7 +2,7 @@ use crate::{
     user::{
         composer::{CompositionDataType, IComposition},
         library::{
-            formulas::{
+            injectables::formulas::{
                 apr::APR,
                 consecutive_wins_losses::{self, ConsecutiveWinsLosses},
                 sharpe_ratio::SharpeRatio,
@@ -454,8 +454,14 @@ impl BacktestResult {
         metrics.insert(Metric::TotalDollarReturn, total_dollar_returns);
         metrics.insert(Metric::TotalRatioReturn, total_ratio_returns);
         metrics.insert(Metric::APR, apr);
-        metrics.insert(Metric::MostConsecutiveWins, consecutive_wins_losses.0 as f32);
-        metrics.insert(Metric::MostConsecutiveLosses, consecutive_wins_losses.1 as f32);
+        metrics.insert(
+            Metric::MostConsecutiveWins,
+            consecutive_wins_losses.0 as f32,
+        );
+        metrics.insert(
+            Metric::MostConsecutiveLosses,
+            consecutive_wins_losses.1 as f32,
+        );
 
         return Self {
             initial_capital: backtest_manager.initial_capital(),

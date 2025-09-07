@@ -1,5 +1,5 @@
 use crate::user::composer::{CompositionDataType, IComposition};
-use crate::user::library::technical_indicators::{bollinger_bands, BollingerBands};
+use crate::user::library::bollinger_bands::BollingerBands;
 use crate::user::library::IInjectable;
 use crate::user::static_resources::{crypto, StaticResource};
 use crate::utils::classes::charting::{ChartingData, LineChartingData, LineData};

@@ -12,8 +12,8 @@ pub trait IInjectable<Input: for<'de> Deserialize<'de>, Output: for<'de> Deseria
     fn render(&self, timestamps: Vec<i64>) -> Result<Vec<ChartingData>, Box<dyn Error>>;
 }
 
-pub mod formulas;
-pub mod technical_indicators;
+pub mod injectables;
+pub use injectables::*;
 
 #[derive(Clone)]
 pub enum Injectable {

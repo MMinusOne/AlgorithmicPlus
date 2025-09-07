@@ -54,7 +54,7 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Figure out a better design for IInejctables `get_data(&mut self)`, a global parameter set for `render` and re-think `data_values`
 - ❌ Optimize and refactor the code once a minimum viable product is done.
 - ❌ Write the user and the developer documentation
-- Implement `backtest`, `optimize` command functionalities
-- Implement interface to render either `ratio`, `fixed` or `portfolio` cumulative returns
+- ❌ Implement `backtest`, `optimize` command functionalities
+- ❌ Implement interface to render either `ratio`, `fixed` or `portfolio` cumulative returns
 
 I have plans to keep working on this.

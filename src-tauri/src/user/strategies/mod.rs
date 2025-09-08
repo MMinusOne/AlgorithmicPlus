@@ -1,5 +1,5 @@
 use crate::{
-    user::{
+    library::engines::optimizers::grid::OptimizationParameter, user::{
         composer::{CompositionDataType, IComposition},
         library::{
             injectables::formulas::{
@@ -10,8 +10,7 @@ use crate::{
             },
             IInjectable,
         },
-    },
-    utils::classes::charting::ChartingData,
+    }, utils::classes::charting::ChartingData
 };
 use std::{collections::HashMap, error::Error};
 use std::{sync::LazyLock, time::Instant};
@@ -466,7 +465,7 @@ pub trait IStrategy: Send + Sync {
     fn description(&self) -> &str;
     fn composition(&self) -> &'static dyn IComposition;
     // fn wfo(&self, optimizer: OptimizationStrategy) {}
-    fn optimization_map_creator(&self) -> Option<&HashMap<String, CompositionDataType>> {
+    fn optimization_parameters_creator(&self) -> Option<Box<[OptimizationParameter]>> {
         None
     }
     fn optimization_target(&self, backtest_result: &BacktestResult) -> f32 {

@@ -1,5 +1,6 @@
 use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
 use crate::{
+    library::engines::optimizers::grid::{NumericOptimizationParameter, OptimizationParameter},
     user::{
         composer::{
             eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y, CompositionDataType,
@@ -9,6 +10,7 @@ use crate::{
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
+use chrono::format::Numeric;
 use std::collections::HashMap;
 use std::{error::Error, vec};
 use uuid::Uuid;
@@ -31,6 +33,17 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
 
     fn description(&self) -> &str {
         return &self.description;
+    }
+
+    fn optimization_parameters_creator(&self) -> Option<Box<[OptimizationParameter]>> {
+        let optimization_parameters = [OptimizationParameter::Numeric(
+            NumericOptimizationParameter {
+                name: "sma_period".into(),
+                range: 10..200,
+            },
+        )];
+
+        Some(Box::new(optimization_parameters))
     }
 
     fn backtest(

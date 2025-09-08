@@ -1,12 +1,11 @@
 use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
 use crate::{
-    user::{
+    library::engines::optimizers::grid::{NumericOptimizationParameter, OptimizationParameter}, user::{
         composer::{
             eth_hlc_standalone_4h_4y::ETH_HLC_STANDALONE_4H_4Y, CompositionDataType, IComposition,
         },
         library::{sma::SMA, theilsen::TheilSen, IInjectable},
-    },
-    utils::classes::charting::{ChartingData, LineChartingData, LineData},
+    }, utils::classes::charting::{ChartingData, LineChartingData, LineData}
 };
 use std::collections::HashMap;
 use std::{error::Error, vec};
@@ -30,6 +29,17 @@ impl IStrategy for TheilSenOptimizeableStrategy {
 
     fn description(&self) -> &str {
         return &self.description;
+    }
+
+    fn optimization_parameters_creator(&self) -> Option<Box<[OptimizationParameter]>> {
+        let optimization_parameters = [OptimizationParameter::Numeric(
+            NumericOptimizationParameter {
+                name: "theilsen_window_length".into(),
+                range: 10..200,
+            },
+        )];
+
+        Some(Box::new(optimization_parameters))
     }
 
     fn backtest(

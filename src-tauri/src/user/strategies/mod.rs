@@ -466,6 +466,9 @@ pub trait IStrategy: Send + Sync {
     fn description(&self) -> &str;
     fn composition(&self) -> &'static dyn IComposition;
     // fn wfo(&self, optimizer: OptimizationStrategy) {}
+    fn optimization_map_creator(&self) -> Option<&HashMap<String, CompositionDataType>> {
+        None
+    }
     fn optimization_target(&self, backtest_result: &BacktestResult) -> f32 {
         let sharpe = backtest_result
             .metrics()

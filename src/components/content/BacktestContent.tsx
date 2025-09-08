@@ -56,14 +56,10 @@ export default function BacktestContent() {
     }
   }, [backtestStrategy, graphType]);
 
-  useEffect(() => {
-    console.log(chartingData);
-  }, [chartingData]);
-
   return (
-    <div className="w-full h-screen overflow-hidden overflow-y-scroll">
+    <div className="w-full h-screen overflow-hidden overflow-y-scroll flex flex-col gap-8">
       <div className="w-full h-full">
-        <div className="h-[100px] w-full">
+        <div className="h-[50px] w-full flex items-center justify-center p-4">
           <select
             onChange={(e) => {
               setGraphType(e.currentTarget.value as GraphType);

@@ -81,6 +81,13 @@ pub fn backtest_strategy(
     data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest);
     data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest);
 
+    for (key, value) in backtest.metrics() {
+        data_response.metrics.push(MetricPair {
+            key: key.clone(),
+            value: value.to_owned(),
+        });
+    }
+
     Ok(data_response)
 }
 

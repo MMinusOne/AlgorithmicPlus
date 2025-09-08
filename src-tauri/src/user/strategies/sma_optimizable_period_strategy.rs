@@ -44,6 +44,11 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
         let composition: &'static dyn IComposition = self.composition();
         let composition_data = self.composed_data();
 
+        if optimization_map.is_none() {
+            let backtest_result = backtest_manager.backtest_ended();
+            return Ok(backtest_result);
+        }
+
         let sma_comp = optimization_map
             .unwrap()
             .get("sma_period")

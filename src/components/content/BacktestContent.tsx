@@ -5,11 +5,22 @@ import { BacktestDataResponse, ChartingSeries, Metric } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import BaseChart from "../charting/BaseChart";
 
+enum GraphType {
+  FixedEquity = "FixedEquity",
+  TradePercentage = "TradePercentage",
+  PortfolioPercentage = "PortfolioPercentage",
+}
+
 export default function BacktestContent() {
   const { selectedItem } = useSidebarState();
 
+  const [graphType, setGraphType] = useState<GraphType>(
+    GraphType.PortfolioPercentage
+  );
   const [chartingData, setChartingData] = useState<ChartingSeries[]>();
   const [metrics, setMetrics] = useState<Metric[]>([]);
+  const [backtestStrategy, setBacktestStrategy] =
+    useState<BacktestDataResponse>();
 
   useEffect(() => {
     const getBacktestData = async () => {
@@ -22,21 +33,55 @@ export default function BacktestContent() {
         }
       );
 
-      // setChartingData(backtestStrategyData);
       setMetrics(backtestStrategyData.metrics);
+      setBacktestStrategy(backtestStrategyData);
     };
 
     getBacktestData();
   }, [selectedItem]);
 
+  useEffect(() => {
+    if (!backtestStrategy) return;
+
+    switch (graphType) {
+      case GraphType.FixedEquity:
+        setChartingData(backtestStrategy.equity_growth_charting_data);
+        break;
+      case GraphType.PortfolioPercentage:
+        setChartingData(backtestStrategy.portfolio_growth_data);
+        break;
+      case GraphType.TradePercentage:
+        setChartingData(backtestStrategy.percentage_growth_data);
+        break;
+    }
+  }, [backtestStrategy, graphType]);
+
+  useEffect(() => {
+    console.log(chartingData);
+  }, [chartingData]);
+
   return (
     <div className="w-full h-screen overflow-hidden overflow-y-scroll">
-      <div className={`w-full h-full p-4`}>
-        {chartingData !== undefined ? (
-          <BaseChart chartingData={chartingData} />
-        ) : null}
+      <div className="w-full h-full">
+        <div className="h-[100px] w-full">
+          <select
+            onChange={(e) => {
+              setGraphType(e.currentTarget.value as GraphType);
+            }}
+            value={graphType}
+            className="select select-xs"
+          >
+            {Object.values(GraphType).map((graph) => {
+              return <option value={graph}>{graph}</option>;
+            })}
+          </select>
+        </div>
+        <div className={`p-4 w-full h-full`}>
+          {chartingData !== undefined ? (
+            <BaseChart chartingData={chartingData} />
+          ) : null}
+        </div>
       </div>
-
       <div className="w-full h-[200px]">
         <div className="p-4 flex flex-col">
           <span className="font-semibold text-2xl">Metrics</span>

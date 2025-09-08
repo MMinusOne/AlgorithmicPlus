@@ -44,6 +44,11 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
         let composition: &'static dyn IComposition = self.composition();
         let composition_data = self.composed_data();
 
+        if optimization_map.is_none() {
+            let backtest_result = backtest_manager.backtest_ended();
+            return Ok(backtest_result);
+        }
+
         let sma_short_comp = optimization_map
             .unwrap()
             .get("sma_short_period")
@@ -101,7 +106,7 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
             if latest_trade.is_none() {
                 let mut new_trade = Trade::new(TradeOptions {
                     side,
-                    capital_allocation: Some(backtest_manager.initial_capital()),
+                    capital_allocation: Some(backtest_manager.available_capital()),
                     leverage: Some(1.0),
                 });
                 backtest_manager.open_trade(&mut new_trade);

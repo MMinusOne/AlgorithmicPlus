@@ -75,79 +75,12 @@ pub fn backtest_strategy(
     data_response.name = Some(strategy.name().into());
     data_response.description = Some(strategy.description().into());
 
-    let parameters = [
-        OptimizationParameter::Numeric(NumericOptimizationParameter {
-            name: "theilsen_window_length".into(),
-            range: 10..200,
-        }),
-    ];
+    let backtest = strategy.backtest(None).unwrap();
 
-    // let backtest_result = GridOptimizer::optimize(strategy, &parameters);
-    println!("Executing strategy {:?}", strategy.name());
+    data_response.portfolio_growth_data = strategy.render_portfolio_percentage_growth(&backtest);
+    data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest);
+    data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest);
 
-    // let mut backtest_results = strategy.backtest(None).unwrap();
-    let mut backtest_results = GridOptimizer::optimize(strategy, &parameters).unwrap();
-
-    // for trade in backtest_results.trades() {
-    //     println!(
-    //         "
-    //     ============
-    //     Capital: {:.2}
-    //     PL Portfolio {:.2}
-    //     PL Ratio {:.2}
-    //     PL Fixed {:.2}
-    //     Side: {:?}
-    //     Entry Price {:.2}
-    //     Exit Price {:.2}
-    //     ============
-    //     ",
-    //         trade.capital_allocation().unwrap(),
-    //         trade.pl_portfolio(),
-    //         trade.pl_ratio(),
-    //         trade.pl_fixed(),
-    //         trade.side(),
-    //         trade.open_price().unwrap(),
-    //         trade.close_price().unwrap()
-    //     );
-    // }
-
-    backtest_results.sort_by(|a, b| {
-        if a.score < b.score {
-            Ordering::Less
-        } else if a.score > b.score {
-            Ordering::Greater
-        } else {
-            Ordering::Equal
-        }
-    });
-
-    for backtest in backtest_results {
-        println!(
-            "
-        ================================
-        Parameters: {:?}
-        Metrics: {:?}
-        ================================
-        ",
-            backtest.optimized_parameters,
-            backtest.backtest_result.metrics()
-        );
-    }
-
-    // for (metric_key, metric_value) in backtest_result.metrics() {
-    //     data_response.metrics.push(MetricPair {
-    //         key: metric_key,
-    //         value: metric_value,
-    //     });
-    // }
-
-    //TODO: make a render(...) function so there isnt a need to loop thrice
-    // data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);
-    // data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest_result);
-    // data_response.portfolio_growth_data =
-    //     strategy.render_portfolio_percentage_growth(&backtest_result);
-
-    // println!("Metrics {:?}", backtest_result.metrics());
     Ok(data_response)
 }
 

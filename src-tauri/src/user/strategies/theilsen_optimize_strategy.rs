@@ -43,6 +43,11 @@ impl IStrategy for TheilSenOptimizeableStrategy {
         let composition: &'static dyn IComposition = self.composition();
         let composition_data = self.composed_data();
 
+        if optimization_map.is_none() {
+            let backtest_result = backtest_manager.backtest_ended();
+            return Ok(backtest_result);
+        }
+
         let theilsen_window_length_comp = optimization_map
             .unwrap()
             .get("theilsen_window_length")
@@ -101,8 +106,8 @@ impl IStrategy for TheilSenOptimizeableStrategy {
             }
 
             let portfolio_value = backtest_manager.current_portfolio_value();
-           
-            if portfolio_value == 0.0 { 
+
+            if portfolio_value == 0.0 {
                 break;
             }
 

@@ -22,15 +22,15 @@ impl IInjectable<f32, f32> for SMA {
         return &self.description;
     }
 
-    fn allocate(&mut self, data: f32) {
+    fn allocate(&mut self, close_price: f32) {
         if self.prices.len() == self.period {
             if let Some(last_value) = self.prices.pop_front() {
                 self.current_sum = self.current_sum - last_value;
             }
         }
 
-        self.prices.push_back(data);
-        self.current_sum = self.current_sum + data;
+        self.prices.push_back(close_price);
+        self.current_sum = self.current_sum + close_price;
     }
 
     fn get_data(&mut self) -> Option<f32> {

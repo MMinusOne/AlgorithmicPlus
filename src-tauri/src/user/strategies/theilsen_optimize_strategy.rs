@@ -1,4 +1,5 @@
 use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
+use crate::library::engines::optimizers::Optimizer;
 use crate::{
     library::engines::optimizers::grid::{
         GridOptimizer, NumericOptimizationParameter, OptimizationParameter, OptimizedBacktestResult,
@@ -14,7 +15,6 @@ use crate::{
 use std::collections::HashMap;
 use std::{error::Error, vec};
 use uuid::Uuid;
-use crate::library::engines::optimizers::Optimizer;
 
 #[derive(Clone)]
 pub struct TheilSenOptimizeableStrategy {
@@ -197,7 +197,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
             height: None,
             data: line_data,
             pane: None,
-            title: Some("Portfolio equity growth backtest".into()),
+            title: None,
         }));
 
         return charting_data;
@@ -224,7 +224,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
             height: None,
             data: line_data,
             pane: None,
-            title: Some("Portfolio percentage growth backtest".into()),
+            title: None,
         }));
 
         return charting_data;
@@ -240,7 +240,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
         let mut cumulative_returns: f32 = 0.0;
 
         for trade in backtest_result.trades() {
-            cumulative_returns += trade.pl_fixed();
+            cumulative_returns += trade.pl_portfolio();
 
             line_data.push(Some(LineData {
                 time: trade.close_timestamp().unwrap(),
@@ -254,7 +254,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
             height: None,
             data: line_data,
             pane: None,
-            title: Some("Portfolio percentage growth backtest".into()),
+            title: None,
         }));
 
         return charting_data;

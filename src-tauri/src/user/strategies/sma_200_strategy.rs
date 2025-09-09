@@ -1,10 +1,10 @@
 use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
 use crate::{
-    library::engines::optimizers::grid::OptimizedBacktestResult, user::composer::{
-            eth_sma_200_4h_4y_composition::ETH_SMA_200_4H_4Y,
-            CompositionDataType,
-            IComposition,
-        }, utils::classes::charting::{ChartingData, LineChartingData, LineData}
+    library::engines::optimizers::grid::OptimizedBacktestResult,
+    user::composer::{
+        eth_sma_200_4h_4y_composition::ETH_SMA_200_4H_4Y, CompositionDataType, IComposition,
+    },
+    utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
 use std::collections::HashMap;
 use std::{error::Error, vec};
@@ -125,7 +125,7 @@ impl IStrategy for Sma200Strategy {
             height: None,
             data: line_data,
             pane: None,
-            title: Some("Portfolio equity growth backtest".into()),
+            title: None,
         }));
 
         return charting_data;
@@ -152,7 +152,7 @@ impl IStrategy for Sma200Strategy {
             height: None,
             data: line_data,
             pane: None,
-            title: Some("Portfolio percentage growth backtest".into()),
+            title: None,
         }));
 
         return charting_data;
@@ -182,7 +182,7 @@ impl IStrategy for Sma200Strategy {
             height: None,
             data: line_data,
             pane: None,
-            title: Some("Portfolio percentage growth backtest".into()),
+            title: None,
         }));
 
         return charting_data;

@@ -1,7 +1,10 @@
 use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
 use crate::{
     library::engines::optimizers::{
-        grid::{GridOptimizer, NumericOptimizationParameter, OptimizationParameter, OptimizedBacktestResult},
+        grid::{
+            GridOptimizer, NumericOptimizationParameter, OptimizationParameter,
+            OptimizedBacktestResult,
+        },
         Optimizer,
     },
     user::{
@@ -15,9 +18,9 @@ use crate::{
 };
 use chrono::format::Numeric;
 use std::collections::HashMap;
+use std::marker::Copy;
 use std::{error::Error, vec};
 use uuid::Uuid;
-use std::marker::Copy;
 
 #[derive(Clone)]
 pub struct SmaOptimizablePeriodStrategy {
@@ -163,7 +166,7 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
             height: None,
             data: line_data,
             pane: None,
-            title: Some("Portfolio equity growth backtest".into()),
+            title: None,
         }));
 
         return charting_data;
@@ -190,7 +193,7 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
             height: None,
             data: line_data,
             pane: None,
-            title: Some("Portfolio percentage growth backtest".into()),
+            title: None,
         }));
 
         return charting_data;
@@ -208,6 +211,10 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
         for trade in backtest_result.trades() {
             cumulative_returns += trade.pl_portfolio();
 
+            if trade.close_timestamp.is_none() {
+                break;
+            }
+
             line_data.push(Some(LineData {
                 time: trade.close_timestamp().unwrap(),
                 value: cumulative_returns,
@@ -220,7 +227,7 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
             height: None,
             data: line_data,
             pane: None,
-            title: Some("Portfolio percentage growth backtest".into()),
+            title: None,
         }));
 
         return charting_data;

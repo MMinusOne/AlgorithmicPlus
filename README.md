@@ -56,5 +56,6 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Write the user and the developer documentation
 - ❌ Implement `backtest`, `optimize` command functionalities
 - ❌ Implement interface to render either `ratio`, `fixed` or `portfolio` cumulative returns
--  Custom range builder pattern
+- ❌ Custom range builder pattern, `start`, `end`, `skip`, `step`
+
 I have plans to keep working on this.

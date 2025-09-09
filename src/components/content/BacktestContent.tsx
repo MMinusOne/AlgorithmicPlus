@@ -43,19 +43,29 @@ export default function BacktestContent() {
     if (!backtestStrategy) return;
 
     const backtestsChartingData: ChartingSeries[] = [];
-    
+
     for (const backtest of backtestStrategy.backtests) {
-  
+      let chartSeries: ChartingSeries[];
       switch (graphType) {
         case GraphType.FixedEquity:
-          backtestsChartingData.push(...backtest.equity_growth_charting_data);
+          chartSeries = backtest.equity_growth_charting_data;
           break;
         case GraphType.PortfolioPercentage:
-          backtestsChartingData.push(...backtest.portfolio_growth_data);
+          chartSeries = backtest.portfolio_growth_data;
           break;
         case GraphType.TradePercentage:
-          backtestsChartingData.push(...backtest.percentage_growth_data);
+          chartSeries = backtest.percentage_growth_data;
           break;
+      }
+
+      if (chartSeries) {
+        // Maybe move this responsability to the backend
+        for (const serie of chartSeries) {
+          serie.data = serie.data.filter((e, i) => {
+            return serie?.data[i + 1]?.time != e.time;
+          });
+          backtestsChartingData.push(serie);
+        }
       }
     }
 

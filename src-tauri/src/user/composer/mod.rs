@@ -3,6 +3,8 @@ pub mod eth_hlc_standalone_4h_4y;
 pub mod eth_sma_200_4h_4y_composition;
 pub mod eth_standalone_4h_4y_composition;
 pub mod testing_composition;
+use serde::{Deserialize, Serialize};
+
 use crate::user::composer::{
     btc_eth_statarb_4h_4y_composition::BTC_ETH_STATARB_4H_4Y,
     eth_hlc_standalone_4h_4y::ETH_HLC_STANDALONE_4H_4Y,
@@ -15,7 +17,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::sync::LazyLock;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum CompositionDataType {
     Int(i64),
     Float(f32),

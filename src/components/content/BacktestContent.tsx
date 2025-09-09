@@ -33,7 +33,6 @@ export default function BacktestContent() {
         }
       );
 
-      setMetrics(backtestStrategyData.metrics);
       setBacktestStrategy(backtestStrategyData);
     };
 
@@ -43,17 +42,24 @@ export default function BacktestContent() {
   useEffect(() => {
     if (!backtestStrategy) return;
 
-    switch (graphType) {
-      case GraphType.FixedEquity:
-        setChartingData(backtestStrategy.equity_growth_charting_data);
-        break;
-      case GraphType.PortfolioPercentage:
-        setChartingData(backtestStrategy.portfolio_growth_data);
-        break;
-      case GraphType.TradePercentage:
-        setChartingData(backtestStrategy.percentage_growth_data);
-        break;
+    const backtestsChartingData: ChartingSeries[] = [];
+    
+    for (const backtest of backtestStrategy.backtests) {
+  
+      switch (graphType) {
+        case GraphType.FixedEquity:
+          backtestsChartingData.push(...backtest.equity_growth_charting_data);
+          break;
+        case GraphType.PortfolioPercentage:
+          backtestsChartingData.push(...backtest.portfolio_growth_data);
+          break;
+        case GraphType.TradePercentage:
+          backtestsChartingData.push(...backtest.percentage_growth_data);
+          break;
+      }
     }
+
+    setChartingData(backtestsChartingData);
   }, [backtestStrategy, graphType]);
 
   return (

@@ -8,6 +8,7 @@ use crate::{
     },
 };
 use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::{btree_map::Range, HashMap, VecDeque},
     fs::File,
@@ -22,16 +23,19 @@ pub enum OptimizationKind {
     CATEGORIC,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct NumericOptimizationParameter {
     pub name: String,
     pub range: OpsRange<usize>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct CategoricOptimizationParameter {
     pub name: String,
     pub categories: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum OptimizationParameter {
     Numeric(NumericOptimizationParameter),
     Categoric(CategoricOptimizationParameter),

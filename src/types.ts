@@ -127,14 +127,18 @@ export interface Metric {
   value: string;
 }
 
-export interface BacktestDataResponse {
-  name: string;
-  description: string;
+export interface BacktestResultDataResponse {
   equity_growth_charting_data: ChartingSeries[];
   portfolio_growth_data: ChartingSeries[];
   percentage_growth_data: ChartingSeries[];
   data_blocks: DataBlock[];
   metrics: Metric[];
+}
+
+export interface BacktestDataResponse {
+  name: string;
+  description: string;
+  backtests: BacktestResultDataResponse[];
 }
 
 export interface SidebarData {

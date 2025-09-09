@@ -5,6 +5,7 @@ use crate::library::engines::optimizers::grid::{
     GridOptimizer, NumericOptimizationParameter, OptimizationParameter,
 };
 use crate::library::engines::optimizers::Optimizer;
+use crate::user::composer::CompositionDataType;
 use crate::user::strategies::{IStrategy, Metric, STRATEGIES};
 use crate::utils::classes::charting::{ChartingData, DataBlock};
 use serde::{Deserialize, Serialize};
@@ -43,14 +44,26 @@ pub struct MetricPair {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct BacktestStrategyResponse {
-    pub name: Option<String>,
-    pub description: Option<String>,
+pub struct OptimizationParameterPair {
+    key: String,
+    value: CompositionDataType,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct BacktestResultResponse {
     pub equity_growth_charting_data: Vec<ChartingData>,
     pub portfolio_growth_data: Vec<ChartingData>,
     pub percentage_growth_data: Vec<ChartingData>,
     pub data_blocks: Vec<DataBlock>,
     pub metrics: Vec<MetricPair>,
+    pub parameters: Vec<OptimizationParameterPair>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct BacktestStrategyResponse {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub backtests: Vec<BacktestResultResponse>,
 }
 
 #[tauri::command]
@@ -60,11 +73,7 @@ pub fn backtest_strategy(
     let mut data_response = BacktestStrategyResponse {
         name: None,
         description: None,
-        equity_growth_charting_data: Vec::new(),
-        portfolio_growth_data: Vec::new(),
-        percentage_growth_data: Vec::new(),
-        data_blocks: Vec::new(),
-        metrics: Vec::new(),
+        backtests: Vec::new(),
     };
 
     let strategy = (&*STRATEGIES)
@@ -75,22 +84,66 @@ pub fn backtest_strategy(
     data_response.name = Some(strategy.name().into());
     data_response.description = Some(strategy.description().into());
 
-    if strategy.optimize().is_none() {
-        let backtest = strategy.backtest(None).unwrap();
+    let optimization = strategy.optimize();
 
-        data_response.portfolio_growth_data =
-            strategy.render_portfolio_percentage_growth(&backtest);
-        data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest);
-        data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest);
+    if optimization.is_none() {
+        let backtest_result = strategy.backtest(None).unwrap();
 
-        for (key, value) in backtest.metrics() {
-            data_response.metrics.push(MetricPair {
+        let portfolio_growth_data = strategy.render_portfolio_percentage_growth(&backtest_result);
+        let percentage_growth_data = strategy.render_percentage_growth(&backtest_result);
+        let equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);
+        let mut metrics = Vec::new();
+
+        for (key, value) in backtest_result.metrics() {
+            metrics.push(MetricPair {
                 key: key.clone(),
                 value: value.to_owned(),
             });
         }
+
+        data_response.backtests.push(BacktestResultResponse {
+            equity_growth_charting_data: equity_growth_charting_data,
+            portfolio_growth_data: portfolio_growth_data,
+            percentage_growth_data: percentage_growth_data,
+            data_blocks: vec![],
+            metrics: metrics,
+            parameters: Vec::new(),
+        })
     } else {
-    
+        for optimized_backtest_result in optimization.unwrap() {
+            let portfolio_growth_data = strategy
+                .render_portfolio_percentage_growth(&optimized_backtest_result.backtest_result);
+            let percentage_growth_data =
+                strategy.render_percentage_growth(&optimized_backtest_result.backtest_result);
+            let equity_growth_charting_data =
+                strategy.render_equity_growth(&optimized_backtest_result.backtest_result);
+            let mut metrics = Vec::new();
+
+            for (key, value) in optimized_backtest_result.backtest_result.metrics() {
+                metrics.push(MetricPair {
+                    key: key.clone(),
+                    value: value.to_owned(),
+                });
+            }
+
+            let mut optimized_parameters_pairs: Vec<OptimizationParameterPair> = vec![];
+
+            for (key, value) in &optimized_backtest_result.optimized_parameters {
+                optimized_parameters_pairs.push(OptimizationParameterPair {
+                    key: key.to_owned(),
+                    value: value.to_owned(),
+                })
+            }
+
+            data_response.backtests.push(BacktestResultResponse {
+                equity_growth_charting_data: equity_growth_charting_data,
+                portfolio_growth_data: portfolio_growth_data,
+                percentage_growth_data: percentage_growth_data,
+                data_blocks: vec![],
+                metrics: metrics,
+                parameters: optimized_parameters_pairs,
+            })
+        }
     }
 
     Ok(data_response)

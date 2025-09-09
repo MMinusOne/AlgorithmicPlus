@@ -1,5 +1,5 @@
 use crate::{
-    library::engines::optimizers::grid::OptimizationParameter, user::{
+    library::engines::optimizers::grid::{OptimizationParameter, OptimizedBacktestResult}, user::{
         composer::{CompositionDataType, IComposition},
         library::{
             injectables::formulas::{
@@ -465,7 +465,7 @@ pub trait IStrategy: Send + Sync {
     fn description(&self) -> &str;
     fn composition(&self) -> &'static dyn IComposition;
     // fn wfo(&self, optimizer: OptimizationStrategy) {}
-    fn optimization_parameters_creator(&self) -> Option<Box<[OptimizationParameter]>> {
+    fn optimize(&self) -> Option<Vec<OptimizedBacktestResult>> {
         None
     }
     fn optimization_target(&self, backtest_result: &BacktestResult) -> f32 {

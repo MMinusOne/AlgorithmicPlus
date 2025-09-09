@@ -1,6 +1,9 @@
 use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
+use crate::library::engines::optimizers::Optimizer;
 use crate::{
-    library::engines::optimizers::grid::{NumericOptimizationParameter, OptimizationParameter},
+    library::engines::optimizers::grid::{
+        GridOptimizer, NumericOptimizationParameter, OptimizationParameter, OptimizedBacktestResult,
+    },
     user::{
         composer::{
             eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y, CompositionDataType,
@@ -14,6 +17,7 @@ use std::collections::HashMap;
 use std::{error::Error, vec};
 use uuid::Uuid;
 
+#[derive(Clone)]
 pub struct DoubleSmaOptimizablePeriodStrategy {
     id: String,
     name: String,
@@ -34,7 +38,7 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
         return &self.description;
     }
 
-    fn optimization_parameters_creator(&self) -> Option<Box<[OptimizationParameter]>> {
+    fn optimize(&self) -> Option<Vec<OptimizedBacktestResult>> {
         let optimization_parameters = [
             OptimizationParameter::Numeric(NumericOptimizationParameter {
                 name: "sma_short_period".into(),
@@ -46,7 +50,12 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
             }),
         ];
 
-        Some(Box::new(optimization_parameters))
+        let strategy: Box<dyn IStrategy> = Box::new(self.clone());
+
+        let optimization_results =
+            GridOptimizer::optimize(&strategy, &optimization_parameters).unwrap_or(Vec::new());
+
+        Some(optimization_results)
     }
 
     fn backtest(

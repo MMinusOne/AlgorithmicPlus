@@ -1,13 +1,10 @@
 use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
 use crate::{
-    user::{
-        composer::{
+    library::engines::optimizers::grid::OptimizedBacktestResult, user::composer::{
             eth_sma_200_4h_4y_composition::ETH_SMA_200_4H_4Y,
             CompositionDataType,
             IComposition,
-        },
-    },
-    utils::classes::charting::{ChartingData, LineChartingData, LineData},
+        }, utils::classes::charting::{ChartingData, LineChartingData, LineData}
 };
 use std::collections::HashMap;
 use std::{error::Error, vec};
@@ -89,6 +86,10 @@ impl IStrategy for Sma200Strategy {
 
         let backtest_result = backtest_manager.backtest_ended();
         Ok(backtest_result)
+    }
+
+    fn optimize(&self) -> Option<Vec<OptimizedBacktestResult>> {
+        None
     }
 
     fn composition(&self) -> &'static dyn IComposition {

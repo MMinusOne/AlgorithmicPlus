@@ -75,17 +75,22 @@ pub fn backtest_strategy(
     data_response.name = Some(strategy.name().into());
     data_response.description = Some(strategy.description().into());
 
-    let backtest = strategy.backtest(None).unwrap();
+    if strategy.optimize().is_none() {
+        let backtest = strategy.backtest(None).unwrap();
 
-    data_response.portfolio_growth_data = strategy.render_portfolio_percentage_growth(&backtest);
-    data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest);
-    data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest);
+        data_response.portfolio_growth_data =
+            strategy.render_portfolio_percentage_growth(&backtest);
+        data_response.percentage_growth_data = strategy.render_percentage_growth(&backtest);
+        data_response.equity_growth_charting_data = strategy.render_equity_growth(&backtest);
 
-    for (key, value) in backtest.metrics() {
-        data_response.metrics.push(MetricPair {
-            key: key.clone(),
-            value: value.to_owned(),
-        });
+        for (key, value) in backtest.metrics() {
+            data_response.metrics.push(MetricPair {
+                key: key.clone(),
+                value: value.to_owned(),
+            });
+        }
+    } else {
+    
     }
 
     Ok(data_response)

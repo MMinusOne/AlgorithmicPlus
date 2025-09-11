@@ -1,10 +1,9 @@
-use crate::library::engines::optimizers::async_trait;
 use crate::{
     library::engines::optimizers::{
         grid::{OptimizationParameter, OptimizedBacktestResult},
         Optimizer,
     },
-    user::strategies::{BacktestResult, IStrategy},
+    user::strategies::{IStrategy},
 };
 use std::io::Error;
 

@@ -47,7 +47,9 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
         let optimization_parameters = [OptimizationParameter::Numeric(
             NumericOptimizationParameter {
                 name: "sma_period".into(),
-                range: 10..200,
+                start: 10,
+                end: 200,
+                step: 5,
             },
         )];
 

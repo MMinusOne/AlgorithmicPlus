@@ -41,7 +41,9 @@ impl IStrategy for TheilSenOptimizeableStrategy {
         let optimization_parameters = [OptimizationParameter::Numeric(
             NumericOptimizationParameter {
                 name: "theilsen_window_length".into(),
-                range: 10..200,
+                start: 10,
+                end: 200,
+                step: 5,
             },
         )];
 

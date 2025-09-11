@@ -9,14 +9,7 @@ use crate::{
 };
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::{btree_map::Range, HashMap, VecDeque},
-    fs::File,
-    io::Error,
-    ops::Range as OpsRange,
-    sync::Arc,
-    thread,
-};
+use std::{collections::HashMap, io::Error, ops::Range as OpsRange};
 
 pub enum OptimizationKind {
     NUMERIC,
@@ -26,7 +19,9 @@ pub enum OptimizationKind {
 #[derive(Serialize, Deserialize)]
 pub struct NumericOptimizationParameter {
     pub name: String,
-    pub range: OpsRange<usize>,
+    pub start: usize,
+    pub end: usize,
+    pub step: usize,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -114,7 +109,7 @@ impl GridOptimizer {
 
         let total_combinations = numeric_params
             .iter()
-            .map(|param| param.range.end - param.range.start)
+            .map(|param| param.end - param.start)
             .product();
 
         let mut combinations = Vec::with_capacity(total_combinations);
@@ -137,7 +132,7 @@ impl GridOptimizer {
 
         let current_param = numeric_params[param_index];
 
-        for value in current_param.range.clone() {
+        for value in (current_param.start..current_param.end).step_by(current_param.step) {
             let composition_usize = CompositionDataType::Usize(value);
             current_combination.insert(current_param.name.clone(), composition_usize);
 

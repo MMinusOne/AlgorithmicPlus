@@ -42,11 +42,15 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
         let optimization_parameters = [
             OptimizationParameter::Numeric(NumericOptimizationParameter {
                 name: "sma_short_period".into(),
-                range: 10..100,
+                start: 10,
+                end: 100,
+                step: 5,
             }),
             OptimizationParameter::Numeric(NumericOptimizationParameter {
                 name: "sma_long_period".into(),
-                range: 100..200,
+                start: 100,
+                end: 200,
+                step: 5,
             }),
         ];
 

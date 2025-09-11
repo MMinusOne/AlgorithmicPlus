@@ -4,16 +4,13 @@ use crate::{
 };
 use async_trait::async_trait;
 use futures::{
-    join,
     stream::{self, StreamExt},
 };
 use num_traits::AsPrimitive;
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     sync::{
-        atomic::{AtomicUsize, Ordering},
         Arc, Mutex,
     },
 };

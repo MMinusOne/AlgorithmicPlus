@@ -43,7 +43,6 @@ It's still lacking alot of features, the only features currently available are t
 
 ### Todo List
 
-- ❌ Reduce the property names on big IPC transfers to reduce bottle-necks.
 - ❌ Add chartring auto-coloring and color-maps.
 - ❌ Implement more technical indicators.
 - ❌ Implement `Beysian` and `Genetic` optimization Algorithmic.

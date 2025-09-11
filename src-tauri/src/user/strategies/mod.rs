@@ -1,5 +1,6 @@
 use crate::{
-    library::engines::optimizers::grid::{OptimizationParameter, OptimizedBacktestResult}, user::{
+    library::engines::optimizers::grid::{OptimizationParameter, OptimizedBacktestResult},
+    user::{
         composer::{CompositionDataType, IComposition},
         library::{
             injectables::formulas::{
@@ -10,7 +11,8 @@ use crate::{
             },
             IInjectable,
         },
-    }, utils::classes::charting::ChartingData
+    },
+    utils::classes::charting::ChartingData,
 };
 use std::{collections::HashMap, error::Error};
 use std::{sync::LazyLock, time::Instant};
@@ -246,6 +248,7 @@ pub struct BacktestManager {
     computational_metrics: HashMap<Metric, f32>,
     instant: Instant,
     backtest_ended: bool,
+    backtest_result: Option<BacktestResult>,
 }
 
 impl BacktestManager {
@@ -292,6 +295,9 @@ impl BacktestManager {
         if self.backtest_ended {
             return;
         }
+
+        self.check_capital();
+
         let allocation = trade.capital_allocation().unwrap().to_owned();
         if self.available_capital() >= allocation {
             trade.freeze_open_timestamp(self.current_timestamp.unwrap());
@@ -306,6 +312,8 @@ impl BacktestManager {
         if self.backtest_ended {
             return;
         }
+
+        self.check_capital();
 
         let current_price = self.current_price.unwrap();
         let current_timestamp = self.current_timestamp.unwrap();
@@ -328,23 +336,39 @@ impl BacktestManager {
         self.available_capital += change;
     }
 
+    pub fn check_capital(&mut self) {
+        let portfolio_value = self.current_portfolio_value();
+
+        if portfolio_value <= 0.0 {
+            self.backtest_result = Some(self.backtest_end());
+        }
+    }
+
     pub fn trades(&self) -> &Vec<Trade> {
         return &self.trades;
     }
 
-    pub fn backtest_ended(&mut self) -> BacktestResult {
-        for trade in &mut self.trades.clone().iter_mut() {
-            if !trade.is_closed() {
-                self.close_trade(trade);
-            }
-        }
+    pub fn backtest_ended(&self) -> bool {
+        return self.backtest_ended;
+    }
 
-        self.backtest_ended = true;
-        self.computational_metrics.insert(
-            Metric::PerformanceTime,
-            self.instant.elapsed().as_secs_f32(),
-        );
-        return BacktestResult::from(self.to_owned());
+    pub fn backtest_end(&mut self) -> BacktestResult {
+        if self.backtest_result.is_none() {
+            for trade in &mut self.trades.clone().iter_mut() {
+                if !trade.is_closed() {
+                    self.close_trade(trade);
+                }
+            }
+
+            self.backtest_ended = true;
+            self.computational_metrics.insert(
+                Metric::PerformanceTime,
+                self.instant.elapsed().as_secs_f32(),
+            );
+            return BacktestResult::from(self.to_owned());
+        } else {
+            return self.backtest_result.as_ref().unwrap().clone();
+        }
     }
 
     pub fn new(options: BacktestOptions) -> Self {
@@ -359,6 +383,7 @@ impl BacktestManager {
             computational_metrics,
             instant: Instant::now(),
             backtest_ended: false,
+            backtest_result: None,
         };
     }
 }
@@ -366,7 +391,7 @@ impl BacktestManager {
 pub struct BacktestOptions {
     pub initial_capital: f32,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BacktestResult {
     initial_capital: f32,
     growth_capital: f32,

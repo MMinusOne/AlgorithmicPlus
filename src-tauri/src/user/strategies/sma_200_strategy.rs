@@ -48,6 +48,10 @@ impl IStrategy for Sma200Strategy {
         let mut latest_trade: Option<Trade> = None;
 
         for composition_point in &composition_data {
+            if backtest_manager.backtest_ended {
+                continue;
+            }
+
             let timestamp =
                 CompositionDataType::extract_int(&composition_point[timestamp_position]);
             let close = CompositionDataType::extract_float(&composition_point[close_position]);
@@ -73,10 +77,10 @@ impl IStrategy for Sma200Strategy {
             }
 
             if latest_trade.is_none() {
-                let available_capital = backtest_manager.available_capital();
+                let trade_allocation = backtest_manager.available_capital() * 0.30;
                 let mut new_trade = Trade::new(TradeOptions {
                     side,
-                    capital_allocation: Some(available_capital),
+                    capital_allocation: Some(trade_allocation),
                     leverage: Some(1.0),
                 });
                 backtest_manager.open_trade(&mut new_trade);
@@ -84,7 +88,7 @@ impl IStrategy for Sma200Strategy {
             }
         }
 
-        let backtest_result = backtest_manager.backtest_ended();
+        let backtest_result = backtest_manager.backtest_end();
         Ok(backtest_result)
     }
 

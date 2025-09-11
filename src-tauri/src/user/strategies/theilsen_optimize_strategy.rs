@@ -67,7 +67,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
         let composition_data = self.composed_data();
 
         if optimization_map.is_none() {
-            let backtest_result = backtest_manager.backtest_ended();
+            let backtest_result = backtest_manager.backtest_end();
             return Ok(backtest_result);
         }
 
@@ -90,6 +90,10 @@ impl IStrategy for TheilSenOptimizeableStrategy {
         let mut prev_theilsen_value: Option<f32> = None;
 
         for composition_point in &composition_data {
+            if backtest_manager.backtest_ended {
+                continue;
+            }
+
             let timestamp =
                 CompositionDataType::extract_int(&composition_point[timestamp_position]);
             let high = CompositionDataType::extract_float(&composition_point[high_position]);
@@ -134,7 +138,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
                 break;
             }
 
-            let trade_allocation = backtest_manager.available_capital();
+            let trade_allocation = backtest_manager.available_capital() * 0.30;
 
             if latest_trade.is_none() {
                 let mut new_trade = Trade::new(TradeOptions {
@@ -149,7 +153,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
             prev_theilsen_value = Some(theilsen_value);
         }
 
-        let backtest_result = backtest_manager.backtest_ended();
+        let backtest_result = backtest_manager.backtest_end();
         Ok(backtest_result)
     }
 

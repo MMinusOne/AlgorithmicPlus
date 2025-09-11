@@ -66,6 +66,7 @@ export type ChartingSeries =
       pane?: number;
       title?: string;
       data: CandlestickData<Time>[];
+      hidden: boolean;
     }
   | {
       chart_type: "line";
@@ -73,6 +74,7 @@ export type ChartingSeries =
       pane?: number;
       title?: string;
       data: LineData<Time>[];
+      hidden: boolean;
     }
   | {
       chart_type: "bar";
@@ -80,6 +82,7 @@ export type ChartingSeries =
       pane?: number;
       title?: string;
       data: (WhitespaceData<Time> | BarData<Time>)[];
+      hidden: boolean;
     }
   | {
       chart_type: "histogram";
@@ -87,6 +90,7 @@ export type ChartingSeries =
       pane?: number;
       title?: string;
       data: HistogramData<Time>[];
+      hidden: boolean;
     }
   | {
       chart_type: "area";
@@ -94,6 +98,7 @@ export type ChartingSeries =
       pane?: number;
       title?: string;
       data: AreaData<Time>[];
+      hidden: boolean;
     };
 
 export interface NewsData {}
@@ -128,6 +133,7 @@ export interface Metric {
 }
 
 export interface BacktestResultDataResponse {
+  id: string,
   equity_growth_charting_data: ChartingSeries[];
   portfolio_growth_data: ChartingSeries[];
   percentage_growth_data: ChartingSeries[];

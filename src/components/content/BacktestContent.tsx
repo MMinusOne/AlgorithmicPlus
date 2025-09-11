@@ -1,7 +1,19 @@
 import { useSidebarState } from "@/lib/state/sidebar";
 import ChartingContent from "../sidebar/content/ChartingContent";
-import { useEffect, useState } from "react";
-import { BacktestDataResponse, ChartingSeries, Metric } from "@/types";
+import {
+  ChangeEventHandler,
+  DetailedHTMLProps,
+  InputHTMLAttributes,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+import {
+  BacktestDataResponse,
+  BacktestResultDataResponse,
+  ChartingSeries,
+  Metric,
+} from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 import BaseChart from "../charting/BaseChart";
 
@@ -72,10 +84,95 @@ export default function BacktestContent() {
     setChartingData(backtestsChartingData);
   }, [backtestStrategy, graphType]);
 
+  const setHighestSharpeDisplayOnly = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.currentTarget.checked) {
+        let highestSharpeBacktest: BacktestResultDataResponse | null = null;
+
+        for (const backtest of backtestStrategy?.backtests || []) {
+          if (!highestSharpeBacktest) highestSharpeBacktest = backtest;
+          const sharpeMetric = backtest.metrics.find(
+            (m) => m.key == "SharpeRatio"
+          );
+          const comparasionSharpeMetric = highestSharpeBacktest.metrics.find(
+            (m) => m.key == "SharpeRatio"
+          );
+          if (!sharpeMetric || !comparasionSharpeMetric) continue;
+
+          const sharpe = Number(sharpeMetric.value);
+          const comparasionSharpe = Number(comparasionSharpeMetric.value);
+
+          if (sharpe > comparasionSharpe) highestSharpeBacktest = backtest;
+        }
+
+        const newChartingSeries: ChartingSeries[] = [];
+        for (const backtest of backtestStrategy?.backtests || []) {
+          let chartSeries;
+          switch (graphType) {
+            case GraphType.FixedEquity:
+              chartSeries = backtest.equity_growth_charting_data;
+              break;
+            case GraphType.PortfolioPercentage:
+              chartSeries = backtest.portfolio_growth_data;
+              break;
+            case GraphType.TradePercentage:
+              chartSeries = backtest.percentage_growth_data;
+              break;
+          }
+          for (const chartingSerie of chartSeries) {
+            chartingSerie.hidden = backtest.id != highestSharpeBacktest?.id;
+            newChartingSeries.push(chartingSerie);
+          }
+        }
+
+        setChartingData(newChartingSeries);
+      } else {
+        const newChartingSeries: ChartingSeries[] = [];
+        for (const backtest of backtestStrategy?.backtests || []) {
+          let chartSeries;
+          switch (graphType) {
+            case GraphType.FixedEquity:
+              chartSeries = backtest.equity_growth_charting_data;
+              break;
+            case GraphType.PortfolioPercentage:
+              chartSeries = backtest.portfolio_growth_data;
+              break;
+            case GraphType.TradePercentage:
+              chartSeries = backtest.percentage_growth_data;
+              break;
+          }
+          for (const chartingSerie of chartSeries) {
+            chartingSerie.hidden = false;
+            newChartingSeries.push(chartingSerie);
+          }
+        }
+
+        setChartingData(newChartingSeries);
+      }
+    },
+    [backtestStrategy]
+  );
+
   return (
     <div className="w-full h-screen overflow-hidden overflow-y-scroll flex flex-col gap-8">
       <div className="w-full h-full">
         <div className="h-[50px] w-full flex items-center justify-center p-4">
+          <legend className="fieldset-legend">Login options</legend>
+          {(chartingData?.length || 0) > 1 ? (
+            <>
+              <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
+                <label className="label">
+                  <input
+                    onChange={setHighestSharpeDisplayOnly}
+                    type="checkbox"
+                    defaultChecked
+                    className="checkbox"
+                  />
+                  Highest Sharpe
+                </label>
+              </fieldset>
+            </>
+          ) : null}
           <select
             onChange={(e) => {
               setGraphType(e.currentTarget.value as GraphType);

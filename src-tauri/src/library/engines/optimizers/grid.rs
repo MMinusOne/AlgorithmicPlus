@@ -10,6 +10,7 @@ use crate::{
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, io::Error, ops::Range as OpsRange};
+use uuid::Uuid;
 
 pub enum OptimizationKind {
     NUMERIC,

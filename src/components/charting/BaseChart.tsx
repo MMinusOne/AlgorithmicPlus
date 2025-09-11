@@ -40,7 +40,7 @@ export default function BaseChart({
         },
       },
       timeScale: {
-        minBarSpacing: 0.01, 
+        minBarSpacing: 0.01,
         maxBarSpacing: Infinity,
       },
       grid: { horzLines: { visible: true } },
@@ -69,6 +69,7 @@ export default function BaseChart({
 
     for (const chartingSerieIndex in chartingData || []) {
       const chartingSerie = chartingData[chartingSerieIndex];
+      if (chartingSerie.hidden) continue;
       //@ts-ignore
       const paneIndex: number = Number.isNaN(chartingSerie.pane)
         ? Number(chartingSerieIndex)
@@ -86,7 +87,7 @@ export default function BaseChart({
         SeriesTypes[chartingSerie.chart_type],
         {
           title: chartingSerie.title,
-          lineWidth: 1.50 as LineWidth,
+          lineWidth: 1.5 as LineWidth,
         },
         paneIndex
       );
@@ -102,7 +103,7 @@ export default function BaseChart({
         const pane = chart.panes()[paneIndex];
         pane.setHeight(chartingSerie.height);
       }
-    }    
+    }
 
     chart.timeScale().fitContent();
   }, [chartContainer, chartingData, chartApiRef]);

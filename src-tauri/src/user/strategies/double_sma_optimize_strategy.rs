@@ -44,13 +44,13 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
                 name: "sma_short_period".into(),
                 start: 10,
                 end: 100,
-                step: 5,
+                step: 15,
             }),
             OptimizationParameter::Numeric(NumericOptimizationParameter {
                 name: "sma_long_period".into(),
                 start: 100,
                 end: 200,
-                step: 5,
+                step: 15,
             }),
         ];
 

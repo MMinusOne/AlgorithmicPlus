@@ -2,6 +2,7 @@ use crate::user::composer::CompositionDataType;
 use crate::user::strategies::{Metric, STRATEGIES};
 use crate::utils::classes::charting::{ChartingData, DataBlock};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
 pub struct StrategyMetadata {
@@ -44,6 +45,7 @@ pub struct OptimizationParameterPair {
 
 #[derive(Serialize, Deserialize)]
 pub struct BacktestResultResponse {
+    pub id: String,
     pub equity_growth_charting_data: Vec<ChartingData>,
     pub portfolio_growth_data: Vec<ChartingData>,
     pub percentage_growth_data: Vec<ChartingData>,
@@ -95,6 +97,7 @@ pub fn backtest_strategy(
         }
 
         data_response.backtests.push(BacktestResultResponse {
+            id: Uuid::new_v4().to_string(),
             equity_growth_charting_data: equity_growth_charting_data,
             portfolio_growth_data: portfolio_growth_data,
             percentage_growth_data: percentage_growth_data,
@@ -129,6 +132,7 @@ pub fn backtest_strategy(
             }
 
             data_response.backtests.push(BacktestResultResponse {
+                id: Uuid::new_v4().to_string(),
                 equity_growth_charting_data: equity_growth_charting_data,
                 portfolio_growth_data: portfolio_growth_data,
                 percentage_growth_data: percentage_growth_data,

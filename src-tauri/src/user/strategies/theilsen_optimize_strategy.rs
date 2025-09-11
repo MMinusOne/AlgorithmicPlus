@@ -38,14 +38,20 @@ impl IStrategy for TheilSenOptimizeableStrategy {
     }
 
     fn optimize(&self) -> Option<Vec<OptimizedBacktestResult>> {
-        let optimization_parameters = [OptimizationParameter::Numeric(
-            NumericOptimizationParameter {
+        let optimization_parameters = [
+            OptimizationParameter::Numeric(NumericOptimizationParameter {
                 name: "theilsen_window_length".into(),
-                start: 10,
-                end: 200,
-                step: 5,
-            },
-        )];
+                start: 10.0,
+                end: 200.0,
+                step: 15.0,
+            }),
+            OptimizationParameter::Numeric(NumericOptimizationParameter {
+                name: "capital_ratio".into(),
+                start: 0.1,
+                end: 0.9,
+                step: 0.2,
+            }),
+        ];
 
         let strategy: Box<dyn IStrategy> = Box::new(self.clone());
 
@@ -76,9 +82,15 @@ impl IStrategy for TheilSenOptimizeableStrategy {
             .get("theilsen_window_length")
             .unwrap()
             .to_owned();
+        let capital_ratio_comp = optimization_map
+            .unwrap()
+            .get("capital_ratio")
+            .unwrap()
+            .to_owned();
 
         let theilsen_window_length =
-            CompositionDataType::extract_usize(theilsen_window_length_comp);
+            CompositionDataType::extract_usize(&theilsen_window_length_comp);
+        let capital_ratio = CompositionDataType::extract_float(&capital_ratio_comp);
 
         let timestamp_position = composition.get_composition_field_position("timestamp");
         let high_position = composition.get_composition_field_position("high");
@@ -138,7 +150,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
                 break;
             }
 
-            let trade_allocation = backtest_manager.available_capital() * 0.30;
+            let trade_allocation = backtest_manager.available_capital() * capital_ratio;
 
             if latest_trade.is_none() {
                 let mut new_trade = Trade::new(TradeOptions {
@@ -162,13 +174,8 @@ impl IStrategy for TheilSenOptimizeableStrategy {
     }
 
     fn optimization_target(&self, backtest_result: &BacktestResult) -> f32 {
-        if let (Some(sharpe_ratio), Some(ratio_return)) = (
-            backtest_result.metrics.get(&super::Metric::SharpeRatio),
-            backtest_result
-                .metrics
-                .get(&super::Metric::TotalRatioReturn),
-        ) {
-            return (sharpe_ratio * 0.8) + (ratio_return * 0.2);
+        if let Some(sharpe_ratio) = backtest_result.metrics.get(&super::Metric::SharpeRatio) {
+            return sharpe_ratio.to_owned();
         } else {
             return -1.0;
         }

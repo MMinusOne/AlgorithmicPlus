@@ -47,9 +47,9 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
         let optimization_parameters = [OptimizationParameter::Numeric(
             NumericOptimizationParameter {
                 name: "sma_period".into(),
-                start: 10,
-                end: 200,
-                step: 5,
+                start: 10.0,
+                end: 200.0,
+                step: 5.0,
             },
         )];
 
@@ -82,7 +82,7 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
             .get("sma_period")
             .unwrap()
             .to_owned();
-        let sma_period = CompositionDataType::extract_usize(sma_comp);
+        let sma_period = CompositionDataType::extract_usize(&sma_comp);
 
         let timestamp_position = composition.get_composition_field_position("timestamp");
         let close_position = composition.get_composition_field_position("close");

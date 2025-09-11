@@ -33,6 +33,8 @@ export default function BacktestContent() {
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [backtestStrategy, setBacktestStrategy] =
     useState<BacktestDataResponse>();
+  const [displayHighestSharpeOnly, setDisplayHighestSharpeOnly] =
+    useState(true);
 
   useEffect(() => {
     const getBacktestData = async () => {
@@ -54,9 +56,30 @@ export default function BacktestContent() {
   useEffect(() => {
     if (!backtestStrategy) return;
 
-    const backtestsChartingData: ChartingSeries[] = [];
+    let backtestsChartingData: ChartingSeries[] = [];
+
+    let highestSharpeBacktest: BacktestResultDataResponse | null = null;
 
     for (const backtest of backtestStrategy.backtests) {
+      if (displayHighestSharpeOnly) {
+        if (!highestSharpeBacktest) highestSharpeBacktest = backtest;
+
+        const highestSharpe = Number(
+          highestSharpeBacktest.metrics.find((m) => m.key == "SharpeRatio")
+            ?.value
+        );
+        const backtestSharpe = Number(
+          backtest.metrics.find((m) => m.key == "SharpeRatio")?.value
+        );
+
+        if (backtestSharpe > highestSharpe) {
+          highestSharpeBacktest = backtest;
+          backtestsChartingData = [];
+        } else { 
+          continue;
+        }
+      }
+
       let chartSeries: ChartingSeries[];
       switch (graphType) {
         case GraphType.FixedEquity:
@@ -82,73 +105,11 @@ export default function BacktestContent() {
     }
 
     setChartingData(backtestsChartingData);
-  }, [backtestStrategy, graphType]);
+  }, [backtestStrategy, graphType, displayHighestSharpeOnly]);
 
   const setHighestSharpeDisplayOnly = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.currentTarget.checked) {
-        let highestSharpeBacktest: BacktestResultDataResponse | null = null;
-
-        for (const backtest of backtestStrategy?.backtests || []) {
-          if (!highestSharpeBacktest) highestSharpeBacktest = backtest;
-          const sharpeMetric = backtest.metrics.find(
-            (m) => m.key == "SharpeRatio"
-          );
-          const comparasionSharpeMetric = highestSharpeBacktest.metrics.find(
-            (m) => m.key == "SharpeRatio"
-          );
-          if (!sharpeMetric || !comparasionSharpeMetric) continue;
-
-          const sharpe = Number(sharpeMetric.value);
-          const comparasionSharpe = Number(comparasionSharpeMetric.value);
-
-          if (sharpe > comparasionSharpe) highestSharpeBacktest = backtest;
-        }
-
-        const newChartingSeries: ChartingSeries[] = [];
-        for (const backtest of backtestStrategy?.backtests || []) {
-          let chartSeries;
-          switch (graphType) {
-            case GraphType.FixedEquity:
-              chartSeries = backtest.equity_growth_charting_data;
-              break;
-            case GraphType.PortfolioPercentage:
-              chartSeries = backtest.portfolio_growth_data;
-              break;
-            case GraphType.TradePercentage:
-              chartSeries = backtest.percentage_growth_data;
-              break;
-          }
-          for (const chartingSerie of chartSeries) {
-            chartingSerie.hidden = backtest.id != highestSharpeBacktest?.id;
-            newChartingSeries.push(chartingSerie);
-          }
-        }
-
-        setChartingData(newChartingSeries);
-      } else {
-        const newChartingSeries: ChartingSeries[] = [];
-        for (const backtest of backtestStrategy?.backtests || []) {
-          let chartSeries;
-          switch (graphType) {
-            case GraphType.FixedEquity:
-              chartSeries = backtest.equity_growth_charting_data;
-              break;
-            case GraphType.PortfolioPercentage:
-              chartSeries = backtest.portfolio_growth_data;
-              break;
-            case GraphType.TradePercentage:
-              chartSeries = backtest.percentage_growth_data;
-              break;
-          }
-          for (const chartingSerie of chartSeries) {
-            chartingSerie.hidden = false;
-            newChartingSeries.push(chartingSerie);
-          }
-        }
-
-        setChartingData(newChartingSeries);
-      }
+      setDisplayHighestSharpeOnly(e.currentTarget.checked);
     },
     [backtestStrategy]
   );
@@ -157,8 +118,7 @@ export default function BacktestContent() {
     <div className="w-full h-screen overflow-hidden overflow-y-scroll flex flex-col gap-8">
       <div className="w-full h-full">
         <div className="h-[50px] w-full flex items-center justify-center p-4">
-          <legend className="fieldset-legend">Login options</legend>
-          {(chartingData?.length || 0) > 1 ? (
+          {(backtestStrategy?.backtests?.length || 0) > 1 ? (
             <>
               <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
                 <label className="label">

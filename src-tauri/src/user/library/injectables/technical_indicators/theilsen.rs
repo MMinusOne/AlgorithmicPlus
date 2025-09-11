@@ -15,6 +15,8 @@ pub struct TheilSen {
     close_history: VecDeque<f32>,
     baseline: Option<f32>,
     atr: ATR,
+    cached_atr: Option<f32>,
+    slopes_buffer: Vec<f32>,
 }
 
 impl IInjectable<(f32, f32, f32), f32> for TheilSen {
@@ -29,6 +31,10 @@ impl IInjectable<(f32, f32, f32), f32> for TheilSen {
     fn allocate(&mut self, (high, low, close): (f32, f32, f32)) {
         self.atr.allocate((high, low, close));
 
+        if let Some(new_atr) = self.atr.get_data() {
+            self.cached_atr = Some(new_atr);
+        }
+
         self.close_history.push_back(close);
 
         if self.close_history.len() > self.window_length + 1 {
@@ -39,31 +45,28 @@ impl IInjectable<(f32, f32, f32), f32> for TheilSen {
             return;
         }
 
-        let mut slopes = Vec::new();
+        self.slopes_buffer.clear();
         let current_price = close;
-        let current_idx = self.close_history.len() - 1;
 
-        for i in 1..=self.window_length {
-            if let Some(historical_price) = self.close_history.get(current_idx - i) {
-                let slope = (current_price - historical_price) / i as f32;
-                slopes.push(slope);
-            }
+        for (i, &historical_price) in self
+            .close_history
+            .iter()
+            .rev()
+            .skip(1)
+            .take(self.window_length)
+            .enumerate()
+        {
+            let slope = (current_price - historical_price) / (i + 1) as f32;
+            self.slopes_buffer.push(slope);
         }
 
-        if slopes.is_empty() {
+        if self.slopes_buffer.is_empty() {
             return;
         }
 
-        slopes.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median_slope = self.quick_median();
 
-        let median_slope = if slopes.len() % 2 == 1 {
-            slopes[slopes.len() / 2]
-        } else {
-            let mid = slopes.len() / 2;
-            (slopes[mid - 1] + slopes[mid]) / 2.0
-        };
-
-        let slope_cap = self.calculate_slope_cap();
+        let slope_cap = self.cached_atr.unwrap_or(0.001) * self.atr_multiplier;
         let capped_slope = median_slope.clamp(-slope_cap, slope_cap);
 
         let previous_baseline = self.baseline.unwrap_or(current_price);
@@ -100,7 +103,33 @@ impl TheilSen {
             close_history: VecDeque::with_capacity(window_length + 1 as usize),
             baseline: None,
             atr: ATR::new(atr_length),
+            cached_atr: None,
+            slopes_buffer: Vec::with_capacity(window_length),
         };
+    }
+
+    fn quick_median(&mut self) -> f32 {
+        let len = self.slopes_buffer.len();
+        if len == 0 {
+            return 0.0;
+        }
+
+        let mid = len / 2;
+
+        // Use select_nth_unstable_by for efficient median finding
+        self.slopes_buffer
+            .select_nth_unstable_by(mid, |a, b| a.partial_cmp(b).unwrap());
+
+        if len % 2 == 1 {
+            // Odd length: return middle element
+            self.slopes_buffer[mid]
+        } else {
+            // Even length: return average of two middle elements
+            let left_mid = mid - 1;
+            self.slopes_buffer
+                .select_nth_unstable_by(left_mid, |a, b| a.partial_cmp(b).unwrap());
+            (self.slopes_buffer[left_mid] + self.slopes_buffer[mid]) / 2.0
+        }
     }
 
     fn calculate_slope_cap(&mut self) -> f32 {

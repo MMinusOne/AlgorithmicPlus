@@ -20,9 +20,9 @@ pub enum OptimizationKind {
 #[derive(Serialize, Deserialize)]
 pub struct NumericOptimizationParameter {
     pub name: String,
-    pub start: usize,
-    pub end: usize,
-    pub step: usize,
+    pub start: f32,
+    pub end: f32,
+    pub step: f32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -110,7 +110,10 @@ impl GridOptimizer {
 
         let total_combinations = numeric_params
             .iter()
-            .map(|param| param.end - param.start)
+            .map(|param| {
+                let steps = (param.end - param.start).ceil() as usize;
+                steps.max(1)
+            })
             .product();
 
         let mut combinations = Vec::with_capacity(total_combinations);
@@ -133,9 +136,15 @@ impl GridOptimizer {
 
         let current_param = numeric_params[param_index];
 
-        for value in (current_param.start..current_param.end).step_by(current_param.step) {
-            let composition_usize = CompositionDataType::Usize(value);
-            current_combination.insert(current_param.name.clone(), composition_usize);
+        let mut value = current_param.start;
+        while value < current_param.end {
+            let composition_value = if value.fract() == 0.0 {
+                CompositionDataType::Usize(value as usize)
+            } else {
+                CompositionDataType::Float(value)
+            };
+
+            current_combination.insert(current_param.name.clone(), composition_value);
 
             Self::generate_recursive(
                 numeric_params,
@@ -143,6 +152,8 @@ impl GridOptimizer {
                 current_combination,
                 combinations,
             );
+
+            value += current_param.step;
         }
 
         current_combination.remove(&current_param.name);

@@ -42,15 +42,15 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
         let optimization_parameters = [
             OptimizationParameter::Numeric(NumericOptimizationParameter {
                 name: "sma_short_period".into(),
-                start: 10,
-                end: 100,
-                step: 15,
+                start: 10.0,
+                end: 100.0,
+                step: 15.0,
             }),
             OptimizationParameter::Numeric(NumericOptimizationParameter {
                 name: "sma_long_period".into(),
-                start: 100,
-                end: 200,
-                step: 15,
+                start: 100.0,
+                end: 200.0,
+                step: 15.0,
             }),
         ];
 
@@ -83,14 +83,14 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
             .get("sma_short_period")
             .unwrap()
             .to_owned();
-        let sma_short_period = CompositionDataType::extract_usize(sma_short_comp);
+        let sma_short_period = CompositionDataType::extract_usize(&sma_short_comp);
 
         let sma_long_comp = optimization_map
             .unwrap()
             .get("sma_long_period")
             .unwrap()
             .to_owned();
-        let sma_long_period = CompositionDataType::extract_usize(sma_long_comp);
+        let sma_long_period = CompositionDataType::extract_usize(&sma_long_comp);
 
         let timestamp_position = composition.get_composition_field_position("timestamp");
         let close_position = composition.get_composition_field_position("close");

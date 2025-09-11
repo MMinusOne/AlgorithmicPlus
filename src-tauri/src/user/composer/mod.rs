@@ -46,23 +46,23 @@ impl CompositionDataType {
             _ => panic!("Invalid compsition type conversion."),
         }
     }
-    pub fn extract_bool(compsition_data: CompositionDataType) -> bool {
+    pub fn extract_bool(compsition_data: &CompositionDataType) -> bool {
         match compsition_data {
-            Self::Bool(v) => v,
+            Self::Bool(v) => v.clone(),
             _ => panic!("Invalid compsition type conversion."),
         }
     }
 
-    pub fn extract_string(compsition_data: CompositionDataType) -> String {
+    pub fn extract_string(compsition_data: &CompositionDataType) -> String {
         match compsition_data {
-            Self::String(v) => v,
+            Self::String(v) => v.clone(),
             _ => panic!("Invalid compsition type conversion."),
         }
     }
 
-    pub fn extract_usize(compsition_data: CompositionDataType) -> usize {
+    pub fn extract_usize(compsition_data: &CompositionDataType) -> usize {
         match compsition_data {
-            Self::Usize(v) => v,
+            Self::Usize(v) => v.clone(),
             _ => panic!("Invalid compsition type conversion."),
         }
     }

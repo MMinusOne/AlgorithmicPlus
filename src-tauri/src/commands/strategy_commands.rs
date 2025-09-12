@@ -1,6 +1,11 @@
+use std::fs::File;
+use std::thread;
+
 use crate::user::composer::CompositionDataType;
 use crate::user::strategies::{Metric, STRATEGIES};
 use crate::utils::classes::charting::{ChartingData, DataBlock};
+use crate::utils::paths::get_app_data_dir;
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -31,19 +36,19 @@ pub struct BacktestStrategyParams {
     pub id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MetricPair {
     key: Metric,
     value: f32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct OptimizationParameterPair {
     key: String,
     value: CompositionDataType,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct BacktestResultResponse {
     pub id: String,
     pub equity_growth_charting_data: Vec<ChartingData>,
@@ -54,7 +59,7 @@ pub struct BacktestResultResponse {
     pub parameters: Vec<OptimizationParameterPair>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct BacktestStrategyResponse {
     pub name: Option<String>,
     pub description: Option<String>,
@@ -142,6 +147,25 @@ pub fn backtest_strategy(
             })
         }
     }
+
+    let data_response_clone = data_response.clone();
+
+    thread::spawn(move || {
+        let app_data_dir = get_app_data_dir().unwrap();
+        let base_download_path = app_data_dir.join("saves");
+        let save_id = format!(
+            "{}_{}_{}",
+            strategy.name(),
+            strategy.composition().name(),
+            Utc::now().to_string().replace(":", "_")
+        );
+        eprintln!("{:?}", save_id);
+        let json_path = base_download_path.join(format!("{}.json", save_id));
+        let ohlcv_data_string = serde_json::to_string(&data_response_clone).unwrap();
+        std::fs::write(&json_path, ohlcv_data_string).unwrap();
+    })
+    .join()
+    .unwrap();
 
     Ok(data_response)
 }

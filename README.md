@@ -52,5 +52,7 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Optimize and refactor the code once a minimum viable product is done.
 - ❌ Write the user and the developer documentation
 - ❌ Frontend filtering of charts, individual chart selection
+- ❌ Saving functionality
+- ❌ Look into GPU optimization
 
 I have plans to keep working on this.

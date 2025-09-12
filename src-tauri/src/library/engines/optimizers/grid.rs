@@ -76,7 +76,7 @@ impl Optimizer for GridOptimizer {
         let backtest_results: Vec<OptimizedBacktestResult> = combinations
             .into_par_iter()
             .filter_map(|combination| {
-                println!("{:?}", combination);
+                eprintln!("{:?}", combination);
                 strategy
                     .backtest(Some(&combination))
                     .map(|backtest_result| {

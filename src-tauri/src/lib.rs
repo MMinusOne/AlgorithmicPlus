@@ -36,7 +36,7 @@ pub fn run() {
                 "raw/ohlcv",
                 "raw/bidask",
                 "raw/news",
-                "results",
+                "saves",
                 "stories",
             ];
 

@@ -177,6 +177,9 @@ pub static STATIC_RESOURCES: LazyLock<Vec<StaticResource>> = LazyLock::new(|| {
         StaticResource::OHLCVDataType(
             crypto::btcusdt_01_01_2021_06_15_2025_4h::BTCUSDT_4YEARS_4H::instance(),
         ),
+        StaticResource::OHLCVDataType(
+            crypto::eth_usdt_01_01_2028_06_15_2025_1m::ETHUSDT_7YEARS_1M::instance(),
+        ),
         // US equity assets
         StaticResource::OHLCVDataType(
             us_equities::aapl_01_01_2010_06_15_2025_1d::AAPL_15YEARS_1D::instance(),

@@ -52,8 +52,8 @@ pub struct OptimizationParameterPair {
 pub struct BacktestResultResponse {
     pub id: String,
     pub equity_growth_charting_data: Vec<ChartingData>,
-    pub portfolio_growth_data: Vec<ChartingData>,
-    pub percentage_growth_data: Vec<ChartingData>,
+    pub portfolio_growth_charting_data: Vec<ChartingData>,
+    pub percentage_growth_charting_data: Vec<ChartingData>,
     pub data_blocks: Vec<DataBlock>,
     pub metrics: Vec<MetricPair>,
     pub parameters: Vec<OptimizationParameterPair>,
@@ -89,8 +89,9 @@ pub fn backtest_strategy(
     if optimization.is_none() {
         let backtest_result = strategy.backtest(None).unwrap();
 
-        let portfolio_growth_data = strategy.render_portfolio_percentage_growth(&backtest_result);
-        let percentage_growth_data = strategy.render_percentage_growth(&backtest_result);
+        let portfolio_growth_charting_data =
+            strategy.render_portfolio_percentage_growth(&backtest_result);
+        let percentage_growth_charting_data = strategy.render_percentage_growth(&backtest_result);
         let equity_growth_charting_data = strategy.render_equity_growth(&backtest_result);
         let mut metrics = Vec::new();
 
@@ -104,17 +105,17 @@ pub fn backtest_strategy(
         data_response.backtests.push(BacktestResultResponse {
             id: Uuid::new_v4().to_string(),
             equity_growth_charting_data: equity_growth_charting_data,
-            portfolio_growth_data: portfolio_growth_data,
-            percentage_growth_data: percentage_growth_data,
+            portfolio_growth_charting_data: portfolio_growth_charting_data,
+            percentage_growth_charting_data: percentage_growth_charting_data,
             data_blocks: vec![],
             metrics: metrics,
             parameters: Vec::new(),
         })
     } else {
         for optimized_backtest_result in optimization.unwrap() {
-            let portfolio_growth_data = strategy
+            let portfolio_growth_charting_data = strategy
                 .render_portfolio_percentage_growth(&optimized_backtest_result.backtest_result);
-            let percentage_growth_data =
+            let percentage_growth_charting_data =
                 strategy.render_percentage_growth(&optimized_backtest_result.backtest_result);
             let equity_growth_charting_data =
                 strategy.render_equity_growth(&optimized_backtest_result.backtest_result);
@@ -139,8 +140,8 @@ pub fn backtest_strategy(
             data_response.backtests.push(BacktestResultResponse {
                 id: Uuid::new_v4().to_string(),
                 equity_growth_charting_data: equity_growth_charting_data,
-                portfolio_growth_data: portfolio_growth_data,
-                percentage_growth_data: percentage_growth_data,
+                portfolio_growth_charting_data: portfolio_growth_charting_data,
+                percentage_growth_charting_data: percentage_growth_charting_data,
                 data_blocks: vec![],
                 metrics: metrics,
                 parameters: optimized_parameters_pairs,

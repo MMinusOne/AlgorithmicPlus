@@ -3,4 +3,4 @@ pub mod ethusdt_01_01_2021_06_15_2025_4h;
 pub mod solusdt_01_01_2021_06_15_2025_15m;
 pub mod btcusdt_01_01_2021_06_15_2025_15m;
 pub mod btcusdt_01_01_2021_06_15_2025_4h;
-pub mod eth_usdt_01_01_2028_06_15_2025_1m;
+pub mod eth_usdt_01_01_2018_06_15_2025_1m;

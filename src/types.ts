@@ -133,10 +133,10 @@ export interface Metric {
 }
 
 export interface BacktestResultDataResponse {
-  id: string,
+  id: string;
   equity_growth_charting_data: ChartingSeries[];
-  portfolio_growth_data: ChartingSeries[];
-  percentage_growth_data: ChartingSeries[];
+  portfolio_growth_charting_data: ChartingSeries[];
+  percentage_growth_charting_data: ChartingSeries[];
   data_blocks: DataBlock[];
   metrics: Metric[];
 }

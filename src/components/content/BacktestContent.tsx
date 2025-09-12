@@ -75,7 +75,7 @@ export default function BacktestContent() {
         if (backtestSharpe > highestSharpe) {
           highestSharpeBacktest = backtest;
           backtestsChartingData = [];
-        } else { 
+        } else {
           continue;
         }
       }
@@ -86,10 +86,10 @@ export default function BacktestContent() {
           chartSeries = backtest.equity_growth_charting_data;
           break;
         case GraphType.PortfolioPercentage:
-          chartSeries = backtest.portfolio_growth_data;
+          chartSeries = backtest.portfolio_growth_charting_data;
           break;
         case GraphType.TradePercentage:
-          chartSeries = backtest.percentage_growth_data;
+          chartSeries = backtest.percentage_growth_charting_data;
           break;
       }
 

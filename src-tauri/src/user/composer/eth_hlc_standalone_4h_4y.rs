@@ -1,7 +1,7 @@
 use crate::user::composer::{CompositionDataType, IComposition};
 use crate::user::library::sma::SMA;
 use crate::user::library::IInjectable;
-use crate::user::static_resources::{crypto, StaticResource};
+use crate::user::static_resources::{crypto, us_equities, StaticResource};
 use crate::utils::classes::charting::{
     CandlestickChartingData, CandlestickData, ChartingData, LineChartingData, LineData,
 };
@@ -62,6 +62,7 @@ impl IComposition for ETH_HLC_STANDALONE_4H_4Y {
 
     fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
         let mut hlc_data: Vec<Option<CandlestickData>> = vec![];
+        let mut sma_data: Vec<Option<LineData>> = vec![];
 
         let composed_data = self.compose()?;
 
@@ -69,12 +70,14 @@ impl IComposition for ETH_HLC_STANDALONE_4H_4Y {
         let high_position = self.composition_fields.get("high").unwrap().clone();
         let low_position = self.composition_fields.get("low").unwrap().clone();
         let close_position = self.composition_fields.get("close").unwrap().clone();
+        let sma_200_position = self.composition_fields.get("sma_200").unwrap().clone();
 
         for data_point in composed_data.into_iter() {
             let timestamp = CompositionDataType::extract_int(&data_point[timestamp_position]);
             let high = CompositionDataType::extract_float(&data_point[high_position]);
             let low = CompositionDataType::extract_float(&data_point[low_position]);
             let close = CompositionDataType::extract_float(&data_point[close_position]);
+            let sma_200 = CompositionDataType::extract_option_float(&data_point[sma_200_position]);
 
             hlc_data.push(Some(CandlestickData {
                 time: timestamp,
@@ -86,17 +89,32 @@ impl IComposition for ETH_HLC_STANDALONE_4H_4Y {
                 border_color: None,
                 color: Some("blue".into()),
             }));
+
+            if sma_200.is_some() {
+                sma_data.push(Some(LineData {
+                    time: timestamp,
+                    value: sma_200.unwrap(),
+                    color: Some("red".into()),
+                }))
+            }
         }
 
-        let charting_data: Vec<ChartingData> = vec![ChartingData::CandlestickChartingData(
-            CandlestickChartingData {
+        let charting_data: Vec<ChartingData> = vec![
+            ChartingData::CandlestickChartingData(CandlestickChartingData {
                 chart_type: "ohlcv".into(),
                 height: None,
                 data: hlc_data,
                 pane: None,
                 title: Some("ETHUSDT close".into()),
-            },
-        )];
+            }),
+            ChartingData::LineChartingData(LineChartingData {
+                chart_type: "line".into(),
+                height: None,
+                data: sma_data,
+                pane: None,
+                title: Some("SMA 200".into()),
+            }),
+        ];
 
         Ok(charting_data)
     }
@@ -128,8 +146,7 @@ impl ETH_HLC_STANDALONE_4H_4Y {
                 "ETHUSDT",
                 StaticResource::OHLCVDataType(
                     // crypto::ethusdt_01_01_2021_06_15_2025_4h::ETHUSDT_4YEARS_4H::instance(),
-                    crypto::ethusdt_01_01_2021_06_15_2025_15m::ETHUSDT_4YEARS_15M::instance(),
-
+                    crypto::ethusdt_01_01_2021_06_15_2025_15m::ETHUSDT_4YEARS_15M::instance()
                 ),
             )]),
         };

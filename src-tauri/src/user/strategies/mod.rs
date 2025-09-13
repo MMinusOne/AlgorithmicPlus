@@ -9,7 +9,7 @@ use crate::{
                 sharpe_ratio::SharpeRatio,
                 standard_deviation::StandardDeviation,
             },
-            IInjectable,
+            kalman_filter, IInjectable,
         },
     },
     utils::classes::charting::ChartingData,
@@ -17,6 +17,7 @@ use crate::{
 use std::{collections::HashMap, error::Error};
 use std::{sync::LazyLock, time::Instant};
 pub mod double_sma_optimize_strategy;
+pub mod kalman_optimize_strategy;
 pub mod sma_200_strategy;
 pub mod sma_optimizable_period_strategy;
 pub mod theilsen_optimize_strategy;
@@ -519,5 +520,6 @@ pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> = LazyLock::new(|| {
         Box::new(sma_optimizable_period_strategy::SmaOptimizablePeriodStrategy::new()),
         Box::new(double_sma_optimize_strategy::DoubleSmaOptimizablePeriodStrategy::new()),
         Box::new(theilsen_optimize_strategy::TheilSenOptimizeableStrategy::new()),
+        Box::new(kalman_optimize_strategy::KalmanOptimizeableStrategy::new()),
     ]
 });

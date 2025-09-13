@@ -1,7 +1,7 @@
 use crate::user::composer::{CompositionDataType, IComposition};
 use crate::user::library::sma::SMA;
 use crate::user::library::IInjectable;
-use crate::user::static_resources::{crypto, StaticResource};
+use crate::user::static_resources::{crypto, us_equities, StaticResource};
 use crate::utils::classes::charting::{ChartingData, LineChartingData, LineData};
 use std::collections::HashMap;
 use std::error::Error;

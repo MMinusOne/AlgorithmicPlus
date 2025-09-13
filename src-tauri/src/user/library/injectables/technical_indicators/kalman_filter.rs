@@ -1,13 +1,16 @@
-use crate::{user::library::IInjectable, utils::classes::charting::ChartingData};
+use crate::{
+    user::library::IInjectable,
+    utils::classes::charting::{ChartingData, LineChartingData, LineData},
+};
 use std::error::Error;
 
 pub struct KalmanFilter {
     name: String,
     description: String,
-    q_noise: f32, 
-    r_noise: f32, 
-    x_est: Option<f32>, 
-    p_est: Option<f32>, 
+    q_noise: f32,
+    r_noise: f32,
+    x_est: Option<f32>,
+    p_est: Option<f32>,
     data_values: Vec<f32>,
     is_initialized: bool,
 }
@@ -47,8 +50,6 @@ impl IInjectable<f32, f32> for KalmanFilter {
     }
 
     fn render(&self, timestamps: Vec<i64>) -> Result<Vec<ChartingData>, Box<dyn Error>> {
-        use crate::utils::classes::charting::{LineChartingData, LineData};
-        
         let mut line_data: Vec<Option<LineData>> = vec![];
 
         for (i, timestamp) in timestamps.iter().enumerate() {
@@ -77,7 +78,8 @@ impl KalmanFilter {
     pub fn new(q_noise: f32, r_noise: f32) -> Self {
         Self {
             name: "Kalman Filter".into(),
-            description: "Algorithmic Kalman Filter for price smoothing and trend estimation".into(),
+            description: "Algorithmic Kalman Filter for price smoothing and trend estimation"
+                .into(),
             q_noise,
             r_noise,
             x_est: None,

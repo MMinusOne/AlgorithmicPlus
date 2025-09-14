@@ -3,13 +3,12 @@ use crate::{
     user::{
         composer::{CompositionDataType, IComposition},
         library::{
-            injectables::formulas::{
+            beta::Beta, injectables::formulas::{
                 apr::APR,
                 consecutive_wins_losses::{self, ConsecutiveWinsLosses},
                 sharpe_ratio::SharpeRatio,
                 standard_deviation::StandardDeviation,
-            },
-            kalman_filter, IInjectable,
+            }, kalman_filter, IInjectable
         },
     },
     utils::classes::charting::ChartingData,
@@ -427,7 +426,7 @@ impl BacktestResult {
         let mut standard_deviation = StandardDeviation::new();
         let mut apr = APR::new();
         let mut consecutive_wins_losses = ConsecutiveWinsLosses::new();
-
+  
         let mut valid_trades: Vec<Trade> = vec![];
 
         for trade in backtest_manager.trades() {

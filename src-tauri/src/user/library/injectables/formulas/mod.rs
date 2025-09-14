@@ -6,3 +6,5 @@ pub mod returns;
 pub use returns::*;
 pub mod trade_analysis;
 pub use trade_analysis::*;
+pub mod market_comparasion;
+pub use market_comparasion::*;

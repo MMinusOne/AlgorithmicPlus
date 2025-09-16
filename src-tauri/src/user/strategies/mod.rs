@@ -3,12 +3,14 @@ use crate::{
     user::{
         composer::{CompositionDataType, IComposition},
         library::{
-            beta::Beta, injectables::formulas::{
+            beta::Beta,
+            injectables::formulas::{
                 apr::APR,
                 consecutive_wins_losses::{self, ConsecutiveWinsLosses},
                 sharpe_ratio::SharpeRatio,
                 standard_deviation::StandardDeviation,
-            }, kalman_filter, IInjectable
+            },
+            kalman_filter, IInjectable,
         },
     },
     utils::classes::charting::ChartingData,
@@ -426,7 +428,7 @@ impl BacktestResult {
         let mut standard_deviation = StandardDeviation::new();
         let mut apr = APR::new();
         let mut consecutive_wins_losses = ConsecutiveWinsLosses::new();
-  
+
         let mut valid_trades: Vec<Trade> = vec![];
 
         for trade in backtest_manager.trades() {
@@ -506,7 +508,7 @@ pub trait IStrategy: Send + Sync {
         &self,
         optimization_map: Option<&HashMap<String, CompositionDataType>>,
     ) -> Result<BacktestResult, Box<dyn Error>>;
-    fn composed_data(&self) -> Vec<Box<[CompositionDataType]>>;
+    fn composed_data(&self) -> Vec<Vec<CompositionDataType>>;
     fn render_equity_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn render_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;
     fn render_portfolio_percentage_growth(&self, backtest: &BacktestResult) -> Vec<ChartingData>;

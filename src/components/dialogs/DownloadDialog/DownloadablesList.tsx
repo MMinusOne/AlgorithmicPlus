@@ -44,7 +44,6 @@ export default function DownloadablesList({
       );
 
       setDisplayedDownloadables([...searchResults]);
-      console.log(searchResults, displayedDownloadables);
     };
 
     searchDownloadables();

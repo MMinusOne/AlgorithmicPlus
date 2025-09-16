@@ -186,6 +186,7 @@ struct RawRequestKline(
 );
 
 #[repr(C, packed)]
+#[derive(Copy, Clone, Debug)]
 pub struct OHLCVCandleObject {
     pub timestamp: i64,
     pub open: f32,

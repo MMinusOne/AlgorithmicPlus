@@ -34,8 +34,8 @@ impl IComposition for ETH_STANDALONE_4H_4Y {
         return self.composition_fields.clone();
     }
 
-    fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
-        let mut composed_data: Vec<Box<[CompositionDataType]>> = vec![];
+    fn compose(&self) -> Result<Vec<Vec<CompositionDataType>>, Box<dyn Error>> {
+        let mut composed_data: Vec<Vec<CompositionDataType>> = vec![];
 
         let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
         let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
@@ -46,10 +46,10 @@ impl IComposition for ETH_STANDALONE_4H_4Y {
             let timestamp = candle.timestamp;
             let close = candle.close;
 
-            let data = Box::new([
+            let data = vec![
                 CompositionDataType::Int(timestamp),
                 CompositionDataType::Float(close),
-            ]);
+            ];
 
             composed_data.push(data);
         }

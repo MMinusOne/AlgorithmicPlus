@@ -3,8 +3,10 @@ pub mod eth_hlc_standalone_4h_4y;
 pub mod eth_sma_200_4h_4y_composition;
 pub mod eth_standalone_4h_4y_composition;
 pub mod testing_composition;
+pub mod universe;
 use serde::{Deserialize, Serialize};
 
+use crate::user::composer::universe::Universe;
 use crate::user::composer::{
     btc_eth_statarb_4h_4y_composition::BTC_ETH_STATARB_4H_4Y,
     eth_hlc_standalone_4h_4y::ETH_HLC_STANDALONE_4H_4Y,
@@ -80,8 +82,8 @@ pub trait IComposition: Send + Sync {
             .unwrap()
             .to_owned();
     }
-    fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>>;
-    fn safe_compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
+    fn compose(&self) -> Result<Vec<Vec<CompositionDataType>>, Box<dyn Error>>;
+    fn safe_compose(&self) -> Result<Vec<Vec<CompositionDataType>>, Box<dyn Error>> {
         let composition_data = self.compose()?;
         let composition_fields = self.composition_fields();
         let composition_fields_length = composition_fields.len();
@@ -104,6 +106,7 @@ pub static COMPOSITIONS: LazyLock<Vec<Box<dyn IComposition>>> = LazyLock::new(||
         Box::new(BTC_ETH_STATARB_4H_4Y::instance().clone()),
         Box::new(ETH_STANDALONE_4H_4Y::instance().clone()),
         Box::new(ETH_HLC_STANDALONE_4H_4Y::instance().clone()),
+        Box::new(Universe::instance().clone()),
         Box::new(TESTING_COMPOSITION::instance().clone()),
     ]
 });

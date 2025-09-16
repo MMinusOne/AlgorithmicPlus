@@ -31,7 +31,7 @@ pub enum StaticResource {
 }
 
 impl StaticResource {
-    pub fn from(name: &str, path: &str) -> StaticResource {
+    pub fn ohlcv_from(name: &str, path: &str) -> StaticResource {
         pub struct FromStaticResource {
             id: String,
             name: String,
@@ -52,19 +52,16 @@ impl StaticResource {
             }
         }
 
-        impl FromStaticResource {
-            pub fn instance(name: &str, path: &str) -> &'static FromStaticResource {
-                static INSTANCE: OnceLock<FromStaticResource> = OnceLock::new();
-                INSTANCE.get_or_init(|| FromStaticResource {
-                    id: Uuid::new_v4().to_string(),
-                    name: name.to_string(),
-                    load_path: join_app_data_dir(path).unwrap(),
-                })
-            }
-        }
+        let from_static_resource = FromStaticResource {
+            id: Uuid::new_v4().to_string(),
+            name: name.to_string(),
+            load_path: join_app_data_dir(path).unwrap(),
+        };
 
-        let static_resource = StaticResource::OHLCVDataType(FromStaticResource::instance(name, path));
-
+        let static_ref: &'static dyn IStaticResource<OHLCVJSONFileDataStructure> =
+            Box::leak(Box::new(from_static_resource));
+        let static_resource = StaticResource::OHLCVDataType(static_ref);
+        
         return static_resource;
     }
 

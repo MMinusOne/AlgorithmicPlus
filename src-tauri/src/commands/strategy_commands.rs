@@ -160,7 +160,7 @@ pub fn backtest_strategy(
             strategy.composition().name(),
             Utc::now().to_string().replace(":", "_")
         );
-        eprintln!("{:?}", save_id);
+        
         let json_path = base_download_path.join(format!("{}.json", save_id));
         let ohlcv_data_string = serde_json::to_string(&data_response_clone).unwrap();
         std::fs::write(&json_path, ohlcv_data_string).unwrap();

@@ -22,7 +22,7 @@ pub struct DoubleSmaOptimizablePeriodStrategy {
     id: String,
     name: String,
     description: String,
-    composition_data: Option<Vec<Box<[CompositionDataType]>>>,
+    composition_data: Option<Vec<Vec<CompositionDataType>>>,
 }
 
 impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
@@ -170,7 +170,7 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
         }
     }
 
-    fn composed_data(&self) -> Vec<Box<[CompositionDataType]>> {
+    fn composed_data(&self) -> Vec<Vec<CompositionDataType>> {
         if self.composition_data.is_some() {
             return self.composition_data.as_ref().unwrap().to_vec();
         }

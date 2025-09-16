@@ -35,8 +35,8 @@ impl IComposition for BTC_ETH_STATARB_4H_4Y {
         return self.composition_fields.clone();
     }
 
-    fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
-        let mut composed_data: Vec<Box<[CompositionDataType]>> = vec![];
+    fn compose(&self) -> Result<Vec<Vec<CompositionDataType>>, Box<dyn Error>> {
+        let mut composed_data: Vec<Vec<CompositionDataType>> = vec![];
 
         // Get the static resource data (OHLCV)
         let btcusdt_resource = self.static_resources.get("BTCUSDT").unwrap();
@@ -90,14 +90,14 @@ impl IComposition for BTC_ETH_STATARB_4H_4Y {
             }
 
             // Push the data
-            let data = Box::new([
+            let data = vec![
                 CompositionDataType::Int(timestamp),
                 CompositionDataType::Float(btc_normalized_close),
                 CompositionDataType::Float(eth_normalized_close),
                 CompositionDataType::OptionFloat(upper_bound),
                 CompositionDataType::OptionFloat(lower_bound),
                 CompositionDataType::Float(stationary_asset_price),
-            ]);
+            ];
 
             composed_data.push(data);
         }

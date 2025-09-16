@@ -4,6 +4,7 @@ use memmap2::{Mmap, MmapOptions};
 use std::error::Error;
 use std::{fs::File, mem, path::Path};
 
+#[derive(Clone)]
 pub struct MmapManager<T: 'static> {
     _mmap: Arc<Mmap>,
     data: &'static [T]

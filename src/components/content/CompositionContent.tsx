@@ -20,7 +20,6 @@ export default function CompositionContent() {
           },
         }
       );
-      console.log(compositionData.charting_data);
       setChartingData(compositionData.charting_data);
     };
 

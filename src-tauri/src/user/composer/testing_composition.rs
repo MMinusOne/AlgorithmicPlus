@@ -36,8 +36,8 @@ impl IComposition for TESTING_COMPOSITION {
         self.composition_fields.clone()
     }
 
-    fn compose(&self) -> Result<Vec<Box<[CompositionDataType]>>, Box<dyn Error>> {
-        let mut composed_data: Vec<Box<[CompositionDataType]>> = vec![];
+    fn compose(&self) -> Result<Vec<Vec<CompositionDataType>>, Box<dyn Error>> {
+        let mut composed_data: Vec<Vec<CompositionDataType>> = vec![];
 
         let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
         let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
@@ -53,11 +53,11 @@ impl IComposition for TESTING_COMPOSITION {
             kalman_filter.allocate(close);
             let current_kalman = kalman_filter.get_data();
 
-            let data = Box::new([
+            let data = vec![
                 CompositionDataType::Int(timestamp),
                 CompositionDataType::Float(close),
                 CompositionDataType::OptionFloat(current_kalman),
-            ]);
+            ];
 
             composed_data.push(data);
         }

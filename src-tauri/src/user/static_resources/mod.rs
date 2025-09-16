@@ -7,10 +7,12 @@ use crate::utils::classes::charting::{
     CandlestickChartingData, CandlestickData, ChartingData, HistogramChartingData, HistogramData,
 };
 use crate::utils::load_mmap::{load_mmap, MmapManager};
+use crate::utils::paths::join_app_data_dir;
 use serde::Deserialize;
 use std::error::Error;
 use std::path::PathBuf;
-use std::sync::LazyLock;
+use std::sync::{LazyLock, OnceLock};
+use uuid::Uuid;
 
 pub trait IStaticResource<T: for<'de> Deserialize<'de>>: Send + Sync {
     fn id(&self) -> &str;
@@ -29,6 +31,43 @@ pub enum StaticResource {
 }
 
 impl StaticResource {
+    pub fn from(name: &str, path: &str) -> StaticResource {
+        pub struct FromStaticResource {
+            id: String,
+            name: String,
+            load_path: PathBuf,
+        }
+
+        impl IStaticResource<OHLCVData> for FromStaticResource {
+            fn id(&self) -> &str {
+                return &self.id;
+            }
+
+            fn name(&self) -> &str {
+                return &self.name;
+            }
+
+            fn load_path(&self) -> PathBuf {
+                return self.load_path.clone();
+            }
+        }
+
+        impl FromStaticResource {
+            pub fn instance(name: &str, path: &str) -> &'static FromStaticResource {
+                static INSTANCE: OnceLock<FromStaticResource> = OnceLock::new();
+                INSTANCE.get_or_init(|| FromStaticResource {
+                    id: Uuid::new_v4().to_string(),
+                    name: name.to_string(),
+                    load_path: join_app_data_dir(path).unwrap(),
+                })
+            }
+        }
+
+        let static_resource = StaticResource::OHLCVDataType(FromStaticResource::instance(name, path));
+
+        return static_resource;
+    }
+
     // Add more types the more types there is
     pub fn id(&self) -> &str {
         match self {

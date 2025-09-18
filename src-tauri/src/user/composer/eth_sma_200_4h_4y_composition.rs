@@ -134,7 +134,7 @@ impl ETH_SMA_200_4H_4Y {
             composition_fields: HashMap::from([("timestamp", 0), ("close", 1), ("sma_200", 2)]),
             static_resources: HashMap::from([(
                 "ETHUSDT",
-                StaticResource::OHLCVDataType(crypto::ethusdt_01_01_2021_06_15_2025_4h::ETHUSDT_4YEARS_4H::instance()),
+                StaticResource::OHLCVDataType(crypto::eth_usdt_01_01_2018_06_15_2025_1m::ETHUSDT_7YEARS_1M::instance()),
             )]),
         };
     }

@@ -19,6 +19,7 @@ use std::{collections::HashMap, error::Error};
 use std::{sync::LazyLock, time::Instant};
 pub mod double_sma_optimize_strategy;
 pub mod kalman_optimize_strategy;
+pub mod renko_sma_optimize;
 pub mod sma_200_strategy;
 pub mod sma_optimizable_period_strategy;
 pub mod theilsen_optimize_strategy;
@@ -335,14 +336,30 @@ impl BacktestManager {
         if self.backtest_ended {
             return;
         }
+
         self.available_capital += change;
+
+        if self.available_capital < 0.0 {
+            self.available_capital = 0.0;
+        }
     }
 
     pub fn check_capital(&mut self) {
         let portfolio_value = self.current_portfolio_value();
 
+        if self.available_capital < 0.0 {
+            self.backtest_ended = true;
+            return;
+        }
+
         if portfolio_value <= 0.0 {
-            self.backtest_result = Some(self.backtest_end());
+            self.backtest_ended = true;
+            return;
+        }
+
+        if self.available_capital < self.initial_capital * 0.01 {
+            self.backtest_ended = true;
+            return;
         }
     }
 
@@ -522,5 +539,6 @@ pub static STRATEGIES: LazyLock<Vec<Box<dyn IStrategy>>> = LazyLock::new(|| {
         Box::new(double_sma_optimize_strategy::DoubleSmaOptimizablePeriodStrategy::new()),
         Box::new(theilsen_optimize_strategy::TheilSenOptimizeableStrategy::new()),
         Box::new(kalman_optimize_strategy::KalmanOptimizeableStrategy::new()),
+        Box::new(renko_sma_optimize::SmaRenkoOptimizablePeriodStrategy::new()),
     ]
 });

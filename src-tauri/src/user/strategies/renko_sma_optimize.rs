@@ -1,30 +1,36 @@
 use super::{BacktestManager, BacktestResult, IStrategy, Trade, TradeOptions, TradeSide};
-use crate::library::engines::optimizers::Optimizer;
-use crate::user::composer::eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y;
-use crate::user::library::kalman_filter::KalmanFilter;
 use crate::{
-    library::engines::optimizers::grid::{
-        GridOptimizer, NumericOptimizationParameter, OptimizationParameter, OptimizedBacktestResult,
+    library::engines::optimizers::{
+        grid::{
+            GridOptimizer, NumericOptimizationParameter, OptimizationParameter,
+            OptimizedBacktestResult,
+        },
+        Optimizer,
     },
     user::{
-        composer::{CompositionDataType, IComposition},
-        library::IInjectable,
+        composer::{
+            eth_standalone_4h_4y_composition::ETH_STANDALONE_4H_4Y, CompositionDataType,
+            IComposition,
+        },
+        library::{renko::Renko, sma::SMA, IInjectable},
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
+use chrono::format::Numeric;
 use std::collections::HashMap;
+use std::marker::Copy;
 use std::{error::Error, vec};
 use uuid::Uuid;
 
 #[derive(Clone)]
-pub struct KalmanOptimizeableStrategy {
+pub struct SmaRenkoOptimizablePeriodStrategy {
     id: String,
     name: String,
     description: String,
     composition_data: Option<Vec<Vec<CompositionDataType>>>,
 }
 
-impl IStrategy for KalmanOptimizeableStrategy {
+impl IStrategy for SmaRenkoOptimizablePeriodStrategy {
     fn id(&self) -> &str {
         return &self.id;
     }
@@ -40,22 +46,16 @@ impl IStrategy for KalmanOptimizeableStrategy {
     fn optimize(&self) -> Option<Vec<OptimizedBacktestResult>> {
         let optimization_parameters = [
             OptimizationParameter::Numeric(NumericOptimizationParameter {
-                name: "q_noise".into(),
-                start: 0.1,
-                end: 2.0,
-                step: 0.5,
+                name: "sma_period".into(),
+                start: 10.0,
+                end: 200.0,
+                step: 30.0,
             }),
             OptimizationParameter::Numeric(NumericOptimizationParameter {
-                name: "r_noise".into(),
-                start: 1.0,
-                end: 50.0,
-                step: 15.0,
-            }),
-            OptimizationParameter::Numeric(NumericOptimizationParameter {
-                name: "capital_ratio".into(),
-                start: 0.1,
-                end: 0.9,
-                step: 0.4,
+                name: "renko_change".into(),
+                start: 10.0,
+                end: 400.0,
+                step: 30.0,
             }),
         ];
 
@@ -83,35 +83,29 @@ impl IStrategy for KalmanOptimizeableStrategy {
             return Ok(backtest_result);
         }
 
-        let q_noise_comp = optimization_map
+        let sma_comp = optimization_map
             .unwrap()
-            .get("q_noise")
-            .unwrap_or(&CompositionDataType::Float(0.1))
-            .to_owned();
-        let r_noise_comp = optimization_map
+            .get("sma_period")
             .unwrap()
-            .get("r_noise")
-            .unwrap_or(&CompositionDataType::Float(1.0))
             .to_owned();
-        let capital_ratio_comp = optimization_map
+        let sma_period = CompositionDataType::extract_usize(&sma_comp);
+        let renko_change_comp = optimization_map
             .unwrap()
-            .get("capital_ratio")
-            .unwrap_or(&CompositionDataType::Float(0.30))
+            .get("renko_change")
+            .unwrap()
             .to_owned();
+        let renko_change = CompositionDataType::extract_usize(&renko_change_comp);
 
-        let q_noise = CompositionDataType::extract_float(&q_noise_comp);
-        let r_noise = CompositionDataType::extract_usize(&r_noise_comp) as f32;
-        let capital_ratio = CompositionDataType::extract_float(&capital_ratio_comp);
         let timestamp_position = composition.get_composition_field_position("timestamp");
         let close_position = composition.get_composition_field_position("close");
-        let mut kalman_injectable = KalmanFilter::new(q_noise, r_noise);
+        let mut sma_injectable = SMA::new(sma_period);
+        let mut renko_injectable = Renko::new(renko_change as f32);
 
         let mut latest_trade: Option<Trade> = None;
-        let mut prev_kalman_value: Option<f32> = None;
 
         for composition_point in &composition_data {
             if backtest_manager.backtest_ended {
-                continue;
+                break;
             }
 
             let timestamp =
@@ -120,23 +114,20 @@ impl IStrategy for KalmanOptimizeableStrategy {
 
             backtest_manager.update_price(timestamp, close);
 
-            kalman_injectable.allocate(close);
+            sma_injectable.allocate(close);
+            renko_injectable.allocate(close);
 
-            let kalman_value = kalman_injectable.get_data();
-            if kalman_value.is_none() {
+            let sma = sma_injectable.get_data();
+            let renko = renko_injectable.get_data();
+
+            if sma.is_none() || renko.is_none() {
                 continue;
             }
 
-            let kalman_value = kalman_value.unwrap();
+            let sma_value = sma.unwrap();
+            let renko_value = renko.unwrap();
 
-            if prev_kalman_value.is_none() {
-                prev_kalman_value = Some(kalman_value);
-                continue;
-            }
-
-            let prev_kalman = prev_kalman_value.unwrap();
-
-            let side = if kalman_value > prev_kalman {
+            let side = if renko_value > sma_value {
                 TradeSide::LONG
             } else {
                 TradeSide::SHORT
@@ -149,11 +140,8 @@ impl IStrategy for KalmanOptimizeableStrategy {
                 }
             }
 
-            let portfolio_value = backtest_manager.current_portfolio_value();
-
-            let trade_allocation = backtest_manager.available_capital() * capital_ratio;
-
             if latest_trade.is_none() {
+                let trade_allocation = backtest_manager.available_capital() * 0.7;
                 let mut new_trade = Trade::new(TradeOptions {
                     side,
                     capital_allocation: Some(trade_allocation),
@@ -162,8 +150,6 @@ impl IStrategy for KalmanOptimizeableStrategy {
                 backtest_manager.open_trade(&mut new_trade);
                 latest_trade = Some(new_trade);
             }
-
-            prev_kalman_value = Some(kalman_value);
         }
 
         let backtest_result = backtest_manager.backtest_end();
@@ -172,14 +158,6 @@ impl IStrategy for KalmanOptimizeableStrategy {
 
     fn composition(&self) -> &'static dyn IComposition {
         return ETH_STANDALONE_4H_4Y::instance();
-    }
-
-    fn optimization_target(&self, backtest_result: &BacktestResult) -> f32 {
-        if let Some(sharpe_ratio) = backtest_result.metrics.get(&super::Metric::SharpeRatio) {
-            return sharpe_ratio.to_owned();
-        } else {
-            return -1.0;
-        }
     }
 
     fn composed_data(&self) -> Vec<Vec<CompositionDataType>> {
@@ -256,6 +234,10 @@ impl IStrategy for KalmanOptimizeableStrategy {
         for trade in backtest_result.trades() {
             cumulative_returns += trade.pl_portfolio();
 
+            if trade.close_timestamp.is_none() {
+                break;
+            }
+
             line_data.push(Some(LineData {
                 time: trade.close_timestamp().unwrap(),
                 value: cumulative_returns,
@@ -279,12 +261,12 @@ impl IStrategy for KalmanOptimizeableStrategy {
     }
 }
 
-impl KalmanOptimizeableStrategy {
+impl SmaRenkoOptimizablePeriodStrategy {
     pub fn new() -> Self {
         let mut strategy = Self {
             id: Uuid::new_v4().into(),
-            name: "Kalman".into(),
-            description: "Kalman".into(),
+            name: "SMA Renko optimizable period price crossover".into(),
+            description: "Long when renko(price) > sma(period) and short when renko(price) < sma(period) where period is optimizable".into(),
             composition_data: None,
         };
 

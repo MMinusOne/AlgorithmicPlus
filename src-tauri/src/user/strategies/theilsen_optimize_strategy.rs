@@ -146,10 +146,6 @@ impl IStrategy for TheilSenOptimizeableStrategy {
 
             let portfolio_value = backtest_manager.current_portfolio_value();
 
-            if portfolio_value == 0.0 {
-                break;
-            }
-
             let trade_allocation = backtest_manager.available_capital() * capital_ratio;
 
             if latest_trade.is_none() {

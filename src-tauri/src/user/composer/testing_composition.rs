@@ -1,5 +1,6 @@
 use crate::user::composer::{CompositionDataType, IComposition};
 use crate::user::library::kalman_filter::KalmanFilter;
+use crate::user::library::renko::{self, Renko};
 use crate::user::library::sma::SMA;
 use crate::user::library::theilsen::TheilSen;
 use crate::user::library::IInjectable;
@@ -42,7 +43,7 @@ impl IComposition for TESTING_COMPOSITION {
         let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
         let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
 
-        let mut kalman_filter = KalmanFilter::default();
+        let mut renko_injectable = Renko::new(100.0);
 
         composed_data.reserve(ethusdt_data.len());
 
@@ -50,13 +51,13 @@ impl IComposition for TESTING_COMPOSITION {
             let timestamp = candle.timestamp;
             let close = candle.close;
 
-            kalman_filter.allocate(close);
-            let current_kalman = kalman_filter.get_data();
+            renko_injectable.allocate(close);
+            let current_renko = renko_injectable.get_data();
 
             let data = vec![
                 CompositionDataType::Int(timestamp),
                 CompositionDataType::Float(close),
-                CompositionDataType::OptionFloat(current_kalman),
+                CompositionDataType::OptionFloat(current_renko),
             ];
 
             composed_data.push(data);
@@ -67,26 +68,19 @@ impl IComposition for TESTING_COMPOSITION {
 
     fn render(&self) -> Result<Vec<ChartingData>, Box<dyn Error>> {
         let mut close_data: Vec<Option<LineData>> = vec![];
-        let mut kalman_data: Vec<Option<LineData>> = vec![];
-        let mut kalman_trend_data: Vec<Option<LineData>> = vec![];
+        let mut renko_data: Vec<Option<LineData>> = vec![];
 
         let composed_data = self.compose()?;
 
         let timestamp_position = self.composition_fields.get("timestamp").unwrap().clone();
         let close_position = self.composition_fields.get("close").unwrap().clone();
-        let kalman_position = self
-            .composition_fields
-            .get("kalman_filter")
-            .unwrap()
-            .clone();
-
-        let mut previous_kalman: Option<f32> = None;
+        let renko_position = self.composition_fields.get("renko").unwrap().clone();
 
         for data_point in composed_data.into_iter() {
             let timestamp = CompositionDataType::extract_int(&data_point[timestamp_position]);
             let close = CompositionDataType::extract_float(&data_point[close_position]);
-            let kalman_value =
-                CompositionDataType::extract_option_float(&data_point[kalman_position]);
+            let renko_value =
+                CompositionDataType::extract_option_float(&data_point[renko_position]);
 
             close_data.push(Some(LineData {
                 time: timestamp,
@@ -94,30 +88,12 @@ impl IComposition for TESTING_COMPOSITION {
                 color: Some("blue".into()),
             }));
 
-            if let Some(value) = kalman_value {
-                kalman_data.push(Some(LineData {
+            if let Some(value) = renko_value {
+                renko_data.push(Some(LineData {
                     time: timestamp,
                     value,
-                    color: Some("aqua".into()),
+                    color: Some("red".into()),
                 }));
-
-                let trend_color = if let Some(prev_value) = previous_kalman {
-                    if value > prev_value {
-                        "green"
-                    } else {
-                        "red"
-                    }
-                } else {
-                    "aqua"
-                };
-
-                kalman_trend_data.push(Some(LineData {
-                    time: timestamp,
-                    value,
-                    color: Some(trend_color.into()),
-                }));
-
-                previous_kalman = Some(value);
             }
         }
 
@@ -132,16 +108,9 @@ impl IComposition for TESTING_COMPOSITION {
             ChartingData::LineChartingData(LineChartingData {
                 chart_type: "line".into(),
                 height: None,
-                data: kalman_data,
+                data: renko_data,
                 pane: Some(0),
-                title: Some("Kalman Filter".into()),
-            }),
-            ChartingData::LineChartingData(LineChartingData {
-                chart_type: "line".into(),
-                height: None,
-                data: kalman_trend_data,
-                pane: Some(0),
-                title: Some("Kalman Filter Trend".into()),
+                title: Some("Renko".into()),
             }),
         ];
 
@@ -164,11 +133,7 @@ impl TESTING_COMPOSITION {
             name: "Testing composition".into(),
             description: "Testing composition".into(),
             id: Uuid::new_v4().into(),
-            composition_fields: HashMap::from([
-                ("timestamp", 0),
-                ("close", 1),
-                ("kalman_filter", 2),
-            ]),
+            composition_fields: HashMap::from([("timestamp", 0), ("close", 1), ("renko", 2)]),
             static_resources: HashMap::from([(
                 "ETHUSDT",
                 StaticResource::OHLCVDataType(

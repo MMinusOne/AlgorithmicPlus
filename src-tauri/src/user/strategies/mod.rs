@@ -23,6 +23,7 @@ pub mod renko_sma_optimize;
 pub mod sma_200_strategy;
 pub mod sma_optimizable_period_strategy;
 pub mod theilsen_optimize_strategy;
+use rayon::option;
 use serde::{Deserialize, Serialize};
 use std::marker::Copy;
 use uuid::Uuid;
@@ -43,6 +44,7 @@ pub struct Trade {
     close_price: Option<f32>,
     leverage: f32,
     side: TradeSide,
+    fees_paid: f32,
     is_closed: bool,
     pl_ratio: f32,
     pl_fixed: f32,
@@ -71,6 +73,61 @@ impl Trade {
         if self.portfolio_value_at_open.is_none() {
             self.portfolio_value_at_open = Some(portfolio_value_at_open);
         }
+    }
+
+    pub fn required_cash_to_open(&self, fee_rate: f32) -> f32 {
+        let allocation = self.capital_allocation.unwrap();
+        let notional = allocation * self.leverage;
+        allocation + notional * fee_rate
+    }
+
+    pub fn apply_open(
+        &mut self,
+        timestamp: i64,
+        open_price: f32,
+        portfolio_value_at_open: f32,
+        fee_rate: f32,
+    ) -> f32 {
+        self.freeze_open_timestamp(timestamp);
+        self.freeze_open_price(open_price);
+        self.freeze_portfolio_value_at_open(portfolio_value_at_open);
+
+        let allocation = self.capital_allocation.unwrap();
+        let notional = allocation * self.leverage;
+        let open_fee = notional * fee_rate;
+        self.fees_paid += open_fee;
+
+        return -allocation - open_fee;
+    }
+
+    pub fn apply_close(&mut self, timestamp: i64, price: f32, fee_rate: f32) -> f32 {
+        self.close(price, timestamp);
+
+        let allocation = self.capital_allocation.unwrap();
+        let notional = allocation * self.leverage;
+        let close_fee = notional * fee_rate;
+        self.fees_paid += close_fee;
+
+        let gross_pl = self.pl_fixed;
+        let net_pl = gross_pl - close_fee;
+
+        allocation + net_pl
+    }
+
+    pub fn pl_fixed_net(&self) -> f32 {
+        self.pl_fixed - self.fees_paid
+    }
+
+    pub fn pl_portfolio_net(&self) -> f32 { 
+        if let Some(pv) = self.portfolio_value_at_open {
+            (self.pl_fixed_net() / pv) * 100.0
+        }else { 
+            0.0
+        }
+    }
+
+    pub fn pl_unrealized_fixed_net(&self, current_price: Option<f32>) -> f32 {
+        self.pl_unrealized_fixed(current_price) - self.fees_paid
     }
 
     pub fn open_timestamp(&self) -> Option<i64> {
@@ -176,6 +233,7 @@ impl Trade {
                 Some(l) => l,
                 None => 1.0,
             },
+            fees_paid: 0.0,
             side: trade_options.side,
             is_closed: false,
             pl_ratio: 0 as f32,
@@ -246,6 +304,7 @@ pub struct BacktestManager {
     current_timestamp: Option<i64>,
     current_price: Option<f32>,
     initial_capital: f32,
+    fees: f32,
     available_capital: f32,
     trades: Vec<Trade>,
     computational_metrics: HashMap<Metric, f32>,
@@ -292,12 +351,15 @@ impl BacktestManager {
 
         self.check_capital();
 
-        let allocation = trade.capital_allocation().unwrap().to_owned();
-        if self.available_capital() >= allocation {
-            trade.freeze_open_timestamp(self.current_timestamp.unwrap());
-            trade.freeze_open_price(self.current_price.unwrap());
-            trade.freeze_portfolio_value_at_open(self.current_portfolio_value());
-            self.adjust_available_capital(-allocation);
+        let needed = trade.required_cash_to_open(self.fees);
+        if self.available_capital() >= needed {
+            let cash_delta = trade.apply_open(
+                self.current_timestamp.unwrap(),
+                self.current_price.unwrap(),
+                self.current_portfolio_value(),
+                self.fees,
+            );
+            self.adjust_available_capital(cash_delta);
             self.trades.push(*trade);
         }
     }
@@ -309,17 +371,13 @@ impl BacktestManager {
 
         self.check_capital();
 
-        let current_price = self.current_price.unwrap();
-        let current_timestamp = self.current_timestamp.unwrap();
-
         if let Some(existing_trade) = self.trades.iter_mut().find(|t| t.id() == trade.id()) {
-            existing_trade.close(current_price, current_timestamp);
-
-            let fixed_pl = existing_trade.pl_fixed();
-            let trade_capital_allocation = existing_trade.capital_allocation().unwrap();
-
-            let capital_returned = trade_capital_allocation + fixed_pl;
-            self.adjust_available_capital(capital_returned);
+            let cash_delta = existing_trade.apply_close(
+                self.current_timestamp.unwrap(),
+                self.current_price.unwrap(),
+                self.fees,
+            );
+            self.adjust_available_capital(cash_delta);
         }
     }
 
@@ -386,6 +444,7 @@ impl BacktestManager {
 
         return Self {
             initial_capital: options.initial_capital,
+            fees: options.fees,
             available_capital: options.initial_capital,
             current_price: None,
             current_timestamp: None,
@@ -400,6 +459,7 @@ impl BacktestManager {
 
 pub struct BacktestOptions {
     pub initial_capital: f32,
+    pub fees: f32,
 }
 #[derive(Debug, Clone)]
 pub struct BacktestResult {

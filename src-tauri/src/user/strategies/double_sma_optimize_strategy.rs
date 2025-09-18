@@ -68,6 +68,7 @@ impl IStrategy for DoubleSmaOptimizablePeriodStrategy {
     ) -> Result<BacktestResult, Box<dyn Error>> {
         let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
             initial_capital: 1_000.0,
+            fees: 0.001
         });
 
         let composition: &'static dyn IComposition = self.composition();

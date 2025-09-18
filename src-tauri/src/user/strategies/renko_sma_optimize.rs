@@ -73,6 +73,7 @@ impl IStrategy for SmaRenkoOptimizablePeriodStrategy {
     ) -> Result<BacktestResult, Box<dyn Error>> {
         let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
             initial_capital: 1_000.0,
+            fees: 0.001,
         });
 
         let composition: &'static dyn IComposition = self.composition();
@@ -120,12 +121,18 @@ impl IStrategy for SmaRenkoOptimizablePeriodStrategy {
             let sma = sma_injectable.get_data();
             let renko = renko_injectable.get_data();
 
-            if sma.is_none() || renko.is_none() {
+            if renko.is_none() {
+                continue;
+            }
+
+            let renko_value = renko.unwrap();
+            sma_injectable.allocate(renko_value);
+
+            if sma.is_none() {
                 continue;
             }
 
             let sma_value = sma.unwrap();
-            let renko_value = renko.unwrap();
 
             let side = if renko_value > sma_value {
                 TradeSide::LONG

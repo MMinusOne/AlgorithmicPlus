@@ -86,22 +86,22 @@ impl IStrategy for KalmanOptimizeableStrategy {
         let q_noise_comp = optimization_map
             .unwrap()
             .get("q_noise")
-            .unwrap_or(&CompositionDataType::Float(0.1))
+            .unwrap_or(&CompositionDataType::F32(0.1))
             .to_owned();
         let r_noise_comp = optimization_map
             .unwrap()
             .get("r_noise")
-            .unwrap_or(&CompositionDataType::Float(1.0))
+            .unwrap_or(&CompositionDataType::F32(1.0))
             .to_owned();
         let capital_ratio_comp = optimization_map
             .unwrap()
             .get("capital_ratio")
-            .unwrap_or(&CompositionDataType::Float(0.30))
+            .unwrap_or(&CompositionDataType::F32(0.30))
             .to_owned();
 
-        let q_noise = CompositionDataType::extract_float(&q_noise_comp);
+        let q_noise = CompositionDataType::extract_f32(&q_noise_comp);
         let r_noise = CompositionDataType::extract_usize(&r_noise_comp) as f32;
-        let capital_ratio = CompositionDataType::extract_float(&capital_ratio_comp);
+        let capital_ratio = CompositionDataType::extract_f32(&capital_ratio_comp);
         let timestamp_position = composition.get_composition_field_position("timestamp");
         let close_position = composition.get_composition_field_position("close");
         let mut kalman_injectable = KalmanFilter::new(q_noise, r_noise);
@@ -115,8 +115,8 @@ impl IStrategy for KalmanOptimizeableStrategy {
             }
 
             let timestamp =
-                CompositionDataType::extract_int(&composition_point[timestamp_position]);
-            let close = CompositionDataType::extract_float(&composition_point[close_position]);
+                CompositionDataType::extract_i64(&composition_point[timestamp_position]);
+            let close = CompositionDataType::extract_f32(&composition_point[close_position]);
 
             backtest_manager.update_price(timestamp, close);
 

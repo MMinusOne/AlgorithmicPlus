@@ -47,8 +47,8 @@ impl IComposition for ETH_STANDALONE_4H_4Y {
             let close = candle.close;
 
             let data = vec![
-                CompositionDataType::Int(timestamp),
-                CompositionDataType::Float(close),
+                CompositionDataType::I64(timestamp),
+                CompositionDataType::F32(close),
             ];
 
             composed_data.push(data);
@@ -66,8 +66,8 @@ impl IComposition for ETH_STANDALONE_4H_4Y {
         let close_position = self.composition_fields.get("close").unwrap().clone();
 
         for data_point in composed_data.into_iter() {
-            let timestamp = CompositionDataType::extract_int(&data_point[timestamp_position]);
-            let close = CompositionDataType::extract_float(&data_point[close_position]);
+            let timestamp = CompositionDataType::extract_i64(&data_point[timestamp_position]);
+            let close = CompositionDataType::extract_f32(&data_point[close_position]);
 
             close_data.push(Some(LineData {
                 time: timestamp,

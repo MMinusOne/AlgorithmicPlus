@@ -88,8 +88,4 @@ impl KalmanFilter {
             is_initialized: false,
         }
     }
-
-    pub fn default() -> Self {
-        Self::new(0.1, 1.0)
-    }
 }

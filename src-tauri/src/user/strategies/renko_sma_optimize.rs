@@ -109,13 +109,13 @@ impl IStrategy for SmaRenkoOptimizablePeriodStrategy {
             }
 
             let timestamp =
-                CompositionDataType::extract_int(&composition_point[timestamp_position]);
-            let close = CompositionDataType::extract_float(&composition_point[close_position]);
+                CompositionDataType::extract_i64(&composition_point[timestamp_position]);
+            let close = CompositionDataType::extract_f32(&composition_point[close_position]);
 
             backtest_manager.update_price(timestamp, close);
 
-            sma_injectable.allocate(close);
             renko_injectable.allocate(close);
+            sma_injectable.allocate(close);
 
             let sma = sma_injectable.get_data();
             let renko = renko_injectable.get_data();

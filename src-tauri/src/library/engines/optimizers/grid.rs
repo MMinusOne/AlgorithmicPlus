@@ -141,7 +141,7 @@ impl GridOptimizer {
             let composition_value = if value.fract() == 0.0 {
                 CompositionDataType::Usize(value as usize)
             } else {
-                CompositionDataType::Float(value)
+                CompositionDataType::F32(value)
             };
 
             current_combination.insert(current_param.name.clone(), composition_value);

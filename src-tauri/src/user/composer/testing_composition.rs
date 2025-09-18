@@ -55,9 +55,9 @@ impl IComposition for TESTING_COMPOSITION {
             let current_renko = renko_injectable.get_data();
 
             let data = vec![
-                CompositionDataType::Int(timestamp),
-                CompositionDataType::Float(close),
-                CompositionDataType::OptionFloat(current_renko),
+                CompositionDataType::I64(timestamp),
+                CompositionDataType::F32(close),
+                CompositionDataType::OptionF32(current_renko),
             ];
 
             composed_data.push(data);
@@ -77,10 +77,10 @@ impl IComposition for TESTING_COMPOSITION {
         let renko_position = self.composition_fields.get("renko").unwrap().clone();
 
         for data_point in composed_data.into_iter() {
-            let timestamp = CompositionDataType::extract_int(&data_point[timestamp_position]);
-            let close = CompositionDataType::extract_float(&data_point[close_position]);
+            let timestamp = CompositionDataType::extract_i64(&data_point[timestamp_position]);
+            let close = CompositionDataType::extract_f32(&data_point[close_position]);
             let renko_value =
-                CompositionDataType::extract_option_float(&data_point[renko_position]);
+                CompositionDataType::extract_option_f32(&data_point[renko_position]);
 
             close_data.push(Some(LineData {
                 time: timestamp,

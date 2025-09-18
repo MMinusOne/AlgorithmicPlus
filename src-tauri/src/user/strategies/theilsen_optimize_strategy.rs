@@ -90,7 +90,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
 
         let theilsen_window_length =
             CompositionDataType::extract_usize(&theilsen_window_length_comp);
-        let capital_ratio = CompositionDataType::extract_float(&capital_ratio_comp);
+        let capital_ratio = CompositionDataType::extract_f32(&capital_ratio_comp);
 
         let timestamp_position = composition.get_composition_field_position("timestamp");
         let high_position = composition.get_composition_field_position("high");
@@ -107,10 +107,10 @@ impl IStrategy for TheilSenOptimizeableStrategy {
             }
 
             let timestamp =
-                CompositionDataType::extract_int(&composition_point[timestamp_position]);
-            let high = CompositionDataType::extract_float(&composition_point[high_position]);
-            let low = CompositionDataType::extract_float(&composition_point[low_position]);
-            let close = CompositionDataType::extract_float(&composition_point[close_position]);
+                CompositionDataType::extract_i64(&composition_point[timestamp_position]);
+            let high = CompositionDataType::extract_f32(&composition_point[high_position]);
+            let low = CompositionDataType::extract_f32(&composition_point[low_position]);
+            let close = CompositionDataType::extract_f32(&composition_point[close_position]);
 
             backtest_manager.update_price(timestamp, close);
 

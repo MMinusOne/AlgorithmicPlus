@@ -48,10 +48,10 @@ impl IComposition for ETH_HLC_STANDALONE_4H_4Y {
             let timestamp = candle.timestamp;
 
             let data = vec![
-                CompositionDataType::Int(timestamp),
-                CompositionDataType::Float(candle.high),
-                CompositionDataType::Float(candle.low),
-                CompositionDataType::Float(candle.close),
+                CompositionDataType::I64(timestamp),
+                CompositionDataType::F32(candle.high),
+                CompositionDataType::F32(candle.low),
+                CompositionDataType::F32(candle.close),
             ];
 
             composed_data.push(data);
@@ -73,11 +73,11 @@ impl IComposition for ETH_HLC_STANDALONE_4H_4Y {
         let sma_200_position = self.composition_fields.get("sma_200").unwrap().clone();
 
         for data_point in composed_data.into_iter() {
-            let timestamp = CompositionDataType::extract_int(&data_point[timestamp_position]);
-            let high = CompositionDataType::extract_float(&data_point[high_position]);
-            let low = CompositionDataType::extract_float(&data_point[low_position]);
-            let close = CompositionDataType::extract_float(&data_point[close_position]);
-            let sma_200 = CompositionDataType::extract_option_float(&data_point[sma_200_position]);
+            let timestamp = CompositionDataType::extract_i64(&data_point[timestamp_position]);
+            let high = CompositionDataType::extract_f32(&data_point[high_position]);
+            let low = CompositionDataType::extract_f32(&data_point[low_position]);
+            let close = CompositionDataType::extract_f32(&data_point[close_position]);
+            let sma_200 = CompositionDataType::extract_option_f32(&data_point[sma_200_position]);
 
             hlc_data.push(Some(CandlestickData {
                 time: timestamp,
@@ -146,7 +146,7 @@ impl ETH_HLC_STANDALONE_4H_4Y {
                 "ETHUSDT",
                 StaticResource::OHLCVDataType(
                     // crypto::ethusdt_01_01_2021_06_15_2025_4h::ETHUSDT_4YEARS_4H::instance(),
-                    crypto::ethusdt_01_01_2021_06_15_2025_15m::ETHUSDT_4YEARS_15M::instance()
+                    crypto::ethusdt_01_01_2021_06_15_2025_15m::ETHUSDT_4YEARS_15M::instance(),
                 ),
             )]),
         };

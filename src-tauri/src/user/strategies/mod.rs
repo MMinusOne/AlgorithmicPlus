@@ -285,15 +285,6 @@ impl BacktestManager {
         self.current_price = Some(price);
     }
 
-    pub fn get_last_trade(&self) -> Option<Trade> {
-        if self.trades.len() == 0 {
-            return None;
-        }
-
-        let trade = self.trades[self.trades.len() - 1];
-        return Some(trade.clone());
-    }
-
     pub fn open_trade(&mut self, trade: &mut Trade) {
         if self.backtest_ended {
             return;

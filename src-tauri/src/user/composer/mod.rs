@@ -18,30 +18,30 @@ use std::sync::LazyLock;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum CompositionDataType {
-    Int(i64),
-    Float(f32),
-    OptionFloat(Option<f32>),
+    I64(i64),
+    F32(f32),
+    OptionF32(Option<f32>),
     Bool(bool),
     Usize(usize),
     String(String),
 }
 
 impl CompositionDataType {
-    pub fn extract_int(compsition_data: &CompositionDataType) -> i64 {
+    pub fn extract_i64(compsition_data: &CompositionDataType) -> i64 {
         match compsition_data {
-            Self::Int(v) => v.clone(),
+            Self::I64(v) => v.clone(),
             _ => panic!("Invalid compsition type conversion."),
         }
     }
-    pub fn extract_float(compsition_data: &CompositionDataType) -> f32 {
+    pub fn extract_f32(compsition_data: &CompositionDataType) -> f32 {
         match compsition_data {
-            Self::Float(v) => v.clone(),
+            Self::F32(v) => v.clone(),
             _ => panic!("Invalid compsition type conversion."),
         }
     }
-    pub fn extract_option_float(compsition_data: &CompositionDataType) -> Option<f32> {
+    pub fn extract_option_f32(compsition_data: &CompositionDataType) -> Option<f32> {
         match compsition_data {
-            Self::OptionFloat(v) => v.clone(),
+            Self::OptionF32(v) => v.clone(),
             _ => panic!("Invalid compsition type conversion."),
         }
     }

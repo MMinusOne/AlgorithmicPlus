@@ -91,12 +91,12 @@ impl IComposition for BTC_ETH_STATARB_4H_4Y {
 
             // Push the data
             let data = vec![
-                CompositionDataType::Int(timestamp),
-                CompositionDataType::Float(btc_normalized_close),
-                CompositionDataType::Float(eth_normalized_close),
-                CompositionDataType::OptionFloat(upper_bound),
-                CompositionDataType::OptionFloat(lower_bound),
-                CompositionDataType::Float(stationary_asset_price),
+                CompositionDataType::I64(timestamp),
+                CompositionDataType::F32(btc_normalized_close),
+                CompositionDataType::F32(eth_normalized_close),
+                CompositionDataType::OptionF32(upper_bound),
+                CompositionDataType::OptionF32(lower_bound),
+                CompositionDataType::F32(stationary_asset_price),
             ];
 
             composed_data.push(data);
@@ -134,15 +134,15 @@ impl IComposition for BTC_ETH_STATARB_4H_4Y {
             .to_owned();
 
         for data_point in composed_data.into_iter() {
-            let timestamp = CompositionDataType::extract_int(&data_point[timestamp_position]);
-            let btc_close = CompositionDataType::extract_float(&data_point[btc_close_position]);
-            let eth_close = CompositionDataType::extract_float(&data_point[eth_close_position]);
+            let timestamp = CompositionDataType::extract_i64(&data_point[timestamp_position]);
+            let btc_close = CompositionDataType::extract_f32(&data_point[btc_close_position]);
+            let eth_close = CompositionDataType::extract_f32(&data_point[eth_close_position]);
             let std_upper_bound =
-                CompositionDataType::extract_option_float(&data_point[std_upper_bound_position]);
+                CompositionDataType::extract_option_f32(&data_point[std_upper_bound_position]);
             let std_lower_bound =
-                CompositionDataType::extract_option_float(&data_point[std_lower_bound_position]);
+                CompositionDataType::extract_option_f32(&data_point[std_lower_bound_position]);
             let stationary_asset =
-                CompositionDataType::extract_float(&data_point[stationary_asset_position]);
+                CompositionDataType::extract_f32(&data_point[stationary_asset_position]);
 
             btc_close_data.push(Some(LineData {
                 time: timestamp,

@@ -72,7 +72,7 @@ impl IStrategy for SmaRenkoOptimizablePeriodStrategy {
         optimization_map: Option<&HashMap<String, CompositionDataType>>,
     ) -> Result<BacktestResult, Box<dyn Error>> {
         let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
-            initial_capital: 1_000.0,
+            initial_capital: 5_000.0,
             fees: 0.001,
         });
 
@@ -116,7 +116,6 @@ impl IStrategy for SmaRenkoOptimizablePeriodStrategy {
             backtest_manager.update_price(timestamp, close);
 
             renko_injectable.allocate(close);
-            sma_injectable.allocate(close);
 
             let sma = sma_injectable.get_data();
             let renko = renko_injectable.get_data();
@@ -148,11 +147,11 @@ impl IStrategy for SmaRenkoOptimizablePeriodStrategy {
             }
 
             if latest_trade.is_none() {
-                let trade_allocation = backtest_manager.available_capital() * 0.7;
+                let trade_allocation = backtest_manager.available_capital() * 0.4;
                 let mut new_trade = Trade::new(TradeOptions {
                     side,
                     capital_allocation: Some(trade_allocation),
-                    leverage: Some(1.0),
+                    leverage: Some(2.0),
                 });
                 backtest_manager.open_trade(&mut new_trade);
                 latest_trade = Some(new_trade);
@@ -173,94 +172,6 @@ impl IStrategy for SmaRenkoOptimizablePeriodStrategy {
         }
 
         return self.composition().compose().unwrap();
-    }
-
-    fn render_equity_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
-        let mut charting_data: Vec<ChartingData> = Vec::new();
-
-        let mut line_data: Vec<Option<LineData>> = vec![];
-        let mut cumulative_returns: f32 = 0.0;
-
-        for trade in backtest_result.trades() {
-            cumulative_returns += trade.pl_fixed();
-
-            line_data.push(Some(LineData {
-                time: trade.close_timestamp().unwrap(),
-                value: cumulative_returns,
-                color: None,
-            }));
-        }
-
-        charting_data.push(ChartingData::LineChartingData(LineChartingData {
-            chart_type: "line".into(),
-            height: None,
-            data: line_data,
-            pane: None,
-            title: None,
-        }));
-
-        return charting_data;
-    }
-
-    fn render_percentage_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
-        let mut charting_data: Vec<ChartingData> = Vec::new();
-
-        let mut line_data: Vec<Option<LineData>> = vec![];
-        let mut cumulative_returns: f32 = 0.0;
-
-        for trade in backtest_result.trades() {
-            cumulative_returns += trade.pl_ratio();
-
-            line_data.push(Some(LineData {
-                time: trade.close_timestamp().unwrap(),
-                value: cumulative_returns,
-                color: None,
-            }));
-        }
-
-        charting_data.push(ChartingData::LineChartingData(LineChartingData {
-            chart_type: "line".into(),
-            height: None,
-            data: line_data,
-            pane: None,
-            title: None,
-        }));
-
-        return charting_data;
-    }
-
-    fn render_portfolio_percentage_growth(
-        &self,
-        backtest_result: &BacktestResult,
-    ) -> Vec<ChartingData> {
-        let mut charting_data: Vec<ChartingData> = Vec::new();
-
-        let mut line_data: Vec<Option<LineData>> = vec![];
-        let mut cumulative_returns: f32 = 0.0;
-
-        for trade in backtest_result.trades() {
-            cumulative_returns += trade.pl_portfolio();
-
-            if trade.close_timestamp.is_none() {
-                break;
-            }
-
-            line_data.push(Some(LineData {
-                time: trade.close_timestamp().unwrap(),
-                value: cumulative_returns,
-                color: None,
-            }));
-        }
-
-        charting_data.push(ChartingData::LineChartingData(LineChartingData {
-            chart_type: "line".into(),
-            height: None,
-            data: line_data,
-            pane: None,
-            title: None,
-        }));
-
-        return charting_data;
     }
 
     fn save(&self) -> Result<(), Box<dyn Error>> {

@@ -57,6 +57,6 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Make `BacktestManager` support multiple assets
 - ❌ Price series permutation tool
 - ❌ Make WFO
-
+- ❌ "Highest Score" GUI
 
 I have plans to keep working on this.

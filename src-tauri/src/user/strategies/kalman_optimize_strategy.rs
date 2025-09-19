@@ -73,7 +73,7 @@ impl IStrategy for KalmanOptimizeableStrategy {
     ) -> Result<BacktestResult, Box<dyn Error>> {
         let mut backtest_manager = BacktestManager::new(super::BacktestOptions {
             initial_capital: 1_000.0,
-            fees: 0.001
+            fees: 0.001,
         });
 
         let composition: &'static dyn IComposition = self.composition();
@@ -189,90 +189,6 @@ impl IStrategy for KalmanOptimizeableStrategy {
         }
 
         return self.composition().compose().unwrap();
-    }
-
-    fn render_equity_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
-        let mut charting_data: Vec<ChartingData> = Vec::new();
-
-        let mut line_data: Vec<Option<LineData>> = vec![];
-        let mut cumulative_returns: f32 = 0.0;
-
-        for trade in backtest_result.trades() {
-            cumulative_returns += trade.pl_fixed();
-
-            line_data.push(Some(LineData {
-                time: trade.close_timestamp().unwrap(),
-                value: cumulative_returns,
-                color: None,
-            }));
-        }
-
-        charting_data.push(ChartingData::LineChartingData(LineChartingData {
-            chart_type: "line".into(),
-            height: None,
-            data: line_data,
-            pane: None,
-            title: None,
-        }));
-
-        return charting_data;
-    }
-
-    fn render_percentage_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
-        let mut charting_data: Vec<ChartingData> = Vec::new();
-
-        let mut line_data: Vec<Option<LineData>> = vec![];
-        let mut cumulative_returns: f32 = 0.0;
-
-        for trade in backtest_result.trades() {
-            cumulative_returns += trade.pl_ratio();
-
-            line_data.push(Some(LineData {
-                time: trade.close_timestamp().unwrap(),
-                value: cumulative_returns,
-                color: None,
-            }));
-        }
-
-        charting_data.push(ChartingData::LineChartingData(LineChartingData {
-            chart_type: "line".into(),
-            height: None,
-            data: line_data,
-            pane: None,
-            title: None,
-        }));
-
-        return charting_data;
-    }
-
-    fn render_portfolio_percentage_growth(
-        &self,
-        backtest_result: &BacktestResult,
-    ) -> Vec<ChartingData> {
-        let mut charting_data: Vec<ChartingData> = Vec::new();
-
-        let mut line_data: Vec<Option<LineData>> = vec![];
-        let mut cumulative_returns: f32 = 0.0;
-
-        for trade in backtest_result.trades() {
-            cumulative_returns += trade.pl_portfolio();
-
-            line_data.push(Some(LineData {
-                time: trade.close_timestamp().unwrap(),
-                value: cumulative_returns,
-                color: None,
-            }));
-        }
-
-        charting_data.push(ChartingData::LineChartingData(LineChartingData {
-            chart_type: "line".into(),
-            height: None,
-            data: line_data,
-            pane: None,
-            title: None,
-        }));
-
-        return charting_data;
     }
 
     fn save(&self) -> Result<(), Box<dyn Error>> {

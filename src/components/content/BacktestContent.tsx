@@ -71,7 +71,6 @@ export default function BacktestContent() {
         const backtestSharpe = Number(
           backtest.metrics.find((m) => m.key == "SharpeRatio")?.value
         );
-
         if (backtestSharpe > highestSharpe) {
           highestSharpeBacktest = backtest;
           backtestsChartingData = [];
@@ -79,7 +78,7 @@ export default function BacktestContent() {
           continue;
         }
       }
-
+      
       let chartSeries: ChartingSeries[];
       switch (graphType) {
         case GraphType.FixedEquity:

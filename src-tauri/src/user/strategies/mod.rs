@@ -577,7 +577,6 @@ pub trait IStrategy: Send + Sync {
         optimization_map: Option<&HashMap<String, CompositionDataType>>,
     ) -> Result<BacktestResult, Box<dyn Error>>;
     fn composed_data(&self) -> Vec<Vec<CompositionDataType>>;
- 
     fn render_equity_growth(&self, backtest_result: &BacktestResult) -> Vec<ChartingData> {
         let mut charting_data: Vec<ChartingData> = Vec::new();
 
@@ -663,7 +662,6 @@ pub trait IStrategy: Send + Sync {
 
         return charting_data;
     }
-
     fn save(&self) -> Result<(), Box<dyn Error>>;
 }
 

@@ -55,6 +55,7 @@ It's still lacking alot of features, the only features currently available are t
 - ❌ Saving functionality
 - ❌ Look into GPU optimization
 - ❌ Make `BacktestManager` support multiple assets
+- ❌ Centerlize `backtest` to be handled in a central IStrategy for loop based on compositions and provided injectables which includes making injectable kinds.
 - ❌ Price series permutation tool
 - ❌ Make WFO
 - ❌ "Highest Score" GUI

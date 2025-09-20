@@ -8,9 +8,8 @@ use crate::{
         composer::{
             eth_hlc_standalone_4h_4y::ETH_HLC_STANDALONE_4H_4Y, CompositionDataType, IComposition,
         },
-        library::{sma::SMA, theilsen::TheilSen, IInjectable},
+        library::{theilsen::TheilSen, IInjectable},
     },
-    utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
 use std::collections::HashMap;
 use std::{error::Error, vec};
@@ -104,7 +103,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
 
         for composition_point in &composition_data {
             if backtest_manager.backtest_ended {
-                continue;
+                break;
             }
 
             let timestamp =
@@ -146,11 +145,9 @@ impl IStrategy for TheilSenOptimizeableStrategy {
                 }
             }
 
-            let portfolio_value = backtest_manager.current_portfolio_value();
-
-            let trade_allocation = backtest_manager.available_capital() * capital_ratio;
-
+            
             if latest_trade.is_none() {
+                let trade_allocation = backtest_manager.available_capital() * capital_ratio;
                 let mut new_trade = Trade::new(TradeOptions {
                     asset_name: composition.name(),
                     side,

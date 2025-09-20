@@ -112,7 +112,7 @@ impl IStrategy for KalmanOptimizeableStrategy {
 
         for composition_point in &composition_data {
             if backtest_manager.backtest_ended {
-                continue;
+                break;
             }
 
             let timestamp =
@@ -150,11 +150,8 @@ impl IStrategy for KalmanOptimizeableStrategy {
                 }
             }
 
-            let portfolio_value = backtest_manager.current_portfolio_value();
-
-            let trade_allocation = backtest_manager.available_capital() * capital_ratio;
-
             if latest_trade.is_none() {
+                let trade_allocation = backtest_manager.available_capital() * capital_ratio;
                 let mut new_trade = Trade::new(TradeOptions {
                     asset_name: composition.name(),
                     side,

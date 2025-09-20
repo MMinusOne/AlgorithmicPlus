@@ -16,9 +16,7 @@ use crate::{
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
-use chrono::format::Numeric;
 use std::collections::HashMap;
-use std::marker::Copy;
 use std::{error::Error, vec};
 use uuid::Uuid;
 

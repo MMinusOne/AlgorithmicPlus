@@ -4,10 +4,9 @@ use crate::{
     user::composer::{
         eth_sma_200_4h_4y_composition::ETH_SMA_200_4H_4Y, CompositionDataType, IComposition,
     },
-    utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
 use std::collections::HashMap;
-use std::{error::Error, vec};
+use std::{error::Error};
 use uuid::Uuid;
 
 pub struct Sma200Strategy {

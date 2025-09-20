@@ -16,10 +16,13 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [profile.release]
 opt-level = 3
-lto = true
+lto =  "fat" 
 codegen-units = 1
 panic = "abort"
 strip = true
+overflow-checks = false          
+debug = false                    
+incremental = false   
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }

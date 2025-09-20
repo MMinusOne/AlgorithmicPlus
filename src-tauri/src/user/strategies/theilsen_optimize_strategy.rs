@@ -109,11 +109,12 @@ impl IStrategy for TheilSenOptimizeableStrategy {
 
             let timestamp =
                 CompositionDataType::extract_i64(&composition_point[timestamp_position]);
-            let high = CompositionDataType::extract_f32(&composition_point[high_position]);
-            let low = CompositionDataType::extract_f32(&composition_point[low_position]);
             let close = CompositionDataType::extract_f32(&composition_point[close_position]);
 
-            backtest_manager.update_price(timestamp, close);
+            backtest_manager.update_price(composition.name(), timestamp, close);
+
+            let high = CompositionDataType::extract_f32(&composition_point[high_position]);
+            let low = CompositionDataType::extract_f32(&composition_point[low_position]);
 
             theilsen_injectable.allocate((high, low, close));
 
@@ -151,6 +152,7 @@ impl IStrategy for TheilSenOptimizeableStrategy {
 
             if latest_trade.is_none() {
                 let mut new_trade = Trade::new(TradeOptions {
+                    asset_name: composition.name(),
                     side,
                     capital_allocation: Some(trade_allocation),
                     leverage: Some(1.0),

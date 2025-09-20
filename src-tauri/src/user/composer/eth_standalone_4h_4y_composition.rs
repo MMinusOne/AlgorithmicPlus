@@ -110,7 +110,6 @@ impl ETH_STANDALONE_4H_4Y {
                 "ETHUSDT",
                 StaticResource::OHLCVDataType(
                     crypto::ethusdt_01_01_2021_06_15_2025_4h::ETHUSDT_4YEARS_4H::instance(),
-                    // crypto::ethusdt_01_01_2021_06_15_2025_15m::ETHUSDT_4YEARS_15M::instance(),
                 ),
             )]),
         };

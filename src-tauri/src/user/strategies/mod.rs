@@ -15,7 +15,7 @@ use crate::{
     },
     utils::classes::charting::{ChartingData, LineChartingData, LineData},
 };
-use std::{collections::HashMap, error::Error};
+use std::{collections::HashMap, error::Error, hash::Hash};
 use std::{sync::LazyLock, time::Instant};
 pub mod double_sma_optimize_strategy;
 pub mod kalman_optimize_strategy;
@@ -37,6 +37,7 @@ pub enum TradeSide {
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Trade {
     id: Uuid,
+    asset_name: &'static str,
     open_timestamp: Option<i64>,
     close_timestamp: Option<i64>,
     capital_allocation: Option<f32>,
@@ -223,6 +224,7 @@ impl Trade {
     pub fn new(trade_options: TradeOptions) -> Self {
         return Self {
             id: Uuid::new_v4(),
+            asset_name: trade_options.asset_name,
             open_timestamp: None,
             close_timestamp: None,
             open_price: None,
@@ -246,6 +248,7 @@ impl Trade {
 // Probably make builder pattern
 #[derive(Debug)]
 pub struct TradeOptions {
+    pub asset_name: &'static str,
     pub side: TradeSide,
     pub capital_allocation: Option<f32>,
     pub leverage: Option<f32>,
@@ -300,9 +303,11 @@ pub enum Metric {
 }
 
 #[derive(Clone, Debug)]
+struct TimestampPrice(i64, f32);
+
+#[derive(Clone, Debug)]
 pub struct BacktestManager {
-    current_timestamp: Option<i64>,
-    current_price: Option<f32>,
+    asset_prices: HashMap<String, TimestampPrice>,
     initial_capital: f32,
     fees: f32,
     available_capital: f32,
@@ -325,10 +330,10 @@ impl BacktestManager {
     pub fn current_portfolio_value(&self) -> f32 {
         let mut total_value = self.available_capital;
 
-        if let Some(current_price) = self.current_price {
-            for trade in &self.trades {
+        for trade in &self.trades {
+            if let Some(timestamp_price) = self.asset_prices.get(trade.asset_name) {
                 if !trade.is_closed() {
-                    total_value += trade.pl_unrealized_fixed(Some(current_price));
+                    total_value += trade.pl_unrealized_fixed(Some(timestamp_price.1));
                 }
             }
         }
@@ -336,12 +341,13 @@ impl BacktestManager {
         total_value
     }
 
-    pub fn update_price(&mut self, timestamp: i64, price: f32) {
+    pub fn update_price(&mut self, asset_name: &str, timestamp: i64, price: f32) {
         if self.backtest_ended {
             return;
         }
-        self.current_timestamp = Some(timestamp);
-        self.current_price = Some(price);
+
+        self.asset_prices
+            .insert(asset_name.into(), TimestampPrice(timestamp, price));
     }
 
     pub fn open_trade(&mut self, trade: &mut Trade) {
@@ -353,14 +359,16 @@ impl BacktestManager {
 
         let needed = trade.required_cash_to_open(self.fees);
         if self.available_capital() >= needed {
-            let cash_delta = trade.apply_open(
-                self.current_timestamp.unwrap(),
-                self.current_price.unwrap(),
-                self.current_portfolio_value(),
-                self.fees,
-            );
-            self.adjust_available_capital(cash_delta);
-            self.trades.push(*trade);
+            if let Some(timestamp_price) = self.asset_prices.get(trade.asset_name) {
+                let cash_delta = trade.apply_open(
+                    timestamp_price.0,
+                    timestamp_price.1,
+                    self.current_portfolio_value(),
+                    self.fees,
+                );
+                self.adjust_available_capital(cash_delta);
+                self.trades.push(*trade);
+            }
         }
     }
 
@@ -372,12 +380,11 @@ impl BacktestManager {
         self.check_capital();
 
         if let Some(existing_trade) = self.trades.iter_mut().find(|t| t.id() == trade.id()) {
-            let cash_delta = existing_trade.apply_close(
-                self.current_timestamp.unwrap(),
-                self.current_price.unwrap(),
-                self.fees,
-            );
-            self.adjust_available_capital(cash_delta);
+            if let Some(timestamp_price) = self.asset_prices.get(existing_trade.asset_name) {
+                let cash_delta =
+                    existing_trade.apply_close(timestamp_price.0, timestamp_price.1, self.fees);
+                self.adjust_available_capital(cash_delta);
+            }
         }
     }
 
@@ -446,8 +453,7 @@ impl BacktestManager {
             initial_capital: options.initial_capital,
             fees: options.fees,
             available_capital: options.initial_capital,
-            current_price: None,
-            current_timestamp: None,
+            asset_prices: HashMap::new(),
             trades: Vec::new(),
             computational_metrics,
             instant: Instant::now(),

@@ -60,7 +60,7 @@ impl IInjectable<f32, f32> for SMA {
                 height: None,
                 data: line_data,
                 pane: Some(0),
-                title: Some(format!("SMA {}", self.period))
+                title: Some(format!("SMA {}", self.period)),
             })];
         Ok(charting_data)
     }
@@ -74,7 +74,7 @@ impl SMA {
             period,
             current_sum: 0 as f32,
             data_values: Vec::new(),
-            prices: VecDeque::new(),
+            prices: VecDeque::with_capacity(period),
         };
     }
 }

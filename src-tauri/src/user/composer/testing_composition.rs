@@ -43,7 +43,7 @@ impl IComposition for TESTING_COMPOSITION {
         let ethusdt_resource = self.static_resources.get("ETHUSDT").unwrap();
         let ethusdt_data = ethusdt_resource.load_ohlcv_mmap()?;
 
-        let mut renko_injectable = Renko::new(100.0);
+        let mut renko_injectable = Renko::new(50.0);
 
         composed_data.reserve(ethusdt_data.len());
 
@@ -79,8 +79,7 @@ impl IComposition for TESTING_COMPOSITION {
         for data_point in composed_data.into_iter() {
             let timestamp = CompositionDataType::extract_i64(&data_point[timestamp_position]);
             let close = CompositionDataType::extract_f32(&data_point[close_position]);
-            let renko_value =
-                CompositionDataType::extract_option_f32(&data_point[renko_position]);
+            let renko_value = CompositionDataType::extract_option_f32(&data_point[renko_position]);
 
             close_data.push(Some(LineData {
                 time: timestamp,
@@ -137,8 +136,7 @@ impl TESTING_COMPOSITION {
             static_resources: HashMap::from([(
                 "ETHUSDT",
                 StaticResource::OHLCVDataType(
-                    // crypto::ethusdt_01_01_2021_06_15_2025_4h::ETHUSDT_4YEARS_4H::instance(),
-                    crypto::ethusdt_01_01_2021_06_15_2025_15m::ETHUSDT_4YEARS_15M::instance(),
+                    crypto::eth_usdt_01_01_2018_06_15_2025_1m::ETHUSDT_7YEARS_1M::instance(),
                 ),
             )]),
         };

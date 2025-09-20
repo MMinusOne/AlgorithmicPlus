@@ -100,7 +100,7 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
                 CompositionDataType::extract_i64(&composition_point[timestamp_position]);
             let close = CompositionDataType::extract_f32(&composition_point[close_position]);
 
-            backtest_manager.update_price(timestamp, close);
+            backtest_manager.update_price(composition.name(), timestamp, close);
 
             sma_injectable.allocate(close);
 
@@ -128,6 +128,7 @@ impl IStrategy for SmaOptimizablePeriodStrategy {
             if latest_trade.is_none() {
                 let trade_allocation = backtest_manager.available_capital() * 0.10;
                 let mut new_trade = Trade::new(TradeOptions {
+                    asset_name: composition.name(),
                     side,
                     capital_allocation: Some(trade_allocation),
                     leverage: Some(1.0),
